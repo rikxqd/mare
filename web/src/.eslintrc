@@ -1,0 +1,19 @@
+{
+    "env": {
+        "browser": true
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "rules": {
+        "jsx-quotes": [2, "prefer-single"]
+    },
+    "plugins": [
+        "react"
+    ],
+    "extends": [
+        "plugin:react/recommended"
+    ]
+}
