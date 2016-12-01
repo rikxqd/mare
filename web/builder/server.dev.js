@@ -6,6 +6,7 @@ import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import createProxyServer from './lib/create-proxy-server';
+import devtoolsServefiles from './lib/devtools-servefiles';
 import historyApiFallback from './lib/history-api-fallback';
 import stripCookieDomain from './lib/strip-cookie-domain';
 import webpackConfig from './webpack-config.dev';
@@ -49,6 +50,8 @@ const httpServer = http.createServer(app);
             './node_modules/chrome-devtools-frontend/front_end/',
         ],
     ];
+    app.use('/devtools/', devtoolsServefiles(
+        '54.0.2840.100+ed651c97177b2ac846b27f62bb8efed6dac0f90b'));
     const option = {fallthrough: false};
     for (const [url, path] of items) {
         app.use(url, express.static(path, option));
