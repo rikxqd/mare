@@ -1,25 +1,21 @@
 import compression from 'compression';
 import express from 'express';
-import httpProxy from 'http-proxy';
+import http from 'http';
 import libpath from 'path';
+import liburl from 'url';
+import createProxyServer from './lib/create-proxy-server';
 import historyApiFallback from './lib/history-api-fallback';
 import stripCookieDomain from './lib/strip-cookie-domain';
 import bc from './build-config';
 
+const proxy = createProxyServer(bc.bridgeServerUrl, stripCookieDomain);
 const app = express();
+const httpServer = http.createServer(app);
 
 // api
 {
-    const apiProxy = httpProxy.createProxyServer({
-        changeOrigin: true,
-        target: bc.apiUrl,
-    });
-    apiProxy.on('error', (err, req, resp) => {
-        resp.writeHead(502);
-        resp.end(err.toString());
-    });
-    apiProxy.on('proxyRes', stripCookieDomain);
-    app.use('/api/', apiProxy.web);
+    app.use('/api/', proxy.web);
+    httpServer.on('upgrade', proxy.ws);
 }
 
 // root
@@ -27,14 +23,16 @@ const app = express();
     app.use(compression());
     const root = './dist/';
     const index = 'index.html';
+    const option = {index, fallthrough: true};
     const fallback = libpath.resolve(root, index);
-    app.use(express.static(root, {index}));
+    app.use(express.static(root, option));
     app.use(historyApiFallback(fallback));
 }
 
 // startup
-const port = /:([0-9]+)/.exec(bc.httpUrl)[1];
-app.listen(port, function(error) {
+const address = liburl.parse(bc.releaseListen);
+console.info(`服务器地址：http://${address.host}/\n`);
+httpServer.listen(address.port, address.hostname, (error) => {
     if (error) {
         console.error(error);
     }

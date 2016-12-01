@@ -1,15 +1,17 @@
-import http from 'http';
 import express from 'express';
-import httpProxy from 'http-proxy';
+import http from 'http';
 import libpath from 'path';
+import liburl from 'url';
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
+import createProxyServer from './lib/create-proxy-server';
 import historyApiFallback from './lib/history-api-fallback';
 import stripCookieDomain from './lib/strip-cookie-domain';
 import webpackConfig from './webpack-config.dev';
 import bc from './build-config';
 
+const proxy = createProxyServer(bc.bridgeServerUrl, stripCookieDomain);
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -27,32 +29,29 @@ const httpServer = http.createServer(app);
 
 // api
 {
-    const proxy = httpProxy.createProxyServer({
-        changeOrigin: true,
-        target: bc.apiUrl,
-    });
-    proxy.on('error', (err, req, resp) => {
-        resp.writeHead(502);
-        resp.end(err.toString());
-    });
-    proxy.on('proxyRes', stripCookieDomain);
-    const apiServer = (req, resp) => proxy.web(req, resp);
-    app.use('/api/', apiServer);
-
-    httpServer.on('upgrade', (req, socket, head) => {
-        proxy.ws(req, socket, head);
-    });
+    app.use('/api/', proxy.web);
+    httpServer.on('upgrade', proxy.ws);
 }
 
 // static
 {
     const items = [
-        ['/node_modules/', './node_modules/'],
-        ['/bower_components/', './bower_components/'],
-        ['/devtools/', './node_modules/chrome-devtools-frontend/front_end/'],
+        [
+            '/node_modules/',
+            './node_modules/',
+        ],
+        [
+            '/bower_components/',
+            './bower_components/',
+        ],
+        [
+            '/devtools/',
+            './node_modules/chrome-devtools-frontend/front_end/',
+        ],
     ];
+    const option = {fallthrough: false};
     for (const [url, path] of items) {
-        app.use(url, express.static(path, {fallthrough: false}));
+        app.use(url, express.static(path, option));
     }
 }
 
@@ -60,14 +59,16 @@ const httpServer = http.createServer(app);
 {
     const root = './src/webroot/';
     const index = 'index.dev.html';
+    const option = {index, fallthrough: true};
     const fallback = libpath.resolve(root, index);
-    app.use(express.static(root, {index}));
+    app.use(express.static(root, option));
     app.use(historyApiFallback(fallback));
 }
 
 // startup
-const port = /:([0-9]+)/.exec(bc.httpUrl)[1];
-httpServer.listen(port, (error) => {
+const address = liburl.parse(bc.debugListen);
+console.info(`服务器地址：http://${address.host}/\n`);
+httpServer.listen(address.port, address.hostname, (error) => {
     if (error) {
         console.error(error);
     }

@@ -1,4 +1,4 @@
-export default function(proxyResp) {
+export default (proxyResp) => {
     const headers = proxyResp.headers;
     for (const key of Object.keys(headers)) {
         if (key.toLowerCase() !== 'set-cookie') {
@@ -9,4 +9,4 @@ export default function(proxyResp) {
             cookies[i] = cookie.replace(/ [Dd]omain=.+?;/, '');
         }
     }
-}
+};

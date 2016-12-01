@@ -54,7 +54,7 @@ export default {
                 test: /\.js$/,
                 loader: 'babel',
                 query: {
-                    presets: ['latest', 'stage-1', 'react', 'react-hmre'],
+                    presets: ['latest', 'stage-0', 'react', 'react-hmre'],
                     compact: false,
                 },
             },
@@ -91,7 +91,7 @@ export default {
         ],
     },
 
-    postcss: function() {
+    postcss() {
         return [autoprefixer];
     },
 
