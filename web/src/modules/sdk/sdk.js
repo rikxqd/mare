@@ -7,7 +7,7 @@ class Sdk {
     }
 
     getEcho = async () => {
-        const resp = await fetcher.get('/get');
+        const resp = await fetcher.get('/connected');
         return resp;
     }
 

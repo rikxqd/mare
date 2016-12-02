@@ -1,8 +1,8 @@
-import fs from 'fs';
-import glob from 'glob';
 import rimraf from 'rimraf';
 import webpack from 'webpack';
+import fsUtils from './lib/fs-utils';
 import webpackConfig from './webpack-config.prod';
+import bc from './build-config';
 
 const runWebpackBuild = () => {
     return new Promise((resolve, reject) => {
@@ -34,20 +34,17 @@ const cleanDistDir = () => {
 };
 
 const copyWebRoot = () => {
-    const copyFile = (src, dst) => {
-        fs.createReadStream(src).pipe(fs.createWriteStream(dst));
-    };
 
     return new Promise((resolve) => {
-        if (!fs.existsSync('./dist')) {
-            fs.mkdirSync('./dist');
-        }
-
-        for (const src of glob.sync('./src/webroot/**/*')) {
-            const dst = src.replace('./src/webroot/', './dist/');
-            copyFile(src, dst);
-        }
-
+        fsUtils.copyFolder(
+            './src/webroot/',
+            './dist/');
+        fsUtils.copyFolder(
+            './node_modules/chrome-devtools-frontend/front_end/',
+            './dist/devtools/');
+        fsUtils.copyFolder(
+            `./node_modules/chrome-devtools-servefiles/${bc.devtoolsVersion}/`,
+            './dist/devtools/');
         resolve();
     });
 };
@@ -59,7 +56,8 @@ const copyWebRoot = () => {
         await runWebpackBuild();
     } catch (e) {
         console.error('构建失败');
+        console.error(e);
         return;
     }
-    console.info('构建成功');
+    console.info('构建完毕');
 })();

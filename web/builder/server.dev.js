@@ -50,8 +50,7 @@ const httpServer = http.createServer(app);
             './node_modules/chrome-devtools-frontend/front_end/',
         ],
     ];
-    app.use('/devtools/', devtoolsServefiles(
-        '54.0.2840.100+ed651c97177b2ac846b27f62bb8efed6dac0f90b'));
+    app.use('/devtools/', devtoolsServefiles(bc.devtoolsVersion));
     const option = {fallthrough: false};
     for (const [url, path] of items) {
         app.use(url, express.static(path, option));
