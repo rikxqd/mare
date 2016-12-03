@@ -5,7 +5,7 @@ const defaultConfig = {
     debugListen: 'http://0.0.0.0:8001/',
     releaseListen: 'http://0.0.0.0:8000/',
     bridgeServerUrl: 'http://0.0.0.0:9223/',
-    devtoolsVersion: '54.0.2840.100+ed651c97177b2ac846b27f62bb8efed6dac0f90b',
+    devtoolsVersion: '55.0.2883.75',
 };
 
 const fileConfig = do {
