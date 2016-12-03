@@ -6,8 +6,8 @@ class Sdk {
         console.log('hello world');
     }
 
-    getEcho = async () => {
-        const resp = await fetcher.get('/connected');
+    getEcho = async (args) => {
+        const resp = await fetcher.post('/echo', args);
         return resp;
     }
 

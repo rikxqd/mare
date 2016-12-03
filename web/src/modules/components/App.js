@@ -16,7 +16,7 @@ class App extends React.Component {
     }
 
     load = async () => {
-        const result = await sdk.getEcho();
+        const result = await sdk.getEcho({x: 1, y: 2});
         const output = JSON.stringify(result, null, 4);
         this.setState({output});
     }
