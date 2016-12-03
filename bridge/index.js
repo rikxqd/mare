@@ -20,5 +20,5 @@ const frontendAddress = `${config.frontend.host}:${config.frontend.port}`;
 const backendAddress = `${config.backend.host}:${config.backend.port}`;
 console.info(`HTTP server: http://${frontendAddress}/\n`);
 console.info(`Lua server: socket://${backendAddress}/\n`);
-console.log(bridge);
+console.info(bridge);
 bridge.start();

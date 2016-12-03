@@ -62,13 +62,14 @@ export class VirtualWebSocket extends EventEmitter {
         this.feed(dataString);
     }
 
-    onSocketClose = () =>  {
+    onSocketClose = (hadError) =>  {
+        const code = hadError ? 1001 : 1000;
         this.readyState = WebSocket.CLOSED;
-        this.emit('close');
+        this.emit('close', code, '');
     }
 
-    onSocketError = () => {
-        this.emit('error');
+    onSocketError = (error) => {
+        this.emit('error', error);
     }
 
     close() {

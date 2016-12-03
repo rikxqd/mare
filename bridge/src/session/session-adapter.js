@@ -76,6 +76,7 @@ export class SessionAdapter extends EventEmitter {
         const req = JSON.parse(data);
         const resp = await handleMethod(req);
         const sendData = JSON.stringify(resp);
+        console.log(this.fews.id, 'send', sendData);
         this.fews.send(sendData);
     }
 
@@ -92,7 +93,7 @@ export class SessionAdapter extends EventEmitter {
         console.log(this.bews.id, 'message', data);
         const event = await pushEvent.consoleLog(data);
         const sendData = JSON.stringify(event);
-        console.log(sendData);
+        console.log(this.bews.id, 'send', sendData);
         this.fews.send(sendData);
     }
 

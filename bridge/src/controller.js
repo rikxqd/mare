@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/echo', (req, resp) => {
-    console.log(req);
+    console.info(req);
     const result =  {
         body: req.body,
         url: req.url,
