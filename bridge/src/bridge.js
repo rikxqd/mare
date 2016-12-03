@@ -1,47 +1,68 @@
-import ControlServer from './control-server';
-import DevToolsServer from './devtools-server';
-import LuaDebugServer from './luadebug-server';
+import http from 'http';
+import {BackendServer} from './server/backend-server';
+import {FrontendServer} from './server/frontend-server';
+//import SessionAdapter from './session/session-adapter';
+import {SessionManager} from './session/session-manager';
 import {pushEvent} from './event';
 import {handleMethod} from './method';
 
-export default class Bridge {
+export class Bridge {
 
     constructor(config) {
         this.config = config;
-
-        this.controlServer = new ControlServer(this.config);
-        this.devtoolsServer = new DevToolsServer({host: this.config.host});
-        this.luadebugServer = new LuaDebugServer(this.config.luadebug);
-
-        this.controlServer.on('get-websocket', (callback) => {
-            const result1 = Object.keys(this.devtoolsServer.websocketItems);
-            const result2 = Object.keys(this.luadebugServer.socketItems);
-            callback({result1, result2});
-        });
-        this.devtoolsServer.on(
-            'method-request', this.onDevToolsServerMethodRequest);
-        this.luadebugServer.on(
-            'command-request', this.onLuaDebugServerCommandRequest);
+        this.fes = new FrontendServer(config.frontend);
+        this.bes = new BackendServer(config.backend);
+        this.sm = new SessionManager(config.session);
     }
 
     start() {
-        this.controlServer.start();
-        this.devtoolsServer.start(this.controlServer.server);
-        this.luadebugServer.start();
-        console.info('bridge started');
+        const controller = this.config.controller;
+        const httpServer = http.createServer((req, resp) => {
+            req.bridge = this;
+            return controller(req, resp);
+        });
+        this.fes.start(httpServer);
+        this.bes.start();
+
+        this.initListeners();
     }
 
-    onDevToolsServerMethodRequest = async ({wsid, request}) => {
-        const resp = await handleMethod(request);
-        this.devtoolsServer.responseMethod(wsid, resp);
+    initListeners() {
+        this.fes.on('connection', this.onFesConnection);
+        this.bes.on('connection', this.onBesConnection);
     }
 
-    onLuaDebugServerCommandRequest = async ({message}) => {
-        const wsid = Object.keys(this.devtoolsServer.websocketItems)[0];
-        const event = await pushEvent.consoleLog(message);
-        this.devtoolsServer.pushEvent(wsid, event);
-    };
+    onFesConnection = (ws) => {
+        const url = ws.upgradeReq.url;
+        if (url.startsWith('/session/')) {
+            this.sm.addFrontendWebSocket(ws);
+            return;
+        }
+        console.warn('未处理的 websocket', ws.id, url);
+    }
 
+    onBesConnection = (ws) => {
+        const url = ws.upgradeReq.url;
+        if (url.startsWith('/session/')) {
+            this.sm.addBackendWebSocket(ws);
+            return;
+        }
+        console.warn('未处理的 websocket', ws.id, url);
+    }
 
+    initDevToolsServerEventHandlers() {
+        this.ds.on('method-request', async (wsid, request) => {
+            const resp = await handleMethod(request);
+            this.ds.responseMethod(wsid, resp);
+        });
+    }
+
+    initLuaDebugServerEventHandlers() {
+        this.ls.on('command-request', async ({message}) => {
+            const wsid = Object.keys(this.ds.websocketItems)[0];
+            const event = await pushEvent.consoleLog(message);
+            this.ds.pushEvent(wsid, event);
+        });
+    }
 
 }

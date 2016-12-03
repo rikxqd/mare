@@ -16,7 +16,7 @@ local function writestring(s)
 	end
 end
 
-writestring "connected\n"
+writestring "/session/abcde?project=1234"
 
 local info = {}
 local _print = print
