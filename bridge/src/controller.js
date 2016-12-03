@@ -39,19 +39,19 @@ app.use('/json', (req, resp) => {
 
     const items = [];
     for (const session of bridge.sm.getSessions()) {
-        const websocketUrl = `${host}:${port}/sessions/${session.id}`;
+        const websocketUrl = `${host}:${port}${session.id}`;
         const webSocketDebuggerUrl = `ws://${websocketUrl}`;
         const devtoolsFrontendUrl = `${devtoolsTpl}&ws=${websocketUrl}`;
 
         const item = {
-            description: session.desc,
+            description: '',
             faviconUrl: faviconUrl,
             id: session.id,
             title: 'Lua Debugger',
             type: 'node',
             url: 'file://',
         };
-        if (!session.frontedAttached) {
+        if (session.isMockFrontend) {
             item.webSocketDebuggerUrl = webSocketDebuggerUrl;
             item.devtoolsFrontendUrl = devtoolsFrontendUrl;
         }

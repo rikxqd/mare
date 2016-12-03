@@ -1,10 +1,7 @@
 import http from 'http';
 import {BackendServer} from './server/backend-server';
 import {FrontendServer} from './server/frontend-server';
-//import SessionAdapter from './session/session-adapter';
 import {SessionManager} from './session/session-manager';
-import {pushEvent} from './event';
-import {handleMethod} from './method';
 
 export class Bridge {
 
@@ -33,36 +30,21 @@ export class Bridge {
     }
 
     onFesConnection = (ws) => {
-        const url = ws.upgradeReq.url;
+        const url = ws.location.href;
         if (url.startsWith('/session/')) {
-            this.sm.addFrontendWebSocket(ws);
+            this.sm.addFrontend(ws);
             return;
         }
-        console.warn('未处理的 websocket', ws.id, url);
+        console.warn('unhandled websocket', ws.id, url);
     }
 
     onBesConnection = (ws) => {
-        const url = ws.upgradeReq.url;
+        const url = ws.location.href;
         if (url.startsWith('/session/')) {
-            this.sm.addBackendWebSocket(ws);
+            this.sm.addBackend(ws);
             return;
         }
-        console.warn('未处理的 websocket', ws.id, url);
-    }
-
-    initDevToolsServerEventHandlers() {
-        this.ds.on('method-request', async (wsid, request) => {
-            const resp = await handleMethod(request);
-            this.ds.responseMethod(wsid, resp);
-        });
-    }
-
-    initLuaDebugServerEventHandlers() {
-        this.ls.on('command-request', async ({message}) => {
-            const wsid = Object.keys(this.ds.websocketItems)[0];
-            const event = await pushEvent.consoleLog(message);
-            this.ds.pushEvent(wsid, event);
-        });
+        console.warn('unhandled websocket', ws.id, url);
     }
 
 }

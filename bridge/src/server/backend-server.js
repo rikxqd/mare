@@ -1,6 +1,7 @@
+import EventEmitter from 'events';
+import liburl from 'url';
 import net from 'net';
 import uuid from 'node-uuid';
-import EventEmitter from 'events';
 import {VirtualWebSocket} from '../core/virtual-websocket';
 
 export class BackendServer extends EventEmitter {
@@ -21,6 +22,7 @@ export class BackendServer extends EventEmitter {
         const ws = new VirtualWebSocket(socket);
         ws.id = `backend:${uuid.v4()}`;
         ws.once('handshake', () => {
+            ws.location = liburl.parse(ws.upgradeReq.url, true);
             this.emit('connection', ws);
         });
     }

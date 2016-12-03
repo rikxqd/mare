@@ -1,5 +1,6 @@
-import liburl from 'url';
 import EventEmitter from 'events';
+import WebSocket from 'ws';
+import liburl from 'url';
 
 const parseMessages = (data) => {
     let messages = null;
@@ -23,7 +24,8 @@ export class VirtualWebSocket extends EventEmitter {
         this.socket = socket;
         this.handshaked = false;
         this.chunk = '';
-        this.upgradeReq = {};
+        this.upgradeReq = null;
+        this.readyState = WebSocket.OPEN;
         this.initListeners();
     }
 
@@ -47,9 +49,9 @@ export class VirtualWebSocket extends EventEmitter {
     }
 
     doHandShake(message) {
-        const urlObj = liburl.parse(message, true);
+        const location = liburl.parse(message.trim(), true);
         this.upgradeReq = {
-            url: urlObj.href,
+            url: location.href,
         };
         this.handshaked = true;
         this.emit('handshake');
@@ -61,11 +63,27 @@ export class VirtualWebSocket extends EventEmitter {
     }
 
     onSocketClose = () =>  {
+        this.readyState = WebSocket.CLOSED;
         this.emit('close');
     }
 
     onSocketError = () => {
         this.emit('error');
+    }
+
+    close() {
+        if (this.readyState === WebSocket.CLOSED) {
+            return;
+        }
+        if (this.socket.destroyed) {
+            return;
+        }
+        this.socket.destroy();
+        this.readyState = WebSocket.CLOSED;
+    }
+
+    send(data) {
+        this.socket.send(data);
     }
 
 }

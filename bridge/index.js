@@ -1,7 +1,6 @@
 import controller from './src/controller';
 import {Bridge} from './src/bridge';
 
-console.log(controller);
 const config = {
     controller: controller,
     frontend: {
@@ -19,6 +18,7 @@ const config = {
 const bridge = new Bridge(config);
 const frontendAddress = `${config.frontend.host}:${config.frontend.port}`;
 const backendAddress = `${config.backend.host}:${config.backend.port}`;
-console.info(`HTTP 服务器地址：http://${frontendAddress}/\n`);
-console.info(`Lua 调试器地址：${backendAddress}\n`);
+console.info(`HTTP server: http://${frontendAddress}/\n`);
+console.info(`Lua server: socket://${backendAddress}/\n`);
+console.log(bridge);
 bridge.start();

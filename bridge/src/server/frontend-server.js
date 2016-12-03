@@ -1,6 +1,7 @@
-import uuid from 'node-uuid';
 import EventEmitter from 'events';
 import WebSocket from 'ws';
+import liburl from 'url';
+import uuid from 'node-uuid';
 
 export class FrontendServer extends EventEmitter {
 
@@ -21,6 +22,7 @@ export class FrontendServer extends EventEmitter {
 
     onServerConnection = (ws) => {
         ws.id = `frontend:${uuid.v4()}`;
+        ws.location = liburl.parse(ws.upgradeReq.url, true);
         this.emit('connection', ws);
     }
 
