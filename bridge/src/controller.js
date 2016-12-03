@@ -1,5 +1,6 @@
 import bodyParser from 'body-parser';
 import express from 'express';
+import libpath from 'path';
 
 const app = express();
 app.set('json spaces', 4);
@@ -23,19 +24,32 @@ app.use('/index', (req, resp) => {
     resp.json(result);
 });
 
+app.use('/favicon.ico', (req, resp) => {
+    const path = libpath.resolve('./src/assets/favicon.ico');
+    resp.sendFile(path, (err) => {
+        if (err) {
+            console.error(err);
+            resp.status(err.status).end();
+        }
+    });
+});
+
 app.use('/json/version', (req, resp) => {
-    const result = {
-        'Browser': 'Lua Debugger/1.0.0',
-        'Protocol-Version': '1.2',
-    };
-    resp.json(result);
+    const path = libpath.resolve('./src/assets/version.json');
+    resp.sendFile(path, (err) => {
+        if (err) {
+            console.error(err);
+            resp.status(err.status).end();
+        }
+    });
 });
 
 app.use('/json', (req, resp) => {
     const bridge = req.bridge;
     const {host, port} = bridge.config.frontend;
-    const faviconUrl = 'https://nodejs.org/static/favicon.ico';
-    const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true&v8only=true';
+    const publicAddress = req.headers.host || `${host}:${port}`;
+    const faviconUrl = `${req.protocol}://${publicAddress}/favicon.ico`;
+    const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true';
 
     const items = [];
     for (const session of bridge.sm.getSessions()) {
