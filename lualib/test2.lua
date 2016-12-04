@@ -15,3 +15,5 @@ for i=1,10 do
 	s = foo(i,s)
 	s = s + 1
 end
+
+gfoo = foo
