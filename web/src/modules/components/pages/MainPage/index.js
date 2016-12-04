@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from 'components/views/Sidebar';
 import ContentPanel from 'components/views/ContentPanel';
+import SessionList from 'components/widgets/SessionList';
 import style from './index.scss';
 
 const sidebarItems = [
@@ -42,7 +43,7 @@ export default class MainPage extends React.Component {
                     items={sidebarItems}
                     onChange={this.onChange} />
                 <ContentPanel title={item.label} key={item.value}>
-                    <p>hello</p>
+                    <SessionList />
                 </ContentPanel>
             </div>
         );

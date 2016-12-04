@@ -11,6 +11,11 @@ class Sdk {
         return resp;
     }
 
+    getSessions = async () => {
+        const resp = await fetcher.get('/json');
+        return resp;
+    }
+
 }
 
 export {Sdk};

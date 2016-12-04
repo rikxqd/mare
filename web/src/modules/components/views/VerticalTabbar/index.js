@@ -35,6 +35,7 @@ export default class VerticalTabbar extends React.Component {
                         }
                     };
                     const onClick = this.onClick(item.value);
+
                     <div className={className} key={item.value}>
                         <button onClick={onClick}>{item.label}</button>
                     </div>;
