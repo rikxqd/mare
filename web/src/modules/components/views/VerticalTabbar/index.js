@@ -20,9 +20,6 @@ export default class VerticalTabbar extends React.Component {
     onClick = (value) => (event) => {
         event.target.blur();
         this.setState({selectedValue: value});
-    }
-
-    componentDidUpdate() {
         this.props.onChange(this.state.selectedValue);
     }
 
