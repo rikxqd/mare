@@ -22,8 +22,9 @@ export default {
 
     externals: {
         'immutable': 'Immutable',
-        'react-dom': 'ReactDOM',
         'react': 'React',
+        'react-dom': 'ReactDOM',
+        'react-mdl': 'ReactMDL',
         'react-proxy': 'ReactProxy',
         'redbox-react': 'redbox',
     },
