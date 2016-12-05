@@ -7,7 +7,7 @@ class Sdk {
     }
 
     getEcho = async (args) => {
-        const resp = await fetcher.post('/echo', args);
+        const resp = await fetcher.get('/echo', args);
         return resp;
     }
 

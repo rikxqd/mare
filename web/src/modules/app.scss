@@ -2,10 +2,14 @@
     box-sizing: border-box;
 }
 
+a {
+    text-decoration: none;
+    color: #15c;
+}
+
 body {
+    color: #303942;
+    font-size: 12px;
     margin: 0;
     padding: 0;
-    font-family: DejaVu Sans, Arial, sans-serif;
-    color: #303942;
-    font-size: 13px;
 }
