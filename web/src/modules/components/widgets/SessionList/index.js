@@ -1,26 +1,28 @@
 import React from 'react';
 import sdk from 'sdk';
+import {DataTable, TableHeader} from 'react-mdl';
 import style from './index.scss';
 
-const frontendUrl = (wsUrl) => {
-    const url = wsUrl.replace('ws://', 'ws=');
-    return `/devtools/inspector.html?experiments=true&${url}`;
+const opCellFormater = (wsUrl) => {
+    if (!wsUrl) {
+        return <span className={style.attached}>调试器已连接</span>;
+    }
+    const ws = wsUrl.replace('ws://', 'ws=');
+    const url = `/devtools/inspector.html?experiments=true&${ws}`;
+    return <a href={url} target='_blank'>打开调试器</a>;
 };
 
 export default class SessionList extends React.Component {
 
     constructor(props) {
         super(props);
-
         this.state = {
             sessions: [],
         };
     }
 
     componentDidMount() {
-        setInterval(() => {
-            this.load();
-        }, 1000);
+        this.load();
     }
 
     load = async () => {
@@ -32,22 +34,16 @@ export default class SessionList extends React.Component {
         const sessions = this.state.sessions;
         return (
             <div className={style.root}>
-                {sessions.map((s) => do {
-                    <div key={s.id}>
-                        <div>
-                            <span>{s.title}</span><span>{s.id}</span>
-                        </div>
-                        <div>
-                            <img src={s.faviconUrl} className={style.favicon}/>
-                            {do {
-                                if (s.webSocketDebuggerUrl) {
-                                    <a target='_blank'
-                                    href={frontendUrl(s.webSocketDebuggerUrl)}>inspect</a>;
-                                }
-                            }}
-                        </div>
-                    </div>;
-                })}
+                <DataTable className={style.table}
+                    rowKeyColumn='id'
+                    shadow={0} rows={sessions}>
+                    <TableHeader name='id'
+                        style={{width: '200px'}}>ID</TableHeader>
+                    <TableHeader name='title'>标题</TableHeader>
+                    <TableHeader name='webSocketDebuggerUrl'
+                        style={{width: '100px'}}
+                        cellFormatter={opCellFormater}>操作</TableHeader>
+                </DataTable>
             </div>
         );
     }

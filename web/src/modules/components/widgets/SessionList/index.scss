@@ -1,11 +1,12 @@
 :local(.root) {
+    width: 100%;
 }
 
-:local(.favicon) {
-    flex-shrink: 0;
-    height: 16px;
-    padding-left: 2px;
-    padding-right: 5px;
-    vertical-align: top;
-    width: 23px;
+:local(.attached) {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+:local(.table) {
+    width: 100%;
 }
