@@ -39,5 +39,15 @@ hook.probe("@test2.lua",15, function()
 	print(f.s)
 end)
 
+hook.probe("@test3.lua",8, function()
+	local f = aux.frame(1)
+	print(f.a, f.b)
+end)
+
+hook.probe("@test3.lua",15, function()
+	local f = aux.frame(1)
+	print(f.s)
+end)
+
 rdebug.sethook(hook.hook)
 
