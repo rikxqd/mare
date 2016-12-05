@@ -16,7 +16,9 @@ local function writestring(s)
 	end
 end
 
-writestring "/session/abcde?project=1234"
+local filename = rdebug.getinfo(2).short_src
+local handshake_url = '/session/' .. filename .. '?project=1234'
+writestring(handshake_url)
 
 local info = {}
 local _print = print
