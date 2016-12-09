@@ -27,7 +27,7 @@ export default class SessionList extends React.Component {
         return (
             <div>
                 {do {
-                    if (item.frontend) {
+                    if (item.frontend.isConnected) {
                         <span>前端已连接</span>;
                     } else {
                         <a href={url} target='_blank'>打开前端</a>;
@@ -36,7 +36,7 @@ export default class SessionList extends React.Component {
                 <Icon className={style.cellIcon}
                     name='compare_arrows' />
                 {do {
-                    if (item.backend) {
+                    if (item.backend.isConnected) {
                         <span>后端已连接</span>;
                     } else {
                         <span>正在监听中</span>;
@@ -48,7 +48,8 @@ export default class SessionList extends React.Component {
 
     renderIdCell = (key, item) => {
         const url = item.id;
-        return <a href={url}>{item.id}</a>;
+        const label = item.id.replace('/session/', '');
+        return <a href={url}>{label}</a>;
     }
 
     renderDetailCell = (key, item) => {

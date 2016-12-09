@@ -23,7 +23,8 @@ export class FrontendServer extends EventEmitter {
     onServerConnection = (ws) => {
         ws.id = `frontend:${uuid.v4()}`;
         ws.socket = ws._socket;
-        ws.location = liburl.parse(ws.upgradeReq.url, true);
+        const url = ws.upgradeReq.url.replace(/\|/, '&');
+        ws.location = liburl.parse(url, true);
         this.emit('connection', ws);
     }
 

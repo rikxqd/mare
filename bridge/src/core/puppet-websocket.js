@@ -17,7 +17,7 @@ const parseMessages = (data) => {
     return {messages, chunk};
 };
 
-export class VirtualWebSocket extends EventEmitter {
+export class PuppetWebSocket extends EventEmitter {
 
     constructor(socket) {
         super();

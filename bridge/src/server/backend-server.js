@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import liburl from 'url';
 import net from 'net';
 import uuid from 'node-uuid';
-import {VirtualWebSocket} from '../core/virtual-websocket';
+import {PuppetWebSocket} from '../core/puppet-websocket';
 
 export class BackendServer extends EventEmitter {
 
@@ -19,7 +19,7 @@ export class BackendServer extends EventEmitter {
     }
 
     onServerConnection = (socket) => {
-        const ws = new VirtualWebSocket(socket);
+        const ws = new PuppetWebSocket(socket);
         ws.id = `backend:${uuid.v4()}`;
         ws.once('handshake', () => {
             ws.location = liburl.parse(ws.upgradeReq.url, true);

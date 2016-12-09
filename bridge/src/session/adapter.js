@@ -2,11 +2,10 @@ import EventEmitter from 'events';
 import {handleMethod} from '../method';
 import {pushEvent} from '../event';
 
-export class SessionAdapter extends EventEmitter {
+export class Adapter extends EventEmitter {
 
-    constructor(id, fews, bews, store) {
+    constructor(fews, bews, store) {
         super();
-        this.id = id;
         this.fews = fews;
         this.bews = bews;
         this.store = store;
@@ -51,7 +50,6 @@ export class SessionAdapter extends EventEmitter {
         this.stopListeners();
         this.fews.close();
         this.bews.close();
-        this.id = null;
         this.fews = null;
         this.bews = null;
         this.store = null;
@@ -76,34 +74,32 @@ export class SessionAdapter extends EventEmitter {
         const req = JSON.parse(data);
         const resp = await handleMethod(req);
         const sendData = JSON.stringify(resp);
-        console.log(this.fews.id, 'send', sendData);
         this.fews.send(sendData);
     }
 
     onFewsClose = (code, message) => {
-        console.log(this.fews.id, 'close',  code, message);
+        console.info(this.fews.id, 'close',  code, message);
         this.emit('close', 'frontend');
     }
 
     onFewsError = (error) => {
-        console.log(this.fews.id, 'error', error);
+        console.error(this.fews.id, 'error', error);
     }
 
     onBewsMessage = async (data) => {
         console.log(this.bews.id, 'message', data);
         const event = await pushEvent.consoleLog(data);
         const sendData = JSON.stringify(event);
-        console.log(this.bews.id, 'send', sendData);
         this.fews.send(sendData);
     }
 
     onBewsClose = (code, message) => {
-        console.log(this.bews.id, 'close',  code, message);
+        console.info(this.bews.id, 'close',  code, message);
         this.emit('close', 'backend');
     }
 
     onBewsError = (error) => {
-        console.log(this.bews.id, 'error', error);
+        console.error(this.bews.id, 'error', error);
     }
 
 }

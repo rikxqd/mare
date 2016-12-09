@@ -62,11 +62,11 @@ app.use('/json', (req, resp) => {
             description: '',
             faviconUrl: faviconUrl,
             id: session.id,
-            title: 'Lua Debugger',
-            type: 'node',
-            url: 'file://',
+            title: session.title,
+            type: 'lua',
+            url: webSocketDebuggerUrl,
         };
-        if (session.isMockFrontend) {
+        if (!session.isFrontendConnected) {
             item.webSocketDebuggerUrl = webSocketDebuggerUrl;
             item.devtoolsFrontendUrl = devtoolsFrontendUrl;
         }
@@ -80,30 +80,8 @@ app.use('/session/', (req, resp) => {
     const items = [];
     const publicAddress = req.headers.host;
     for (const session of bridge.sm.getSessions()) {
-        let frontend = null;
-        if (!session.isMockFrontend) {
-            const fews = session.adapter.fews;
-            frontend = {
-                remoteHost: fews.socket.remoteAddress,
-                remotePort: fews.socket.remotePort,
-                sessionArgs: fews.location.query,
-            };
-        }
-
-        let backend = null;
-        if (!session.isMockBackend) {
-            const bews = session.adapter.bews;
-            backend = {
-                remoteHost: bews.socket.remoteAddress,
-                remotePort: bews.socket.remotePort,
-                sessionArgs: bews.location.query,
-            };
-        }
-
-        const id = session.id;
-        const title = session.title || 'Untitled';
-        const wsPath = `${publicAddress}${session.id}`;
-        const item = {id, title, wsPath, frontend, backend};
+        const item = session.getJSON();
+        item.wsPath = `${publicAddress}${session.id}`;
         items.push(item);
     }
     resp.json(items);
