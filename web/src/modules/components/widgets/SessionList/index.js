@@ -1,16 +1,7 @@
 import React from 'react';
 import sdk from 'sdk';
-import {DataTable, TableHeader} from 'react-mdl';
+import {Icon, DataTable, TableHeader} from 'react-mdl';
 import style from './index.scss';
-
-const opCellFormater = (wsUrl) => {
-    if (!wsUrl) {
-        return <span className={style.attached}>调试器已连接</span>;
-    }
-    const ws = wsUrl.replace('ws://', 'ws=');
-    const url = `/devtools/inspector.html?experiments=true&${ws}`;
-    return <a href={url} target='_blank'>打开调试器</a>;
-};
 
 export default class SessionList extends React.Component {
 
@@ -30,6 +21,41 @@ export default class SessionList extends React.Component {
         this.setState({sessions});
     }
 
+    renderDebuggerCell = (key, item) => {
+        const path = `ws=${item.wsPath}`;
+        const url = `/devtools/inspector.html?experiments=true&${path}`;
+        return (
+            <div>
+                {do {
+                    if (item.frontend) {
+                        <span>前端已连接</span>;
+                    } else {
+                        <a href={url} target='_blank'>打开前端</a>;
+                    }
+                }}
+                <Icon className={style.cellIcon}
+                    name='compare_arrows' />
+                {do {
+                    if (item.backend) {
+                        <span>后端已连接</span>;
+                    } else {
+                        <span>正在监听中</span>;
+                    }
+                }}
+            </div>
+        );
+    }
+
+    renderIdCell = (key, item) => {
+        const url = item.id;
+        return <a href={url}>{item.id}</a>;
+    }
+
+    renderDetailCell = (key, item) => {
+        const url = item.id;
+        return <a href={url}>详情</a>;
+    }
+
     render() {
         const sessions = this.state.sessions;
         return (
@@ -38,11 +64,14 @@ export default class SessionList extends React.Component {
                     rowKeyColumn='id'
                     shadow={0} rows={sessions}>
                     <TableHeader name='id'
+                        cellFormatter={this.renderIdCell}
                         style={{width: '200px'}}>ID</TableHeader>
                     <TableHeader name='title'>标题</TableHeader>
-                    <TableHeader name='webSocketDebuggerUrl'
-                        style={{width: '100px'}}
-                        cellFormatter={opCellFormater}>操作</TableHeader>
+                    <TableHeader name='debugger'
+                        cellFormatter={this.renderDebuggerCell}>调试器</TableHeader>
+                    <TableHeader name='op'
+                        style={{width: '50px'}}
+                        cellFormatter={this.renderDetailCell}>操作</TableHeader>
                 </DataTable>
             </div>
         );

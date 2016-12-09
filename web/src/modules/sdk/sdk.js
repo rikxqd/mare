@@ -12,7 +12,7 @@ class Sdk {
     }
 
     getSessions = async () => {
-        const resp = await fetcher.get('/json');
+        const resp = await fetcher.get('/session/');
         return resp;
     }
 

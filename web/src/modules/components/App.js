@@ -31,7 +31,7 @@ export default class App extends React.Component {
 
     setPage = async (url) => {
         if (url === '/') {
-            redirect('/session');
+            redirect('/session/');
             return;
         }
 

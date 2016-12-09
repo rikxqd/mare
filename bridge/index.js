@@ -12,7 +12,7 @@ const config = {
         port: 8083,
     },
     session: {
-        autoCloseTimeout: 3600,
+        autoRemoveTimeout: 60,
     },
 };
 const bridge = new Bridge(config);

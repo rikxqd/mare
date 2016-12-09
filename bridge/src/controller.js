@@ -46,14 +46,15 @@ app.use('/json/version', (req, resp) => {
 
 app.use('/json', (req, resp) => {
     const bridge = req.bridge;
-    const {host, port} = bridge.config.frontend;
-    const publicAddress = req.headers.host || `${host}:${port}`;
-    const faviconUrl = `${req.protocol}://${publicAddress}/favicon.ico`;
+    const frontendConfig = bridge.config.frontend;
+    const publicAddress = req.headers.host || `${frontendConfig.host}:${frontendConfig.port}`;
+
     const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true';
+    const faviconUrl = `${req.protocol}://${publicAddress}/favicon.ico`;
 
     const items = [];
     for (const session of bridge.sm.getSessions()) {
-        const websocketUrl = `${host}:${port}${session.id}`;
+        const websocketUrl = `${publicAddress}${session.id}`;
         const webSocketDebuggerUrl = `ws://${websocketUrl}`;
         const devtoolsFrontendUrl = `${devtoolsTpl}&ws=${websocketUrl}`;
 
@@ -69,6 +70,40 @@ app.use('/json', (req, resp) => {
             item.webSocketDebuggerUrl = webSocketDebuggerUrl;
             item.devtoolsFrontendUrl = devtoolsFrontendUrl;
         }
+        items.push(item);
+    }
+    resp.json(items);
+});
+
+app.use('/session/', (req, resp) => {
+    const bridge = req.bridge;
+    const items = [];
+    const publicAddress = req.headers.host;
+    for (const session of bridge.sm.getSessions()) {
+        let frontend = null;
+        if (!session.isMockFrontend) {
+            const fews = session.adapter.fews;
+            frontend = {
+                remoteHost: fews.socket.remoteAddress,
+                remotePort: fews.socket.remotePort,
+                sessionArgs: fews.location.query,
+            };
+        }
+
+        let backend = null;
+        if (!session.isMockBackend) {
+            const bews = session.adapter.bews;
+            backend = {
+                remoteHost: bews.socket.remoteAddress,
+                remotePort: bews.socket.remotePort,
+                sessionArgs: bews.location.query,
+            };
+        }
+
+        const id = session.id;
+        const title = session.title || 'Untitled';
+        const wsPath = `${publicAddress}${session.id}`;
+        const item = {id, title, wsPath, frontend, backend};
         items.push(item);
     }
     resp.json(items);

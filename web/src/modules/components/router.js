@@ -15,7 +15,7 @@ const pages = [
         key: 'sessionIndex',
         component: SessionIndexPage,
         match: (url) => {
-            return url === '/session';
+            return url === '/session/';
         },
     },
     {

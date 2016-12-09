@@ -2,11 +2,13 @@
     width: 100%;
 }
 
-:local(.attached) {
-    color: #aaa;
-    cursor: not-allowed;
-}
-
 :local(.table) {
     width: 100%;
 }
+
+:local(.cellIcon) {
+    font-size: 16px;
+    margin: 0 8px;
+    vertical-align: sub;
+}
+
