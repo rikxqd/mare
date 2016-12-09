@@ -3,22 +3,46 @@ local hook = require "debughook"
 local rdebug = require "remotedebug"
 local aux = require "debugaux"
 
-local so = assert(lsocket.connect("127.0.0.1", 8083))
-assert(lsocket.select(nil, {so}, 1))	-- try to connect server for 1 sec
+local so = nil
+function reconnect()
+    so = lsocket.connect("127.0.0.1", 8083)
+    ok, err = so:status()
+    if (not ok) then
+        print(err)
+        so = nil
+        return false
+    end
+    return true
+end
+
+local filename = rdebug.getinfo(2).short_src
+local handshake_url = '/session/' .. filename .. '?project=1234\r\n'
 
 local function writestring(s)
 	s = s .. "\r\n"
+
+    if so == nil then
+        if reconnect() then
+            s = handshake_url .. s
+        else
+            return
+        end
+    end
+
 	local from = 1
 	local len = #s
 	while from <= len do
 		local rd, wt = lsocket.select(nil, {so})
-		from = from + assert(so:send(s:sub(from)))
+        local bytes = so:send(s:sub(from))
+        if bytes == nil then
+            so = nil
+            break
+        end
+		from = from + bytes
 	end
 end
 
-local filename = rdebug.getinfo(2).short_src
-local handshake_url = '/session/' .. filename .. '?project=1234'
-writestring(handshake_url)
+writestring('hello')
 
 local info = {}
 local _print = print
