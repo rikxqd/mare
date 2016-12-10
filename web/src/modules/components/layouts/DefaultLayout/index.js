@@ -14,38 +14,46 @@ export default class DefaultLayout extends React.Component {
         super(props);
     }
 
+    renderNavigation() {
+        const pathname = location.pathname;
+        const active = style.active;
+        return (
+            <Navigation>
+                {do {
+                    const props = {
+                        href: '/overview',
+                        onClick: href('/overview'),
+                        className: pathname === '/overview' ? active : '',
+                    };
+                    <a {...props}>运行状态</a>;
+                }}
+                {do {
+                    const props = {
+                        href: '/session/',
+                        onClick: href('/session/'),
+                        className: pathname.startsWith('/session/') ? active : '',
+                    };
+                    <a {...props}>会话列表</a>;
+                }}
+                {do {
+                    const props = {
+                        href: '/config',
+                        onClick: href('/config'),
+                        className: pathname.startsWith('/config') ? active : '',
+                    };
+                    <a {...props}>查看配置</a>;
+                }}
+            </Navigation>
+        );
+    }
+
     render() {
         return (
             <div className={style.root}>
                 <Layout fixedHeader>
                     <Header title={<a className={style.title}
                             href='/' onClick={href('/')}>LDB</a>}>
-                        <Navigation>
-                            {do {
-                                if (location.pathname === '/overview') {
-                                    <span className={style.active}>运行状态</span>;
-                                } else {
-                                    <a href='/overview'
-                                        onClick={href('/overview')}>运行状态</a>;
-                                }
-                            }}
-                            {do {
-                                if (location.pathname.startsWith('/session/')) {
-                                    <span className={style.active}>会话列表</span>;
-                                } else {
-                                    <a href='/session/'
-                                        onClick={href('/session/')}>会话列表</a>;
-                                }
-                            }}
-                            {do {
-                                if (location.pathname.startsWith('/config')) {
-                                    <span className={style.active}>查看配置</span>;
-                                } else {
-                                    <a href='/session/'
-                                        onClick={href('/config')}>查看配置</a>;
-                                }
-                            }}
-                        </Navigation>
+                        {this.renderNavigation()}
                     </Header>
                     <div className={style.content}>
                         {this.props.children}
