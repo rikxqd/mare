@@ -50,30 +50,21 @@ const sleep = (ms) => {
     });
 };
 
-// 按姓名拼音排序，修复多音字问题
-let pinyinSurnameCompare;
-{
-    const heteronymTable = {
-        '曾': '增',
-    };
-    const heteronym = (text) => {
-        if (text === '') {
-            return '';
-        }
-        const src = text[0];
-        const dst = heteronymTable[src];
-        if (!dst) {
-            return text;
-        }
-        return text.replace(src, dst);
-    };
-    const locale = 'zh-CN-u-co-pinyin';
-    pinyinSurnameCompare = (a, b) => {
-        a = heteronym(a);
-        b = heteronym(b);
-        return a.localeCompare(b, locale);
-    };
-}
+// 秒数转时分秒
+const s2hms = (seconds) => {
+    let m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const h = Math.floor(m / 60);
+    m = m % 60;
+    return {h, m, s};
+};
+
+// 秒数转时分秒格式化
+const s2hmsf = (seconds) => {
+    const pad = (v) => String(v).padLeft(2, '0');
+    const {h, m, s} = s2hms(seconds);
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+};
 
 export {
     urlencode,
@@ -83,5 +74,6 @@ export {
     promiseSeq,
     deepClone,
     sleep,
-    pinyinSurnameCompare,
+    s2hms,
+    s2hmsf,
 };

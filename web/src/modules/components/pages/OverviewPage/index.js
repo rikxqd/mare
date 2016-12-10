@@ -1,22 +1,22 @@
 import React from 'react';
 import postal from 'postal';
-import SessionList from 'components/widgets/SessionList';
+import OverviewTable from 'components/widgets/OverviewTable';
 import style from './index.scss';
 
-export default class SessionIndexPage extends React.Component {
+export default class OverviewPage extends React.Component {
 
     constructor(props) {
         super(props);
     }
 
     componentDidMount() {
-        postal.pub('document-title', '会话列表');
+        postal.pub('document-title', '运行状态');
     }
 
     render() {
         return (
             <div className={style.root}>
-                <SessionList />
+                <OverviewTable />
             </div>
         );
     }

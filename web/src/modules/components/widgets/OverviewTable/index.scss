@@ -1,0 +1,22 @@
+:local(.root) {
+    width: 100%;
+}
+
+:local(.section) {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+:local(.table) {
+    flex: 1;
+    width: calc(50% - 6px);
+    margin-right: 12px;
+
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
+:local(.extra) {
+    float: right;
+}

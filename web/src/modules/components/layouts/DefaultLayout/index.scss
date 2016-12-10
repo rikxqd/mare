@@ -1,2 +1,11 @@
 :local(.root) {
+    width: 100%;
+}
+
+:local(.caption) {
+    color: '#ddd';
+}
+
+:local(.content) {
+    width: 100%;
 }

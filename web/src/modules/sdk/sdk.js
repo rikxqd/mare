@@ -16,6 +16,11 @@ class Sdk {
         return resp;
     }
 
+    getOverview = async () => {
+        const resp = await fetcher.get('/overview');
+        return resp;
+    }
+
 }
 
 export {Sdk};

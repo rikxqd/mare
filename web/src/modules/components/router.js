@@ -1,18 +1,29 @@
 import postal from 'postal';
 import DebugPage from 'components/pages/DebugPage';
 import ErrorPage from 'components/pages/ErrorPage';
+import OverviewPage from 'components/pages/OverviewPage';
 import SessionIndexPage from 'components/pages/SessionIndexPage';
 
 const pages = [
     {
         key: 'debug',
         component: DebugPage,
+        props: {title: '调试页'},
         match: (url) => {
             return url === '/debug';
         },
     },
     {
+        key: 'overview',
+        props: {title: '运行状态'},
+        component: OverviewPage,
+        match: (url) => {
+            return url === '/overview';
+        },
+    },
+    {
         key: 'sessionIndex',
+        props: {title: '会话列表'},
         component: SessionIndexPage,
         match: (url) => {
             return url === '/session/';
@@ -20,6 +31,7 @@ const pages = [
     },
     {
         key: 'error',
+        props: {title: '错误'},
         component: ErrorPage,
         match: (url) => {
             return url === '/error';
@@ -27,6 +39,7 @@ const pages = [
     },
     {
         key: 'error404',
+        props: {title: '错误'},
         component: ErrorPage,
         match: () => {
             return true;
