@@ -11,6 +11,11 @@
     }
 }
 
+:local(.title) {
+    font-weight: bold;
+    color: #fff;
+}
+
 :local(.active) {
     font-weight: bold;
     color: #fff;

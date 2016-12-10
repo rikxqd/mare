@@ -15,13 +15,11 @@ export default class DefaultLayout extends React.Component {
     }
 
     render() {
-        const title = (
-            <strong>LDB</strong>
-        );
         return (
             <div className={style.root}>
                 <Layout fixedHeader>
-                    <Header title={title}>
+                    <Header title={<a className={style.title}
+                            href='/' onClick={href('/')}>LDB</a>}>
                         <Navigation>
                             {do {
                                 if (location.pathname === '/overview') {
