@@ -1,6 +1,6 @@
 import React from 'react';
 import {href} from 'components/router';
-import {Layout, Navigation, Drawer, Header} from 'react-mdl';
+import {Layout, Navigation, Header} from 'react-mdl';
 import style from './index.scss';
 
 export default class DefaultLayout extends React.Component {
@@ -16,23 +16,39 @@ export default class DefaultLayout extends React.Component {
 
     render() {
         const title = (
-            <span>
-                <span className={style.caption}>LDB / </span>
-                <strong>{this.props.layoutProps.title}</strong>
-            </span>
+            <strong>LDB</strong>
         );
         return (
             <div className={style.root}>
                 <Layout fixedHeader>
-                    <Header title={title}></Header>
-                    <Drawer title='LDB'>
+                    <Header title={title}>
                         <Navigation>
-                            <a href='/overview'
-                                onClick={href('/overview')}>运行状态</a>
-                            <a href='/session/'
-                                onClick={href('/session/')}>会话列表</a>
+                            {do {
+                                if (location.pathname === '/overview') {
+                                    <span className={style.active}>运行状态</span>;
+                                } else {
+                                    <a href='/overview'
+                                        onClick={href('/overview')}>运行状态</a>;
+                                }
+                            }}
+                            {do {
+                                if (location.pathname.startsWith('/session/')) {
+                                    <span className={style.active}>会话列表</span>;
+                                } else {
+                                    <a href='/session/'
+                                        onClick={href('/session/')}>会话列表</a>;
+                                }
+                            }}
+                            {do {
+                                if (location.pathname.startsWith('/config')) {
+                                    <span className={style.active}>查看配置</span>;
+                                } else {
+                                    <a href='/session/'
+                                        onClick={href('/config')}>查看配置</a>;
+                                }
+                            }}
                         </Navigation>
-                    </Drawer>
+                    </Header>
                     <div className={style.content}>
                         {this.props.children}
                     </div>

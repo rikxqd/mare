@@ -45,7 +45,7 @@ export default class ConfigList extends React.Component {
                     <tbody>
                         {this.state.items.map((item) => {
                             return (
-                                <tr>
+                                <tr key={item.key}>
                                     <td className='column-key'>{item.key}</td>
                                     <td className='column-value'><code>{item.value}</code></td>
                                 </tr>

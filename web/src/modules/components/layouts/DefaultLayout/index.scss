@@ -1,9 +1,20 @@
 :local(.root) {
     width: 100%;
+
+    .mdl-layout__header-row {
+        padding-left:  40px;
+    }
+
+    .mdl-layout-spacer {
+        flex-grow: 0;
+        width: 40px;
+    }
 }
 
-:local(.caption) {
-    color: '#ddd';
+:local(.active) {
+    font-weight: bold;
+    color: #fff;
+    opacity: 1;
 }
 
 :local(.content) {

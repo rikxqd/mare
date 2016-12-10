@@ -76,9 +76,10 @@ export default class SessionList extends React.Component {
                         cellFormatter={this.renderIdCell}
                         style={{width: '200px'}}>ID</TableHeader>
                     <TableHeader name='title'>标题</TableHeader>
-                    <TableHeader name='debugger'
+                    <TableHeader name='_debugger'
+                        style={{width: '200px'}}
                         cellFormatter={this.renderDebuggerCell}>调试器</TableHeader>
-                    <TableHeader name='op'
+                    <TableHeader name='_detail'
                         style={{width: '50px'}}
                         cellFormatter={this.renderDetailCell}>操作</TableHeader>
                 </DataTable>

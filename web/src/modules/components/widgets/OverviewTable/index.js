@@ -168,8 +168,7 @@ export default class OverviewTable extends React.Component {
                     cellFormatter={this.renderLabelCell}>服务</TableHeader>
                 <TableHeader name='value'
                     cellFormatter={this.renderValueCell}>
-                    <a className={style.extra}
-                        href='/config' target='_blank'>查看配置</a>
+                    <a className={style.extra} href='/config'>查看配置</a>
                 </TableHeader>
             </DataTable>
         );
@@ -185,8 +184,7 @@ export default class OverviewTable extends React.Component {
                     cellFormatter={this.renderLabelCell}>会话</TableHeader>
                 <TableHeader name='value'
                     cellFormatter={this.renderValueCell}>
-                    <a className={style.extra}
-                        href='/session/' target='_blank'>
+                    <a className={style.extra} href='/session/'>
                         查看全部
                     </a>
                 </TableHeader>
@@ -204,8 +202,7 @@ export default class OverviewTable extends React.Component {
                     cellFormatter={this.renderLabelCell}>项目</TableHeader>
                 <TableHeader name='value'
                     cellFormatter={this.renderValueCell}>
-                    <a className={style.extra}
-                        href='/project/' target='_blank'>
+                    <a className={style.extra} href='/project/'>
                         查看全部
                     </a>
                 </TableHeader>
