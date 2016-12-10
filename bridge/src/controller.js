@@ -132,4 +132,9 @@ app.use('/overview', (req, resp) => {
     resp.json(info);
 });
 
+app.use('/config', (req, resp) => {
+    const bridge = req.bridge;
+    resp.json(bridge.config);
+});
+
 export default app;

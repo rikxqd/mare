@@ -21,6 +21,11 @@ class Sdk {
         return resp;
     }
 
+    getConfig = async () => {
+        const resp = await fetcher.get('/config');
+        return resp;
+    }
+
 }
 
 export {Sdk};

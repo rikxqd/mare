@@ -1,5 +1,6 @@
 import postal from 'postal';
 import DebugPage from 'components/pages/DebugPage';
+import ConfigPage from 'components/pages/ConfigPage';
 import ErrorPage from 'components/pages/ErrorPage';
 import OverviewPage from 'components/pages/OverviewPage';
 import SessionIndexPage from 'components/pages/SessionIndexPage';
@@ -19,6 +20,14 @@ const pages = [
         component: OverviewPage,
         match: (url) => {
             return url === '/overview';
+        },
+    },
+    {
+        key: 'config',
+        component: ConfigPage,
+        props: {title: '查看服务配置'},
+        match: (url) => {
+            return url === '/config';
         },
     },
     {
