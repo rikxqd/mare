@@ -4,4 +4,21 @@
 
 :local(.table) {
     width: 100%;
+
+    th {
+        text-align: left;
+    }
+
+    td.column-key {
+        width: 200px;
+        text-align: left;
+        font-weight: bold;
+        vertical-align: top;
+        line-height: 22px;
+    }
+
+    td.column-value {
+        text-align: left;
+    }
+
 }

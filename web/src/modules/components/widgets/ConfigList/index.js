@@ -1,6 +1,5 @@
 import React from 'react';
 import sdk from 'sdk';
-import {DataTable, TableHeader} from 'react-mdl';
 import style from './index.scss';
 
 export default class ConfigList extends React.Component {
@@ -24,7 +23,7 @@ export default class ConfigList extends React.Component {
             for (const [key, value] of Object.entries(groupValue)) {
                 const item = {
                     key: `${groupKey}.${key}`,
-                    value: value,
+                    value: JSON.stringify(value),
                 };
                 items.push(item);
             }
@@ -35,16 +34,25 @@ export default class ConfigList extends React.Component {
 
     render() {
         return (
-            <div className={style.root}>
-
-                <DataTable className={style.table}
-                    rowKeyColumn='key'
-                    shadow={0} rows={this.state.items}>
-                    <TableHeader name='key'
-                        style={{width: '200px'}}>键</TableHeader>
-                    <TableHeader name='value'>值</TableHeader>
-                </DataTable>
-
+            <div className={`mdl-shadow--2dp ${style.root}`}>
+                <table className={`mdl-data-table mdl-js-data-table ${style.table}`}>
+                    <thead>
+                        <tr>
+                            <th>配置名</th>
+                            <th>配置值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.state.items.map((item) => {
+                            return (
+                                <tr>
+                                    <td className='column-key'>{item.key}</td>
+                                    <td className='column-value'><code>{item.value}</code></td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
         );
     }
