@@ -56,7 +56,7 @@ app.use('/json', (req, resp) => {
 
     const items = [];
     for (const session of bridge.sm.getSessions()) {
-        const websocketUrl = `${publicAddress}${session.id}`;
+        const websocketUrl = `${publicAddress}/session/${session.id}`;
         const webSocketDebuggerUrl = `ws://${websocketUrl}`;
         const devtoolsFrontendUrl = `${devtoolsTpl}&ws=${websocketUrl}`;
 
@@ -66,7 +66,7 @@ app.use('/json', (req, resp) => {
             id: session.id,
             title: session.title,
             type: 'lua',
-            url: webSocketDebuggerUrl,
+            url: `lua://session/${session.id}`,
         };
         if (!session.isFrontendConnected) {
             item.webSocketDebuggerUrl = webSocketDebuggerUrl;
@@ -83,7 +83,7 @@ app.use('/session/', (req, resp) => {
     const publicAddress = req.headers.host;
     for (const session of bridge.sm.getSessions()) {
         const item = session.getJSON();
-        item.wsPath = `${publicAddress}${session.id}`;
+        item.wsPath = `${publicAddress}/session/${session.id}`;
         items.push(item);
     }
     resp.json(items);

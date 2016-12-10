@@ -27,7 +27,7 @@ export class SessionManager extends EventEmitter {
     }
 
     addFrontend(ws) {
-        const id = ws.location.pathname;
+        const id = ws.location.pathname.replace('/session/', '');
         let session = this.sessions[id];
         if (!session) {
             const title = ws.location.query.initTitle;
@@ -39,7 +39,7 @@ export class SessionManager extends EventEmitter {
     }
 
     addBackend(ws) {
-        const id = ws.location.pathname;
+        const id = ws.location.pathname.replace('/session/', '');
         let session = this.sessions[id];
         if (!session) {
             const title = ws.location.query.initTitle;
