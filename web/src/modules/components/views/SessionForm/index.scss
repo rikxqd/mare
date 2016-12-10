@@ -1,0 +1,36 @@
+:local(.root) {
+    width: 100%;
+}
+
+:local(.table) {
+    width: 100%;
+
+    td.form-label {
+        width: 100px;
+        text-align: right;
+        font-weight: bold;
+        vertical-align: top;
+        line-height: 22px;
+    }
+
+    td.form-input {
+        text-align: left;
+        border-left: 1px solid rgba(0,0,0,.12);
+        padding-top: 4px;
+        padding-bottom: 4px;
+
+        input {
+            width: 320px;
+            padding: 4px;
+        }
+    }
+
+    td.form-action {
+        text-align: left;
+
+        button {
+            margin-right: 6px;
+        }
+    }
+
+}

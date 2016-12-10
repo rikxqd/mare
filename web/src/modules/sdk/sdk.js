@@ -29,6 +29,11 @@ class Sdk {
         return resp;
     }
 
+    newSession = async (value) => {
+        const resp = await fetcher.post('/session/new', value);
+        return resp;
+    }
+
     on(...args) {
         return this.postal.sub(...args);
     }

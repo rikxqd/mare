@@ -4,6 +4,7 @@ import ConfigPage from 'components/pages/ConfigPage';
 import ErrorPage from 'components/pages/ErrorPage';
 import OverviewPage from 'components/pages/OverviewPage';
 import SessionIndexPage from 'components/pages/SessionIndexPage';
+import SessionNewPage from 'components/pages/SessionNewPage';
 
 const pages = [
     {
@@ -36,6 +37,14 @@ const pages = [
         component: SessionIndexPage,
         match: (url) => {
             return url === '/session/';
+        },
+    },
+    {
+        key: 'sessionNew',
+        props: {title: '新建会话'},
+        component: SessionNewPage,
+        match: (url) => {
+            return url === '/session/new';
         },
     },
     {

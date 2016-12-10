@@ -9,6 +9,10 @@ export class SessionManager extends EventEmitter {
         this.sessions = {};
     }
 
+    existSession(id) {
+        return this.sessions[id] !== undefined;
+    }
+
     addSession(id, {title, expire, createSide}) {
         title = title || 'untitled';
         expire = do {

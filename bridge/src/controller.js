@@ -12,21 +12,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use('/echo', (req, resp) => {
     console.info(req);
     const result =  {
+        query: req.query,
         body: req.body,
         url: req.url,
     };
     resp.json(result);
 });
 
-app.use('/index', (req, resp) => {
-    const result = {
-        x: 1,
-        y: 2,
-    };
-    resp.json(result);
-});
-
-app.use('/favicon.ico', (req, resp) => {
+app.get('/favicon.ico', (req, resp) => {
     const path = libpath.resolve('./src/assets/favicon.ico');
     resp.sendFile(path, (err) => {
         if (err) {
@@ -36,7 +29,7 @@ app.use('/favicon.ico', (req, resp) => {
     });
 });
 
-app.use('/json/version', (req, resp) => {
+app.get('/json/version', (req, resp) => {
     const path = libpath.resolve('./src/assets/version.json');
     resp.sendFile(path, (err) => {
         if (err) {
@@ -46,7 +39,7 @@ app.use('/json/version', (req, resp) => {
     });
 });
 
-app.use('/json', (req, resp) => {
+app.get('/json', (req, resp) => {
     const bridge = req.bridge;
     const frontendConfig = bridge.config.frontend;
     const publicAddress = req.headers.host || `${frontendConfig.host}:${frontendConfig.port}`;
@@ -77,7 +70,21 @@ app.use('/json', (req, resp) => {
     resp.json(items);
 });
 
-app.use('/session/', (req, resp) => {
+app.post('/session/new', (req, resp) => {
+    const sm = req.bridge.sm;
+    const {id, title} = req.body;
+    if (sm.existSession(id)) {
+        resp.json({
+            success: false,
+            existId: true,
+        });
+        return;
+    }
+    sm.addSession(id, {title, expire: 0, createSide: 'control'});
+    resp.json({success: true});
+});
+
+app.get('/session/', (req, resp) => {
     const bridge = req.bridge;
     const items = [];
     const publicAddress = req.headers.host;
@@ -89,7 +96,7 @@ app.use('/session/', (req, resp) => {
     resp.json(items);
 });
 
-app.use('/overview', (req, resp) => {
+app.get('/overview', (req, resp) => {
     const bridge = req.bridge;
     const config = bridge.config;
 
@@ -132,9 +139,16 @@ app.use('/overview', (req, resp) => {
     resp.json(info);
 });
 
-app.use('/config', (req, resp) => {
+app.get('/config', (req, resp) => {
     const bridge = req.bridge;
     resp.json(bridge.config);
+});
+
+app.get('/', (req, resp) => {
+    const result = {
+        version: packsageJSON.version,
+    };
+    resp.json(result);
 });
 
 export default app;

@@ -56,12 +56,12 @@ export default class SessionList extends React.Component {
     }
 
     renderIdCell = (key, item) => {
-        const url = `/session/${item.id}`;
+        const url = `/session/id/${item.id}`;
         return <a href={url}>{item.id}</a>;
     }
 
     renderDetailCell = (key, item) => {
-        const url = item.id;
+        const url = `/session/id/${item.id}`;
         return <a href={url}>详情</a>;
     }
 
