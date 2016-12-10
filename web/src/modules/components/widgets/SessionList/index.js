@@ -13,11 +13,20 @@ export default class SessionList extends React.Component {
     }
 
     componentDidMount() {
+        this.unsub = sdk.on('session-update', this.onSessionUpdate);
         this.load();
+    }
+
+    componentWillUnmount() {
+        this.unsub();
     }
 
     load = async () => {
         const sessions = await sdk.getSessions();
+        this.setState({sessions});
+    }
+
+    onSessionUpdate = (sessions) => {
         this.setState({sessions});
     }
 

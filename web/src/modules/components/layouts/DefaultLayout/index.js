@@ -31,8 +31,6 @@ export default class DefaultLayout extends React.Component {
                                 onClick={href('/overview')}>运行状态</a>
                             <a href='/session/'
                                 onClick={href('/session/')}>会话列表</a>
-                            <a href='/debug'
-                                onClick={href('/debug')}>调试页</a>
                         </Navigation>
                     </Drawer>
                     <div className={style.content}>
