@@ -30,14 +30,14 @@ export default class SessionList extends React.Component {
         this.setState({sessions});
     }
 
-    renderDebuggerCell = (key, item) => {
+    renderDebuggerCell = (value, item) => {
         const path = `ws=${item.wsPath}`;
         const url = `/devtools/inspector.html?experiments=true&${path}`;
         return (
             <div>
                 {do {
                     if (item.frontend.isConnected) {
-                        <span>前端已连接</span>;
+                        <span className='text-success'>前端已连接</span>;
                     } else {
                         <a href={url} target='_blank'>打开前端</a>;
                     }
@@ -46,7 +46,7 @@ export default class SessionList extends React.Component {
                     name='compare_arrows' />
                 {do {
                     if (item.backend.isConnected) {
-                        <span>后端已连接</span>;
+                        <span className='text-success'>后端已连接</span>;
                     } else {
                         <span>正在监听中</span>;
                     }
@@ -55,12 +55,12 @@ export default class SessionList extends React.Component {
         );
     }
 
-    renderIdCell = (key, item) => {
+    renderIdCell = (value, item) => {
         const url = `/session/id/${item.id}`;
         return <a href={url}>{item.id}</a>;
     }
 
-    renderDetailCell = (key, item) => {
+    renderDetailCell = (value, item) => {
         const url = `/session/id/${item.id}`;
         return <a href={url}>详情</a>;
     }

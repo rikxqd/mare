@@ -136,11 +136,11 @@ export default class OverviewTable extends React.Component {
         ];
     }
 
-    renderLabelCell = (key, item) => {
+    renderLabelCell = (value, item) => {
         return <strong>{item.label}</strong>;
     }
 
-    renderValueCell = (key, item) => {
+    renderValueCell = (value, item) => {
         return <span>{item.value}</span>;
     }
 
