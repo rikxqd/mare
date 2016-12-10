@@ -56,8 +56,7 @@ export default class SessionList extends React.Component {
     }
 
     renderIdCell = (value, item) => {
-        const url = `/session/id/${item.id}`;
-        return <a href={url}>{item.id}</a>;
+        return <span>{item.id}</span>;
     }
 
     renderDetailCell = (value, item) => {
@@ -74,13 +73,13 @@ export default class SessionList extends React.Component {
                     shadow={0} rows={sessions}>
                     <TableHeader name='id'
                         cellFormatter={this.renderIdCell}
-                        style={{width: '200px'}}>ID</TableHeader>
+                        style={{width: '220px'}}>ID</TableHeader>
                     <TableHeader name='title'>标题</TableHeader>
                     <TableHeader name='_debugger'
-                        style={{width: '200px'}}
+                        style={{width: '220px'}}
                         cellFormatter={this.renderDebuggerCell}>调试器</TableHeader>
                     <TableHeader name='_detail'
-                        style={{width: '50px'}}
+                        style={{width: '80px'}}
                         cellFormatter={this.renderDetailCell}>操作</TableHeader>
                 </DataTable>
             </div>

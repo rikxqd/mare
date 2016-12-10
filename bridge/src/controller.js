@@ -96,6 +96,16 @@ app.get('/session/', (req, resp) => {
     resp.json(items);
 });
 
+app.get('/session/:id', (req, resp) => {
+    const bridge = req.bridge;
+    const session = bridge.sm.getSession(req.params.id);
+    if (session === null) {
+        resp.json(null);
+        return;
+    }
+    resp.json(session.getJSON());
+});
+
 app.get('/overview', (req, resp) => {
     const bridge = req.bridge;
     const config = bridge.config;
