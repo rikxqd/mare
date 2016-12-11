@@ -11,7 +11,7 @@ export class FrontendServer extends EventEmitter {
         this.server = null;
     }
 
-    start(httpServer) {
+    start = async (httpServer) => {
         this.server = new WebSocket.Server({
             host: this.config.host,
             server: httpServer,

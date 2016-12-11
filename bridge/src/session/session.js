@@ -25,7 +25,7 @@ export class Session extends EventEmitter {
     initAdapter() {
         const fews = DummyWebSocket.createByType(this.id, 'frontend');
         const bews = DummyWebSocket.createByType(this.id, 'backend');
-        this.adapter = new Adapter(fews, bews, this.store);
+        this.adapter = new Adapter(this.id, fews, bews, this.store);
         this.adapter.on('close', this.onAdapterClose);
     }
 
@@ -46,6 +46,7 @@ export class Session extends EventEmitter {
     frontendConnect(ws) {
         const now = mktime();
         this.adapter.updateFrontend(ws);
+        this.adapter.pushPersistentedEvent();
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
         this.addLog('frontend-connect', {
@@ -122,7 +123,10 @@ export class Session extends EventEmitter {
 
     destroy() {
         this.adapter.destroy();
-        // TODO 清空 store
+        this.adapter = null;
+        this.store.destroy();
+        this.store = null;
+        this.logs = null;
     }
 
     getJSON() {

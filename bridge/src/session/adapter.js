@@ -4,8 +4,9 @@ import {pushEvent} from '../event';
 
 export class Adapter extends EventEmitter {
 
-    constructor(fews, bews, store) {
+    constructor(id, fews, bews, store) {
         super();
+        this.id = id;
         this.fews = fews;
         this.bews = bews;
         this.store = store;
@@ -69,9 +70,21 @@ export class Adapter extends EventEmitter {
         this.initBewsListeners();
     }
 
+    pushPersistentedEvent = async () => {
+        const events = await this.store.loadEvents();
+        for (const event of events) {
+            delete event._id;
+            const sendData = JSON.stringify(event);
+            this.fews.send(sendData);
+        }
+    }
+
     onFewsMessage = async (data) => {
         console.log(this.fews.id, 'message', data);
         const req = JSON.parse(data);
+        if (req.method === 'Log.clear') {
+            console.log(this.store.deleteEvents('Log.entryAdded'));
+        }
         const resp = await handleMethod(req);
         const sendData = JSON.stringify(resp);
         this.fews.send(sendData);
@@ -89,6 +102,10 @@ export class Adapter extends EventEmitter {
     onBewsMessage = async (data) => {
         console.log(this.bews.id, 'message', data);
         const event = await pushEvent.consoleLog(data);
+
+        if (event.method === 'Log.entryAdded') {
+            this.store.saveEvent(event);
+        }
         const sendData = JSON.stringify(event);
         this.fews.send(sendData);
     }

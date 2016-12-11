@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import {Session} from './session';
+import {Store} from './store';
 
 export class SessionManager extends EventEmitter {
 
@@ -7,6 +8,11 @@ export class SessionManager extends EventEmitter {
         super();
         this.config = config;
         this.sessions = {};
+        this.database = null;
+    }
+
+    start = async (database) => {
+        this.database = database;
     }
 
     existSession(id) {
@@ -23,7 +29,7 @@ export class SessionManager extends EventEmitter {
             }
         };
         createSide = createSide || 'controller';
-        const store = {};
+        const store = new Store(id, this.database);
         const session = new Session(id, {title, expire, store, createSide});
         session.on('expired', this.onSessionExpired);
         this.sessions[id] = session;

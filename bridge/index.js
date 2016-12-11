@@ -14,6 +14,9 @@ const config = {
     session: {
         removeExpire: 60,
     },
+    storage: {
+        database: 'mongodb://localhost:27017/ldb',
+    },
 };
 const bridge = new Bridge(config);
 const frontendAddress = `${config.frontend.host}:${config.frontend.port}`;

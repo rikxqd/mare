@@ -1,4 +1,5 @@
 import http from 'http';
+import {Storage} from './core/storage';
 import {BackendServer} from './server/backend-server';
 import {FrontendServer} from './server/frontend-server';
 import {SessionManager} from './session/session-manager';
@@ -9,19 +10,29 @@ export class Bridge {
         this.config = config;
         this.fes = new FrontendServer(config.frontend);
         this.bes = new BackendServer(config.backend);
+        this.st = new Storage(config.storage);
         this.sm = new SessionManager(config.session);
     }
 
-    start() {
+    start = async () => {
+
+        await this.st.start();
+        await Promise.all([
+            this.sm.start(this.st.getSessionDatabase()),
+            this.fes.start(this.createHttpServer()),
+            this.bes.start(),
+        ]);
+
+        this.initListeners();
+    }
+
+    createHttpServer() {
         const controller = this.config.controller;
         const httpServer = http.createServer((req, resp) => {
             req.bridge = this;
             return controller(req, resp);
         });
-        this.fes.start(httpServer);
-        this.bes.start();
-
-        this.initListeners();
+        return httpServer;
     }
 
     initListeners() {

@@ -12,7 +12,7 @@ export class BackendServer extends EventEmitter {
         this.server = null;
     }
 
-    start() {
+    start = async () => {
         this.server = net.createServer();
         this.server.listen(this.config.port, this.config.host);
         this.server.on('connection', this.onServerConnection);
