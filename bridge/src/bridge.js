@@ -1,7 +1,7 @@
 import http from 'http';
 import {Storage} from './core/storage';
-import {BackendServer} from './server/backend-server';
-import {FrontendServer} from './server/frontend-server';
+import {BackendServer} from './core/backend-server';
+import {FrontendServer} from './core/frontend-server';
 import {SessionManager} from './session/session-manager';
 
 export class Bridge {
@@ -10,8 +10,9 @@ export class Bridge {
         this.config = config;
         this.fes = new FrontendServer(config.frontend);
         this.bes = new BackendServer(config.backend);
-        this.st = new Storage(config.storage);
         this.sm = new SessionManager(config.session);
+        this.st = new Storage(config.storage);
+        this.webapp = null;
     }
 
     start = async () => {
@@ -19,20 +20,18 @@ export class Bridge {
         await this.st.start();
         await Promise.all([
             this.sm.start(this.st.getSessionDatabase()),
-            this.fes.start(this.createHttpServer()),
+            this.fes.start(this.webapp),
             this.bes.start(),
         ]);
 
         this.initListeners();
     }
 
-    createHttpServer() {
-        const controller = this.config.controller;
-        const httpServer = http.createServer((req, resp) => {
+    mount(middleware) {
+        this.webapp = http.createServer((req, resp) => {
             req.bridge = this;
-            return controller(req, resp);
+            return middleware(req, resp);
         });
-        return httpServer;
     }
 
     initListeners() {
