@@ -2,7 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import libpath from 'path';
 import os from 'os';
-import packsageJSON from '../package.json';
+import packsageJSON from '../../package.json';
 
 const app = express();
 app.set('json spaces', 4);

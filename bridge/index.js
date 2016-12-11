@@ -1,8 +1,8 @@
-import controller from './src/controller';
+import webapi from './src/webapi';
 import {Bridge} from './src/bridge';
 
 const config = {
-    controller: controller,
+    controller: webapi,
     frontend: {
         host: '0.0.0.0',
         port: 9223,
