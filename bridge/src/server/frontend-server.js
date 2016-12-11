@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import WebSocket from 'ws';
-import wsUtils from './ws-utils';
+import wsUtils from '../websocket/utils';
 
 export class FrontendServer extends EventEmitter {
 
@@ -23,7 +23,7 @@ export class FrontendServer extends EventEmitter {
         ws.id = wsUtils.id('frontend');
         ws.location = wsUtils.location(ws);
         ws.socket = ws._socket;
-        this.emit('connection', ws);
+        this.emit('connect', ws);
     }
 
 }

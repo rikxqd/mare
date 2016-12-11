@@ -1,6 +1,6 @@
 class PushEvent {
 
-    consoleLog = async (data) =>{
+    consoleLog = async (data, store) =>{
         const resp = {
             method: 'Log.entryAdded',
             params: {
@@ -12,6 +12,7 @@ class PushEvent {
                 },
             },
         };
+        store.eventAppendOne(resp);
         return resp;
     }
 

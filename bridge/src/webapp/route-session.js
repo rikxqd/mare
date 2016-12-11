@@ -19,7 +19,8 @@ app.post('/session/new', (req, resp) => {
 
     const creator = 'webapp';
     const expired = -1;
-    sm.addSession(id, creator, {title, expired});
+    sm.addSession(id, {title, expired, creator});
+    sm.saveSessionToStorage(id);
     resp.json({success: true});
 });
 
@@ -31,7 +32,7 @@ app.get('/session/:id', (req, resp) => {
         return;
     }
 
-    const item = session.getJSON();
+    const item = session.toJSON();
     item.logs = session.logs;
     resp.json(item);
 });
@@ -41,7 +42,7 @@ app.get('/session/', (req, resp) => {
     const items = [];
     const publicAddress = req.headers.host;
     for (const session of bridge.sm.getSessions()) {
-        const item = session.getJSON();
+        const item = session.toJSON();
         item.wsPath = `${publicAddress}/session/${session.id}`;
         items.push(item);
     }

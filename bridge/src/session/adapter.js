@@ -10,10 +10,7 @@ export class Adapter extends EventEmitter {
         this.fews = fews;
         this.bews = bews;
         this.store = store;
-        this.initListeners();
-    }
 
-    initListeners() {
         this.initFewsListeners();
         this.initBewsListeners();
     }
@@ -30,11 +27,6 @@ export class Adapter extends EventEmitter {
         this.bews.on('error', this.onBewsError);
     }
 
-    stopListeners() {
-        this.stopFewsListeners();
-        this.stopBewsListeners();
-    }
-
     stopFewsListeners() {
         this.fews.removeListener('message', this.onFewsMessage);
         this.fews.removeListener('close', this.onFewsClose);
@@ -48,7 +40,8 @@ export class Adapter extends EventEmitter {
     }
 
     close() {
-        this.stopListeners();
+        this.stopFewsListeners();
+        this.stopBewsListeners();
         this.fews.close();
         this.bews.close();
     }
@@ -59,14 +52,14 @@ export class Adapter extends EventEmitter {
         this.store = null;
     }
 
-    updateFrontend(fews) {
+    replaceFrontendWebSocket(fews) {
         this.stopFewsListeners();
         this.fews.close();
         this.fews = fews;
         this.initFewsListeners();
     }
 
-    updateBackend(bews) {
+    replaceBackendWebSoceket(bews) {
         this.stopBewsListeners();
         this.bews.close();
         this.bews = bews;
@@ -74,7 +67,7 @@ export class Adapter extends EventEmitter {
     }
 
     replayFrontendEvents = async () => {
-        const events = await this.store.getEvents();
+        const events = await this.store.eventGetAll();
         for (const event of events) {
             const sendData = JSON.stringify(event);
             this.fews.send(sendData);
@@ -84,10 +77,7 @@ export class Adapter extends EventEmitter {
     onFewsMessage = async (data) => {
         console.log(this.fews.id, 'message', data);
         const req = JSON.parse(data);
-        if (req.method === 'Log.clear') {
-            this.store.removeEvents('Log.entryAdded');
-        }
-        const resp = await handleMethod(req);
+        const resp = await handleMethod(req, this.store);
         const sendData = JSON.stringify(resp);
         this.fews.send(sendData);
     }
@@ -103,11 +93,7 @@ export class Adapter extends EventEmitter {
 
     onBewsMessage = async (data) => {
         console.log(this.bews.id, 'message', data);
-        const event = await pushEvent.consoleLog(data);
-
-        if (event.method === 'Log.entryAdded') {
-            this.store.appendEvent(event);
-        }
+        const event = await pushEvent.consoleLog(data, this.store);
         const sendData = JSON.stringify(event);
         this.fews.send(sendData);
     }

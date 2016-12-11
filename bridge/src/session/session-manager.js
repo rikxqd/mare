@@ -7,22 +7,64 @@ export class SessionManager extends EventEmitter {
         super();
         this.config = config;
         this.sessions = {};
-        this.database = null;
+        this.storage = null;
     }
 
-    start = async (database) => {
-        this.database = database;
+    start = async (storage) => {
+        this.storage = storage;
+        await this.restoreFromStorage();
+    }
+
+    restoreFromStorage = async () => {
+        const storage = this.storage;
+        const sessionStore = storage.getSessionStore();
+        const docs = await sessionStore.get();
+
+        const expired = [];
+        const fresh = [];
+        for (const doc of docs) {
+            const session = new Session(doc.id);
+            Object.assign(session, doc);
+            session.isFrontendConnected = false;
+            session.isBackendConnected = false;
+            if (session.expireAfterSeconds() === 0) {
+                expired.push(session);
+            } else {
+                fresh.push(session);
+            }
+        }
+
+        for (const session of expired) {
+            const dataStore = storage.getSessionDataStore(session.id);
+            console.info('clean-expired-session', session.id);
+            await Promise.all([
+                dataStore.drop(),
+                sessionStore.remove(session.id),
+            ]);
+            dataStore.destroy();
+        }
+
+        for (const session of fresh) {
+            session.initialize(this.storage);
+            session.on('expire', this.onSessionExpire);
+            session.expireCountdown();
+            this.sessions[session.id] = session;
+        }
     }
 
     parseExpire(value) {
-        const globalValue = this.config.expire || 0;
-        return parseInt(value) || globalValue;
+        const num = parseInt(value);
+        if (isNaN(num)) {
+            return this.config.expire || 0;
+        }
+        return num < 0 ? -1 : num;
     }
 
-    addSession(id, creator, props) {
-        const session = new Session(id, creator, this.database);
-        session.on('expired', this.onSessionExpired);
-        Object.assign(session, props);
+    addSession(id, initProps) {
+        const session = new Session(id);
+        Object.assign(session, initProps);
+        session.initialize(this.storage);
+        session.on('expire', this.onSessionExpire);
         this.sessions[id] = session;
         return session;
     }
@@ -49,12 +91,7 @@ export class SessionManager extends EventEmitter {
         return Object.values(this.sessions);
     }
 
-    onSessionExpired = (session) => {
-        this.removeSession(session.id);
-        // TODO WebSocket 推送通知
-    }
-
-    addFrontend(ws) {
+    attachFrontend(ws) {
         const id = ws.location.pathname.replace('/session/', '');
         let session = this.sessions[id];
         if (!session) {
@@ -62,12 +99,12 @@ export class SessionManager extends EventEmitter {
             const title = query.initTitle || 'Create By Frontend';
             const expire = this.parseExpire(query.initExpire);
             const creator = 'frontend';
-            session = this.addSession(id, creator, {title, expire});
+            session = this.addSession(id, {title, expire, creator});
         }
-        session.frontendConnect(ws);
+        session.attachFrontend(ws);
     }
 
-    addBackend(ws) {
+    attachBackend(ws) {
         const id = ws.location.pathname.replace('/session/', '');
         let session = this.sessions[id];
         if (!session) {
@@ -75,9 +112,20 @@ export class SessionManager extends EventEmitter {
             const title = query.initTitle || 'Create By Backend';
             const expire = this.parseExpire(query.initExpire);
             const creator = 'backend';
-            session = this.addSession(id, creator, {title, expire});
+            session = this.addSession(id, {title, expire, creator});
         }
-        session.backendConnect(ws);
+        session.attachBackend(ws);
+    }
+
+    saveSessionToStorage(id) {
+        const session = this.sessions[id];
+        if (session) {
+            session.saveToStorage();
+        }
+    }
+
+    onSessionExpire = (id) => {
+        this.removeSession(id);
     }
 
 }

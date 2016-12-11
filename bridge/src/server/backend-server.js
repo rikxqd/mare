@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import net from 'net';
-import wsUtils from './ws-utils';
-import {PuppetWebSocket} from './puppet-websocket';
+import {PuppetWebSocket} from '../websocket/puppet-websocket';
+import wsUtils from '../websocket/utils';
 
 export class BackendServer extends EventEmitter {
 
@@ -22,7 +22,7 @@ export class BackendServer extends EventEmitter {
         ws.id = wsUtils.id('backend');
         ws.once('handshake', () => {
             ws.location = wsUtils.location(ws);
-            this.emit('connection', ws);
+            this.emit('connect', ws);
         });
     }
 

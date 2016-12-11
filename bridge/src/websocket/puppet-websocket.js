@@ -26,10 +26,10 @@ export class PuppetWebSocket extends EventEmitter {
         this.chunk = '';
         this.upgradeReq = null;
         this.readyState = WebSocket.OPEN;
-        this.initListeners();
+        this.initSocketListeners();
     }
 
-    initListeners() {
+    initSocketListeners() {
         this.socket.on('data', this.onSocketData);
         this.socket.on('close', this.onSocketClose);
         this.socket.on('error', this.onSocketError);

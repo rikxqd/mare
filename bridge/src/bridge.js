@@ -1,30 +1,31 @@
 import http from 'http';
-import {Storage} from './core/storage';
-import {BackendServer} from './core/backend-server';
-import {FrontendServer} from './core/frontend-server';
+import {Storage} from './storage/storage';
+import {BackendServer} from './server/backend-server';
+import {FrontendServer} from './server/frontend-server';
 import {SessionManager} from './session/session-manager';
 
 export class Bridge {
 
     constructor(config) {
         this.config = config;
+        this.st = new Storage(config.storage);
+        this.sm = new SessionManager(config.session);
         this.fes = new FrontendServer(config.frontend);
         this.bes = new BackendServer(config.backend);
-        this.sm = new SessionManager(config.session);
-        this.st = new Storage(config.storage);
         this.webapp = null;
     }
 
     start = async () => {
-
         await this.st.start();
+        await this.sm.start(this.st);
+
         await Promise.all([
-            this.sm.start(this.st.getSessionDatabase()),
             this.fes.start(this.webapp),
             this.bes.start(),
         ]);
 
-        this.initListeners();
+        this.fes.on('connect', this.onFesConnect);
+        this.bes.on('connect', this.onBesConnect);
     }
 
     mount(middleware) {
@@ -34,24 +35,19 @@ export class Bridge {
         });
     }
 
-    initListeners() {
-        this.fes.on('connection', this.onFesConnection);
-        this.bes.on('connection', this.onBesConnection);
-    }
-
-    onFesConnection = (ws) => {
+    onFesConnect = (ws) => {
         const url = ws.location.href;
         if (url.startsWith('/session/')) {
-            this.sm.addFrontend(ws);
+            this.sm.attachFrontend(ws);
             return;
         }
         console.warn('unhandled websocket', ws.id, url);
     }
 
-    onBesConnection = (ws) => {
+    onBesConnect = (ws) => {
         const url = ws.location.href;
         if (url.startsWith('/session/')) {
-            this.sm.addBackend(ws);
+            this.sm.attachBackend(ws);
             return;
         }
         console.warn('unhandled websocket', ws.id, url);

@@ -4,6 +4,12 @@ import packageJson from './package.json';
 
 const webapp = new WebApp(packageJson);
 const config = {
+    storage: {
+        database: 'mongodb://localhost:27017/ldb',
+    },
+    session: {
+        expire: 10,
+    },
     frontend: {
         host: '0.0.0.0',
         port: 9223,
@@ -12,12 +18,6 @@ const config = {
         host: '0.0.0.0',
         port: 8083,
     },
-    session: {
-        expire: 0,
-    },
-    storage: {
-        database: 'mongodb://localhost:27017/ldb',
-    },
 };
 const bridge = new Bridge(config);
 
@@ -25,7 +25,11 @@ const frontendAddress = `${config.frontend.host}:${config.frontend.port}`;
 const backendAddress = `${config.backend.host}:${config.backend.port}`;
 console.info(`HTTP server: http://${frontendAddress}/\n`);
 console.info(`Lua server: socket://${backendAddress}/\n`);
-console.info(webapp);
 console.info(bridge);
 bridge.mount(webapp);
 bridge.start();
+
+// debug
+process.on('unhandledRejection', (reason, promise) => {
+    console.error({promise, reason});
+});

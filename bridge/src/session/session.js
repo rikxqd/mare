@@ -1,44 +1,43 @@
 import EventEmitter from 'events';
-import {DummyWebSocket} from './../core/dummy-websocket';
+import {DummyWebSocket} from '../websocket/dummy-websocket';
 import {Adapter} from './adapter';
-import {Store} from './store';
 
 const mktime = () => new Date().getTime();
 
 export class Session extends EventEmitter {
 
-    constructor(id, creator, database) {
+    constructor(id) {
         super();
-        this.id = id;
-        this.creator = creator;
-        this.database = database;
 
+        this.id = id;
+        this.creator = 'unknow';
         this.title = 'untitle';
         this.expire = -1;
         this.isFrontendConnected = false;
         this.isBackendConnected = false;
-
-        this.createTime = mktime();
         this.frontendConnectionTime = -1;
         this.backendConnectionTime = -1;
+        this.createTime = mktime();
 
+        this.storage = null;
+        this.initialized = false;
+    }
+
+    initialize(storage) {
+        this.storage = storage;
         this.initStore();
-        this.initLogs();
         this.initAdapter();
+        this.initialized = true;
     }
 
     initStore() {
-        this.store = new Store(this.id, this.database);
-    }
-
-    initLogs() {
-        this.logs = [];
-        this.store.getLogs().then((logs) => this.logs = logs);
+        this.store = this.storage.getSessionDataStore(this.id);
     }
 
     initAdapter() {
-        const fews = DummyWebSocket.fromSessionId(this.id, 'frontend');
-        const bews = DummyWebSocket.fromSessionId(this.id, 'backend');
+        const url = `/session/${this.id}`;
+        const fews = DummyWebSocket.fromUrl(url, 'frontend');
+        const bews = DummyWebSocket.fromUrl(url, 'backend');
         this.adapter = new Adapter(this.id, fews, bews, this.store);
         this.adapter.on('websocket-close', this.onAdapterWebSocketClose);
     }
@@ -56,84 +55,91 @@ export class Session extends EventEmitter {
             return -1;
         }
 
+        const fcTime = this.frontendConnectionTime;
+        const bcTime = this.backendConnectionTime;
+        if (fcTime === -1 && bcTime === -1) {
+            return 0;
+        }
+
         const now = mktime();
-        const latest = Math.max(
-            this.frontendConnectionTime, this.backendConnectionTime);
+        const latest = Math.max(fcTime, bcTime);
         const seconds = latest + (this.expire * 1000) - now;
-        return Math.round(seconds / 1000);
+        const result =  Math.round(seconds / 1000);
+        if (result < 0) {
+            return 0;
+        }
+        return result;
     }
 
-    setTitle(title, log = true) {
+    setTitle(title) {
         const before = this.title;
         this.title = String(title);
-        if (log) {
-            this.addLog('change-title', {before, after: title});
-        }
+        this.logging('change-title', {before, after: title});
+        this.saveToStorage();
     }
 
-    setExpire(expire, log = true) {
-        if (expire < 0) {
-            expire = -1;
-        }
-        const before = this.title;
+    setExpire(expire) {
+        const before = this.expire;
         this.expire = expire;
-        if (log) {
-            this.addLog('change-expire', {before, after: expire});
-        }
-
+        this.logging('change-expire', {before, after: expire});
+        this.saveToStorage();
         this.expireCountdown();
     }
 
-    frontendConnect(ws) {
+    attachFrontend(ws) {
         clearTimeout(this.expireTimeout);
 
         const now = mktime();
-        this.adapter.updateFrontend(ws);
+        this.adapter.replaceFrontendWebSocket(ws);
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
-        this.addLog('connect', {
+        this.logging('connect', {
             side: 'frontend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
             sessionArgs: ws.location.query,
         }, now);
+        this.saveToStorage();
 
         this.adapter.replayFrontendEvents();
     }
 
-    backendConnect(ws) {
+    attachBackend(ws) {
         clearTimeout(this.expireTimeout);
 
         const now = mktime();
-        this.adapter.updateBackend(ws);
+        this.adapter.replaceBackendWebSoceket(ws);
         this.isBackendConnected = true;
         this.backendConnectionTime = now;
-        this.addLog('connect', {
+        this.logging('connect', {
             side: 'backend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
             sessionArgs: ws.location.query,
         }, now);
+        this.saveToStorage();
 
         // TODO 推送一些配置给后端
     }
 
     onAdapterWebSocketClose = (side) => {
         const now = mktime();
-        const ws = DummyWebSocket.fromSessionId(this.id, side);
+        const url = `/session/${this.id}`;
+        const ws = DummyWebSocket.fromUrl(url, side);
 
         if (side === 'frontend') {
             this.isFrontendConnected = false;
             this.frontendConnectionTime = now;
-            this.adapter.updateFrontend(ws);
+            this.adapter.replaceFrontendWebSocket(ws);
         }
         if (side === 'backend') {
             this.isBackendConnected = false;
             this.backendConnectionTime = now;
-            this.adapter.updateBackend(ws);
+            this.adapter.replaceBackendWebSoceket(ws);
         }
 
-        this.addLog('disconnect', {side}, now);
+        this.logging('disconnect', {side}, now);
+        this.saveToStorage();
         this.expireCountdown();
     }
 
@@ -144,23 +150,23 @@ export class Session extends EventEmitter {
         }
 
         this.expireTimeout = setTimeout(() => {
-            if (this.expireAfterSeconds() <= 0) {
-                this.emit('expired', this);
+            if (this.expireAfterSeconds() === 0) {
+                this.emit('expire', this.id);
             }
         }, this.expire  * 1000);
     }
 
-    addLog(tag, content, time) {
+    logging(tag, content, time) {
         time = time || mktime();
-        const log = {tag, content, time};
-        this.logs.push(log);
-        this.store.appendLog(log);
+        const log = {tag, content, time, session: this.id};
+        const loggingStore = this.storage.getLoggingStore();
+        loggingStore.append('session', log);
     }
 
     cleanup() {
         this.adapter.close();
-        this.store.clearEvents();
-        this.store.clearLogs();
+        this.store.drop();
+        this.removeFromStorage();
     }
 
     destroy() {
@@ -168,10 +174,20 @@ export class Session extends EventEmitter {
         this.store.destroy();
         this.adapter = null;
         this.store = null;
-        this.logs = null;
     }
 
-    getJSON() {
+    removeFromStorage() {
+        const store = this.storage.getSessionStore();
+        store.remove(this.id);
+    }
+
+    saveToStorage() {
+        const doc = this.toPersistentDoc();
+        const store = this.storage.getSessionStore();
+        store.update(doc);
+    }
+
+    toJSON() {
         const {fews, bews} = this.adapter;
         return {
             id: this.id,
@@ -181,7 +197,6 @@ export class Session extends EventEmitter {
             creator: this.creator,
             createTime: this.createTime,
             isActiviting: this.isActiviting(),
-            logCount: this.logs.length,
             frontend: {
                 isConnected: this.isFrontendConnected,
                 connectionTime: this.frontendConnectionTime,
@@ -196,6 +211,20 @@ export class Session extends EventEmitter {
                 remotePort: bews.socket.remotePort,
                 sessionArgs: bews.location.query,
             },
+        };
+    }
+
+    toPersistentDoc() {
+        return {
+            id: this.id,
+            title: this.title,
+            expire: this.expire,
+            creator: this.creator,
+            createTime: this.createTime,
+            isFrontendConnected: this.isFrontendConnected,
+            isBackendConnected: this.isBackendConnected,
+            frontendConnectionTime: this.frontendConnectionTime,
+            backendConnectionTime: this.backendConnectionTime,
         };
     }
 

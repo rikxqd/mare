@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import WebSocket from 'ws';
-import wsUtils from './ws-utils';
+import wsUtils from './utils';
 
 export class DummyWebSocket extends EventEmitter {
 
@@ -21,8 +21,7 @@ export class DummyWebSocket extends EventEmitter {
     send() {
     }
 
-    static fromSessionId(sessionId, type) {
-        const url = `/session/${sessionId}`;
+    static fromUrl(url, type) {
         const ws = new DummyWebSocket(url);
         ws.id = wsUtils.id(type);
         ws.location = wsUtils.location(ws);

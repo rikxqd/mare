@@ -16,7 +16,7 @@ function reconnect()
 end
 
 local filename = rdebug.getinfo(2).short_src
-local handshake_url = '/session/' .. filename .. '?initExpire=10&initTitle=haha&project=1234\r\n'
+local handshake_url = '/session/' .. filename .. '?initTitle=haha&project=1234\r\n'
 
 local function writestring(s)
 	s = s .. "\r\n"

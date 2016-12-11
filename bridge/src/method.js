@@ -5,6 +5,12 @@ const registry = {
         return resp;
     },
 
+    'Log.clear': async (req, store) => {
+        store.eventRemoveByMethod('Log.entryAdded');
+        const resp = {id: req.id, result: {}};
+        return resp;
+    },
+
     'Page.getResourceTree': async (req) => {
         const resp = {
             id: req.id,
@@ -27,13 +33,13 @@ const registry = {
 
 };
 
-const handleMethod = async (req) => {
+const handleMethod = async (req, store) => {
     const handler = registry[req.method];
     if (!handler) {
         return {id: req.id, result: {}};
     }
 
-    const resp = await handler(req);
+    const resp = await handler(req, store);
     resp.id = req.id;
     return resp;
 };
