@@ -1,7 +1,6 @@
 import EventEmitter from 'events';
 import WebSocket from 'ws';
-import liburl from 'url';
-import uuid from 'node-uuid';
+import wsUtils from './ws-utils';
 
 export class DummyWebSocket extends EventEmitter {
 
@@ -23,10 +22,11 @@ export class DummyWebSocket extends EventEmitter {
     send() {
     }
 
-    static createByType(id, type) {
-        const ws = new DummyWebSocket(id);
-        ws.id = `${type}:${uuid.v4()}`;
-        ws.location = liburl.parse(ws.upgradeReq.url, true);
+    static fromSessionId(sessionId, type) {
+        const url = `/session/${sessionId}`;
+        const ws = new DummyWebSocket(url);
+        ws.id = wsUtils.id(type);
+        ws.location = wsUtils.location(ws);
         return ws;
     }
 

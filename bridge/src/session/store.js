@@ -6,24 +6,34 @@ export class Store extends EventEmitter {
         super();
         this.id = id;
         this.db = db;
-        this.cln = db.collection(`session.${id}`);
+        this.logCln = db.collection('logs');
+        this.eventCln = db.collection(`session.${id}`);
     }
 
     destroy() {
         this.db = null;
-        this.cln = null;
+        this.eventCln = null;
     }
 
     saveEvent = async (event) => {
-        return this.cln.insertOne(event);
+        return this.eventCln.insertOne(event);
     }
 
     loadEvents = async () => {
-        return this.cln.find().toArray();
+        return this.eventCln.find().toArray();
     }
 
-    deleteEvents = async (method) => {
-        return this.cln.deleteMany({method});
+    deleteEventByMethod = async (method) => {
+        return this.eventCln.deleteMany({method});
+    }
+
+    loadLogs = async (logs) => {
+        const doc = {_id: this.id, logs};
+        this.logCln.updateOne({_id: this.id}, doc, {upsert: true});
+    }
+
+    saveLogs = async () => {
+        return this.logCln.find({_id: this.id}).toArray();
     }
 
 }

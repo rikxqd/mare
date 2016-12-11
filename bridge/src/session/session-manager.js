@@ -71,7 +71,7 @@ export class SessionManager extends EventEmitter {
 
     onSessionExpired = (session) => {
         this.destroySession(session.id);
-        // TODO 推送通知
+        // TODO WebSocket 推送通知
     }
 
     getSession(id) {

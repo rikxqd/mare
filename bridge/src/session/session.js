@@ -18,15 +18,19 @@ export class Session extends EventEmitter {
         this.isBackendConnected = false;
         this.frontendConnectionTime = -1;
         this.backendConnectionTime = -1;
-        this.logs = [];
+        this.initLogs();
         this.initAdapter();
     }
 
+    initLogs() {
+        this.logs = this.store.loadLogs();
+    }
+
     initAdapter() {
-        const fews = DummyWebSocket.createByType(this.id, 'frontend');
-        const bews = DummyWebSocket.createByType(this.id, 'backend');
+        const fews = DummyWebSocket.fromSessionId(this.id, 'frontend');
+        const bews = DummyWebSocket.fromSessionId(this.id, 'backend');
         this.adapter = new Adapter(this.id, fews, bews, this.store);
-        this.adapter.on('close', this.onAdapterClose);
+        this.adapter.on('websocket-close', this.onAdapterWebSocketClose);
     }
 
     setTitle(title) {
@@ -46,7 +50,6 @@ export class Session extends EventEmitter {
     frontendConnect(ws) {
         const now = mktime();
         this.adapter.updateFrontend(ws);
-        this.adapter.pushPersistentedEvent();
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
         this.addLog('frontend-connect', {
@@ -54,6 +57,8 @@ export class Session extends EventEmitter {
             remotePort: ws.socket.remotePort,
             sessionArgs: ws.location.query,
         }, now);
+
+        this.adapter.replayFrontendEvents();
     }
 
     backendConnect(ws) {
@@ -68,9 +73,9 @@ export class Session extends EventEmitter {
         }, now);
     }
 
-    onAdapterClose = (whichSide) => {
+    onAdapterWebSocketClose = (whichSide) => {
         const now = mktime();
-        const ws = DummyWebSocket.createByType(this.id, whichSide);
+        const ws = DummyWebSocket.fromSessionId(this.id, whichSide);
 
         if (whichSide === 'frontend') {
             this.isFrontendConnected = false;
@@ -107,7 +112,7 @@ export class Session extends EventEmitter {
         }
         const now = mktime();
         const latest = Math.max(this.frontendConnectionTime,
-                                this.backendConnectionTime);
+            this.backendConnectionTime);
         let seconds = latest + this.expire * 1000 - now;
         if (seconds < 0) {
             seconds = 0;
@@ -118,7 +123,7 @@ export class Session extends EventEmitter {
     addLog(tag, content, time) {
         time = time || mktime();
         this.logs.push({tag, content, time});
-        // TODO 写到 store 里
+        this.store.saveLogs(this.logs);
     }
 
     destroy() {

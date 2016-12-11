@@ -70,7 +70,7 @@ export class Adapter extends EventEmitter {
         this.initBewsListeners();
     }
 
-    pushPersistentedEvent = async () => {
+    replayFrontendEvents = async () => {
         const events = await this.store.loadEvents();
         for (const event of events) {
             delete event._id;
@@ -83,7 +83,7 @@ export class Adapter extends EventEmitter {
         console.log(this.fews.id, 'message', data);
         const req = JSON.parse(data);
         if (req.method === 'Log.clear') {
-            console.log(this.store.deleteEvents('Log.entryAdded'));
+            this.store.deleteEventByMethod('Log.entryAdded');
         }
         const resp = await handleMethod(req);
         const sendData = JSON.stringify(resp);
@@ -92,7 +92,7 @@ export class Adapter extends EventEmitter {
 
     onFewsClose = (code, message) => {
         console.info(this.fews.id, 'close',  code, message);
-        this.emit('close', 'frontend');
+        this.emit('websocket-close', 'frontend');
     }
 
     onFewsError = (error) => {
@@ -112,7 +112,7 @@ export class Adapter extends EventEmitter {
 
     onBewsClose = (code, message) => {
         console.info(this.bews.id, 'close',  code, message);
-        this.emit('close', 'backend');
+        this.emit('websocket-close', 'backend');
     }
 
     onBewsError = (error) => {
