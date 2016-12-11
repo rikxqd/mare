@@ -6,34 +6,43 @@ export class Store extends EventEmitter {
         super();
         this.id = id;
         this.db = db;
-        this.eventCln = db.collection(`session.${id}`);
-        this.logCln = db.collection('logs');
+        this.dataCln = db.collection(`session-data.${id}`);
+        this.logCln = db.collection('session-log');
     }
 
     destroy() {
         this.db = null;
-        this.eventCln = null;
+        this.dataCln = null;
         this.logCln = null;
     }
 
     getEvents = async () => {
-        const docs = await this.eventCln.find().toArray();
+        const query = {_type: 'event'};
+        const docs = await this.dataCln.find(query).toArray();
         for (const doc of docs) {
             delete doc._id;
+            delete doc._type;
         }
         return docs;
     }
 
     appendEvent = async (event) => {
-        await this.eventCln.insertOne(event);
+        const doc = Object.assign({_type: 'event'}, event);
+        await this.dataCln.insertOne(doc);
     }
 
     removeEvents = async (method) => {
-        await this.eventCln.deleteMany({method});
+        const query = {_type: 'event', method};
+        await this.dataCln.deleteMany(query);
     }
 
     clearEvents = async () => {
-        await this.eventCln.drop();
+        const query = {_type: 'event'};
+        await this.dataCln.deleteMany(query);
+    }
+
+    dropAllData = async () => {
+        this.dataCln.drop();
     }
 
     getLogs = async () => {
@@ -65,7 +74,7 @@ export class Store extends EventEmitter {
 
     clearLogs = async () => {
         const query = {_session: this.id};
-        await this.logCln.remove(query);
+        await this.logCln.deleteMany(query);
     }
 
 }
