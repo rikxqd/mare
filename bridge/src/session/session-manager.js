@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import {Session} from './session';
-import {Store} from './store';
 
 export class SessionManager extends EventEmitter {
 
@@ -15,63 +14,31 @@ export class SessionManager extends EventEmitter {
         this.database = database;
     }
 
-    existSession(id) {
-        return this.sessions[id] !== undefined;
+    parseExpire(value) {
+        const globalValue = this.config.expire || 0;
+        return parseInt(value) || globalValue;
     }
 
-    addSession(id, {title, expire, createSide}) {
-        title = title || 'untitled';
-        expire = do {
-            if (expire === undefined || expire === null) {
-                this.config.removeExpire;
-            } else {
-                parseInt(expire);
-            }
-        };
-        createSide = createSide || 'controller';
-        const store = new Store(id, this.database);
-        const session = new Session(id, {title, expire, store, createSide});
+    addSession(id, creator, props) {
+        const session = new Session(id, creator, this.database);
         session.on('expired', this.onSessionExpired);
+        Object.assign(session, props);
         this.sessions[id] = session;
         return session;
     }
 
-    addFrontend(ws) {
-        const id = ws.location.pathname.replace('/session/', '');
-        let session = this.sessions[id];
-        if (!session) {
-            const title = ws.location.query.initTitle;
-            const expire = ws.location.query.initExpire;
-            const createSide = 'frontend';
-            session = this.addSession(id, {title, expire, createSide});
-        }
-        session.frontendConnect(ws);
-    }
-
-    addBackend(ws) {
-        const id = ws.location.pathname.replace('/session/', '');
-        let session = this.sessions[id];
-        if (!session) {
-            const title = ws.location.query.initTitle;
-            const expire = ws.location.query.initExpire;
-            const createSide = 'backend';
-            session = this.addSession(id, {title, expire, createSide});
-        }
-        session.backendConnect(ws);
-    }
-
-    destroySession(id) {
-        console.info('destroy-session', id);
+    removeSession(id) {
+        console.info('remove-session', id);
         const session = this.sessions[id];
         if (session) {
+            session.cleanup();
             session.destroy();
             delete this.sessions[id];
         }
     }
 
-    onSessionExpired = (session) => {
-        this.destroySession(session.id);
-        // TODO WebSocket 推送通知
+    existSession(id) {
+        return this.sessions[id] !== undefined;
     }
 
     getSession(id) {
@@ -80,6 +47,37 @@ export class SessionManager extends EventEmitter {
 
     getSessions() {
         return Object.values(this.sessions);
+    }
+
+    onSessionExpired = (session) => {
+        this.removeSession(session.id);
+        // TODO WebSocket 推送通知
+    }
+
+    addFrontend(ws) {
+        const id = ws.location.pathname.replace('/session/', '');
+        let session = this.sessions[id];
+        if (!session) {
+            const query = ws.location.query;
+            const title = query.initTitle || 'Create By Frontend';
+            const expire = this.parseExpire(query.initExpire);
+            const creator = 'frontend';
+            session = this.addSession(id, creator, {title, expire});
+        }
+        session.frontendConnect(ws);
+    }
+
+    addBackend(ws) {
+        const id = ws.location.pathname.replace('/session/', '');
+        let session = this.sessions[id];
+        if (!session) {
+            const query = ws.location.query;
+            const title = query.initTitle || 'Create By Backend';
+            const expire = this.parseExpire(query.initExpire);
+            const creator = 'backend';
+            session = this.addSession(id, creator, {title, expire});
+        }
+        session.backendConnect(ws);
     }
 
 }

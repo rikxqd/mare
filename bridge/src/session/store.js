@@ -6,34 +6,66 @@ export class Store extends EventEmitter {
         super();
         this.id = id;
         this.db = db;
-        this.logCln = db.collection('logs');
         this.eventCln = db.collection(`session.${id}`);
+        this.logCln = db.collection('logs');
     }
 
     destroy() {
         this.db = null;
         this.eventCln = null;
+        this.logCln = null;
     }
 
-    saveEvent = async (event) => {
-        return this.eventCln.insertOne(event);
+    getEvents = async () => {
+        const docs = await this.eventCln.find().toArray();
+        for (const doc of docs) {
+            delete doc._id;
+        }
+        return docs;
     }
 
-    loadEvents = async () => {
-        return this.eventCln.find().toArray();
+    appendEvent = async (event) => {
+        await this.eventCln.insertOne(event);
     }
 
-    deleteEventByMethod = async (method) => {
-        return this.eventCln.deleteMany({method});
+    removeEvents = async (method) => {
+        await this.eventCln.deleteMany({method});
     }
 
-    loadLogs = async (logs) => {
-        const doc = {_id: this.id, logs};
-        this.logCln.updateOne({_id: this.id}, doc, {upsert: true});
+    clearEvents = async () => {
+        await this.eventCln.drop();
     }
 
-    saveLogs = async () => {
-        return this.logCln.find({_id: this.id}).toArray();
+    getLogs = async () => {
+        const query = {_session: this.id};
+        const docs = await this.logCln.find(query).toArray();
+        const logs = [];
+        for (const doc of docs) {
+            delete doc._id;
+            delete doc._session;
+            logs.push(doc);
+        }
+        return logs;
+    }
+
+    appendLog = async (log) => {
+        const doc = Object.assign({_session: this.id}, log);
+        await this.logCln.insertOne(doc);
+    }
+
+    saveLogs = async (logs) => {
+        await this.clearLogs();
+        const docs = [];
+        for (const log of logs) {
+            const doc = Object.assign({_session: this.id}, log);
+            docs.push(doc);
+        }
+        await this.logCln.insertMany(docs);
+    }
+
+    clearLogs = async () => {
+        const query = {_session: this.id};
+        await this.logCln.remove(query);
     }
 
 }

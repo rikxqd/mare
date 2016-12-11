@@ -47,10 +47,13 @@ export class Adapter extends EventEmitter {
         this.bews.removeListener('error', this.onBewsError);
     }
 
-    destroy() {
+    close() {
         this.stopListeners();
         this.fews.close();
         this.bews.close();
+    }
+
+    destroy() {
         this.fews = null;
         this.bews = null;
         this.store = null;
@@ -71,9 +74,8 @@ export class Adapter extends EventEmitter {
     }
 
     replayFrontendEvents = async () => {
-        const events = await this.store.loadEvents();
+        const events = await this.store.getEvents();
         for (const event of events) {
-            delete event._id;
             const sendData = JSON.stringify(event);
             this.fews.send(sendData);
         }
@@ -83,7 +85,7 @@ export class Adapter extends EventEmitter {
         console.log(this.fews.id, 'message', data);
         const req = JSON.parse(data);
         if (req.method === 'Log.clear') {
-            this.store.deleteEventByMethod('Log.entryAdded');
+            this.store.removeEvents('Log.entryAdded');
         }
         const resp = await handleMethod(req);
         const sendData = JSON.stringify(resp);
@@ -104,7 +106,7 @@ export class Adapter extends EventEmitter {
         const event = await pushEvent.consoleLog(data);
 
         if (event.method === 'Log.entryAdded') {
-            this.store.saveEvent(event);
+            this.store.appendEvent(event);
         }
         const sendData = JSON.stringify(event);
         this.fews.send(sendData);

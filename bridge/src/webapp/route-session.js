@@ -16,7 +16,10 @@ app.post('/session/new', (req, resp) => {
         });
         return;
     }
-    sm.addSession(id, {title, expire: 0, createSide: 'control'});
+
+    const creator = 'webapp';
+    const expired = -1;
+    sm.addSession(id, creator, {title, expired});
     resp.json({success: true});
 });
 
@@ -27,7 +30,10 @@ app.get('/session/:id', (req, resp) => {
         resp.json(null);
         return;
     }
-    resp.json(session.getJSON());
+
+    const item = session.getJSON();
+    item.logs = session.logs;
+    resp.json(item);
 });
 
 app.get('/session/', (req, resp) => {

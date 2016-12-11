@@ -16,7 +16,6 @@ export class DummyWebSocket extends EventEmitter {
 
     close() {
         this.readyState = WebSocket.CLOSED;
-        this.removeAllListeners();
     }
 
     send() {

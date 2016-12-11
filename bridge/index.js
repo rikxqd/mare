@@ -13,7 +13,7 @@ const config = {
         port: 8083,
     },
     session: {
-        removeExpire: 60,
+        expire: 0,
     },
     storage: {
         database: 'mongodb://localhost:27017/ldb',

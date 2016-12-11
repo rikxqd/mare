@@ -1,29 +1,39 @@
 import EventEmitter from 'events';
 import {DummyWebSocket} from './../core/dummy-websocket';
 import {Adapter} from './adapter';
+import {Store} from './store';
 
 const mktime = () => new Date().getTime();
 
 export class Session extends EventEmitter {
 
-    constructor(id, {title, expire, store, createSide}) {
+    constructor(id, creator, database) {
         super();
         this.id = id;
-        this.title = title || 'untitled';
-        this.expire = expire;
-        this.store = store;
-        this.createSide = createSide;
-        this.createTime = mktime();
+        this.creator = creator;
+        this.database = database;
+
+        this.title = 'untitle';
+        this.expire = -1;
         this.isFrontendConnected = false;
         this.isBackendConnected = false;
+
+        this.createTime = mktime();
         this.frontendConnectionTime = -1;
         this.backendConnectionTime = -1;
+
+        this.initStore();
         this.initLogs();
         this.initAdapter();
     }
 
+    initStore() {
+        this.store = new Store(this.id, this.database);
+    }
+
     initLogs() {
-        this.logs = this.store.loadLogs();
+        this.logs = [];
+        this.store.getLogs().then((logs) => this.logs = logs);
     }
 
     initAdapter() {
@@ -33,26 +43,56 @@ export class Session extends EventEmitter {
         this.adapter.on('websocket-close', this.onAdapterWebSocketClose);
     }
 
-    setTitle(title) {
-        if (title !== undefined) {
-            const before = this.title;
-            this.title = String(title);
+    isExpirable() {
+        return this.expire >= 0;
+    }
+
+    isActiviting() {
+        return this.isFrontendConnected || this.isBackendConnected;
+    }
+
+    expireAfterSeconds() {
+        if (!this.isExpirable() || this.isActiviting()) {
+            return -1;
+        }
+
+        const now = mktime();
+        const latest = Math.max(
+            this.frontendConnectionTime, this.backendConnectionTime);
+        const seconds = latest + (this.expire * 1000) - now;
+        return Math.round(seconds / 1000);
+    }
+
+    setTitle(title, log = true) {
+        const before = this.title;
+        this.title = String(title);
+        if (log) {
             this.addLog('change-title', {before, after: title});
         }
     }
 
-    setExpire(expire) {
+    setExpire(expire, log = true) {
+        if (expire < 0) {
+            expire = -1;
+        }
+        const before = this.title;
         this.expire = expire;
-        clearTimeout(this.expireHandler);
-        this.expireHandler = setTimeout(this.checkExpire, expire * 1000);
+        if (log) {
+            this.addLog('change-expire', {before, after: expire});
+        }
+
+        this.expireCountdown();
     }
 
     frontendConnect(ws) {
+        clearTimeout(this.expireTimeout);
+
         const now = mktime();
         this.adapter.updateFrontend(ws);
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
-        this.addLog('frontend-connect', {
+        this.addLog('connect', {
+            side: 'frontend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
             sessionArgs: ws.location.query,
@@ -62,74 +102,71 @@ export class Session extends EventEmitter {
     }
 
     backendConnect(ws) {
+        clearTimeout(this.expireTimeout);
+
         const now = mktime();
         this.adapter.updateBackend(ws);
         this.isBackendConnected = true;
         this.backendConnectionTime = now;
-        this.addLog('backend-connect', {
+        this.addLog('connect', {
+            side: 'backend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
             sessionArgs: ws.location.query,
         }, now);
+
+        // TODO 推送一些配置给后端
     }
 
-    onAdapterWebSocketClose = (whichSide) => {
+    onAdapterWebSocketClose = (side) => {
         const now = mktime();
-        const ws = DummyWebSocket.fromSessionId(this.id, whichSide);
+        const ws = DummyWebSocket.fromSessionId(this.id, side);
 
-        if (whichSide === 'frontend') {
+        if (side === 'frontend') {
             this.isFrontendConnected = false;
             this.frontendConnectionTime = now;
             this.adapter.updateFrontend(ws);
         }
-        if (whichSide === 'backend') {
+        if (side === 'backend') {
             this.isBackendConnected = false;
             this.backendConnectionTime = now;
             this.adapter.updateBackend(ws);
         }
-        this.addLog(`${whichSide}-disconnect`, {}, now);
 
-        if (!this.isActiviting()) {
-            clearTimeout(this.expireHandler);
-            const delay = this.expire * 1000;
-            this.expireHandler = setTimeout(this.checkExpire, delay);
-        }
+        this.addLog('disconnect', {side}, now);
+        this.expireCountdown();
     }
 
-    isActiviting() {
-        return this.isFrontendConnected || this.isBackendConnected;
-    }
+    expireCountdown() {
+        clearTimeout(this.expireTimeout);
+        if (!this.isExpirable() || this.isActiviting()) {
+            return;
+        }
 
-    checkExpire = () => {
-        if (this.expireAfterSeconds() === 0) {
-            this.emit('expired', this);
-        }
-    }
-
-    expireAfterSeconds() {
-        if (this.expire === 0 || this.isActiviting()) {
-            return -1;
-        }
-        const now = mktime();
-        const latest = Math.max(this.frontendConnectionTime,
-            this.backendConnectionTime);
-        let seconds = latest + this.expire * 1000 - now;
-        if (seconds < 0) {
-            seconds = 0;
-        }
-        return Math.round(seconds / 1000);
+        this.expireTimeout = setTimeout(() => {
+            if (this.expireAfterSeconds() <= 0) {
+                this.emit('expired', this);
+            }
+        }, this.expire  * 1000);
     }
 
     addLog(tag, content, time) {
         time = time || mktime();
-        this.logs.push({tag, content, time});
-        this.store.saveLogs(this.logs);
+        const log = {tag, content, time};
+        this.logs.push(log);
+        this.store.appendLog(log);
+    }
+
+    cleanup() {
+        this.adapter.close();
+        this.store.clearEvents();
+        this.store.clearLogs();
     }
 
     destroy() {
         this.adapter.destroy();
-        this.adapter = null;
         this.store.destroy();
+        this.adapter = null;
         this.store = null;
         this.logs = null;
     }
@@ -141,7 +178,7 @@ export class Session extends EventEmitter {
             title: this.title,
             expire: this.expire,
             expireAfterSeconds: this.expireAfterSeconds(),
-            createSide: this.createSide,
+            creator: this.creator,
             createTime: this.createTime,
             isActiviting: this.isActiviting(),
             logCount: this.logs.length,
