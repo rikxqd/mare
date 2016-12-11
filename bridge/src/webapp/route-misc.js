@@ -3,8 +3,8 @@ import express from 'express';
 import libpath from 'path';
 
 const iconPath = libpath.resolve('./src/assets/favicon.ico');
-
 const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 

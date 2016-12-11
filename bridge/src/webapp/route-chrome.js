@@ -1,13 +1,9 @@
-import bodyParser from 'body-parser';
 import express from 'express';
 import libpath from 'path';
 
 const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true';
 const versionPath = libpath.resolve('./src/assets/version.json');
-
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/json/version', (req, resp) => {
     resp.sendFile(versionPath, (err) => {

@@ -1,10 +1,7 @@
-import bodyParser from 'body-parser';
 import express from 'express';
 import os from 'os';
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
 
 app.get('/overview', (req, resp) => {
     const bridge = req.bridge;
