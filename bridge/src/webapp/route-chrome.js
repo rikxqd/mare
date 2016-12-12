@@ -2,7 +2,7 @@ import express from 'express';
 import libpath from 'path';
 
 const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true';
-const versionPath = libpath.resolve('./src/assets/version.json');
+const versionPath = libpath.resolve('./src/webapp/assets/version.json');
 const app = express();
 
 app.get('/json/version', (req, resp) => {

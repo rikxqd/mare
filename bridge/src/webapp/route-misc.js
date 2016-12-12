@@ -2,7 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import libpath from 'path';
 
-const iconPath = libpath.resolve('./src/assets/favicon.ico');
+const iconPath = libpath.resolve('./src/webapp/assets/favicon.ico');
 const app = express();
 
 app.use(bodyParser.json());
