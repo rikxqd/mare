@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
-import {handleMethod} from '../method';
-import {pushEvent} from '../event';
+import {FrontendModem} from '../modem/frontend-modem';
+import {BackendModem} from '../modem/backend-modem';
 
 export class Adapter extends EventEmitter {
 
@@ -10,9 +10,13 @@ export class Adapter extends EventEmitter {
         this.fews = fews;
         this.bews = bews;
         this.store = store;
+        this.fm = new FrontendModem();
+        this.bm = new BackendModem();
 
         this.initFewsListeners();
         this.initBewsListeners();
+        this.initFmListeners();
+        this.initBmListeners();
     }
 
     initFewsListeners() {
@@ -27,6 +31,16 @@ export class Adapter extends EventEmitter {
         this.bews.on('error', this.onBewsError);
     }
 
+    initFmListeners() {
+        this.fm.on('send-frontend', this.onFmSendFrontend);
+        this.fm.on('send-backend', this.onFmSendBackend);
+    }
+
+    initBmListeners() {
+        this.bm.on('send-frontend', this.onBmSendFrontend);
+        this.bm.on('send-backend', this.onBmSendBackend);
+    }
+
     stopFewsListeners() {
         this.fews.removeListener('message', this.onFewsMessage);
         this.fews.removeListener('close', this.onFewsClose);
@@ -39,9 +53,21 @@ export class Adapter extends EventEmitter {
         this.bews.removeListener('error', this.onBewsError);
     }
 
+    stopFmListeners() {
+        this.fm.removeListener('send-frontend', this.onFmSendFrontend);
+        this.fm.removeListener('send-backend', this.onFmSendBackend);
+    }
+
+    stopBmListeners() {
+        this.bm.removeListener('send-frontend', this.onBmSendFrontend);
+        this.bm.removeListener('send-backend', this.onBmSendBackend);
+    }
+
     close() {
         this.stopFewsListeners();
         this.stopBewsListeners();
+        this.stopFmListeners();
+        this.stopBmListeners();
         this.fews.close();
         this.bews.close();
     }
@@ -50,6 +76,8 @@ export class Adapter extends EventEmitter {
         this.fews = null;
         this.bews = null;
         this.store = null;
+        this.fm = null;
+        this.bm = null;
     }
 
     replaceFrontendWebSocket(fews) {
@@ -66,20 +94,10 @@ export class Adapter extends EventEmitter {
         this.initBewsListeners();
     }
 
-    replayFrontendEvents = async () => {
-        const events = await this.store.eventGetAll();
-        for (const event of events) {
-            const sendData = JSON.stringify(event);
-            this.fews.send(sendData);
-        }
-    }
-
-    onFewsMessage = async (data) => {
-        console.log(this.fews.id, 'message', data);
-        const req = JSON.parse(data);
-        const resp = await handleMethod(req, this.store);
-        const sendData = JSON.stringify(resp);
-        this.fews.send(sendData);
+    onFewsMessage = (msg) => {
+        console.log(this.fews.id, 'message', msg);
+        const req = JSON.parse(msg);
+        this.fm.deliver(req, this.store);
     }
 
     onFewsClose = (code, message) => {
@@ -91,11 +109,9 @@ export class Adapter extends EventEmitter {
         console.error(this.fews.id, 'error', error);
     }
 
-    onBewsMessage = async (data) => {
-        console.log(this.bews.id, 'message', data);
-        const event = await pushEvent.consoleLog(data, this.store);
-        const sendData = JSON.stringify(event);
-        this.fews.send(sendData);
+    onBewsMessage = (msg) => {
+        console.log(this.bews.id, 'message', msg);
+        this.bm.deliver(msg, this.store);
     }
 
     onBewsClose = (code, message) => {
@@ -105,6 +121,34 @@ export class Adapter extends EventEmitter {
 
     onBewsError = (error) => {
         console.error(this.bews.id, 'error', error);
+    }
+
+    onFmSendFrontend = async (msg) => {
+        const data = JSON.stringify(msg);
+        this.fews.send(data);
+    }
+
+    onFmSendBackend = async () => {
+        // TODO 还没处理发送序列化
+        //this.bews.send(data)
+    }
+
+    onBmSendFrontend = async (msg) => {
+        const data = JSON.stringify(msg);
+        this.fews.send(data);
+    }
+
+    onBmSendBackend = async () => {
+        // TODO 还没处理发送序列化
+        //this.bews.send(data)
+    }
+
+    replayFrontendEvents = async () => {
+        const events = await this.store.eventGetAll();
+        for (const event of events) {
+            const sendData = JSON.stringify(event);
+            this.fews.send(sendData);
+        }
     }
 
 }

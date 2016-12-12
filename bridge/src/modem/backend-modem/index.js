@@ -1,6 +1,25 @@
-class PushEvent {
+import EventEmitter from 'events';
 
-    consoleLog = async (data, store) =>{
+export class BackendModem extends EventEmitter {
+
+    constructor() {
+        super();
+    }
+
+    sendFrontend(value) {
+        this.emit('send-frontend', value);
+    }
+
+    sendBackend(value) {
+        this.emit('send-backend', value);
+    }
+
+    deliver = async (msg, store) => {
+        // TODO 暂时全输出控制台
+        this.consoleLogging(msg, store);
+    }
+
+    consoleLogging = async (data, store) => {
         const resp = {
             method: 'Log.entryAdded',
             params: {
@@ -13,7 +32,7 @@ class PushEvent {
             },
         };
         store.eventAppendOne(resp);
-        return resp;
+        this.sendFrontend(resp);
     }
 
     contextCreated = async (data) => {
@@ -31,10 +50,7 @@ class PushEvent {
                 },
             },
         };
-        return resp;
+        this.sendFrontend(resp);
     }
 
 }
-
-const pushEvent = new PushEvent();
-export {pushEvent};
