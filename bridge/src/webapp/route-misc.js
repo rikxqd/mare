@@ -19,12 +19,7 @@ app.use('/echo', (req, resp) => {
 });
 
 app.get('/favicon.ico', (req, resp) => {
-    resp.sendFile(iconPath, (err) => {
-        if (err) {
-            console.error(err);
-            resp.status(err.status).end();
-        }
-    });
+    resp.sendFile(iconPath);
 });
 
 export default app;

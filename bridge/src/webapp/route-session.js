@@ -11,8 +11,8 @@ app.post('/session/new', (req, resp) => {
     const {id, title} = req.body;
     if (sm.existSession(id)) {
         resp.json({
-            success: false,
-            existId: true,
+            ok: false,
+            existed: true,
         });
         return;
     }
@@ -21,12 +21,12 @@ app.post('/session/new', (req, resp) => {
     const expired = -1;
     const session = sm.addSession(id, {title, expired, creator});
     session.saveToStorage(id);
-    resp.json({success: true});
+    resp.json({ok: true});
 });
 
 app.get('/session/:id', (req, resp) => {
-    const bridge = req.bridge;
-    const session = bridge.sm.getSession(req.params.id);
+    const sm = req.bridge.sm;
+    const session = sm.getSession(req.params.id);
     if (session === null) {
         resp.json(null);
         return;
@@ -38,10 +38,10 @@ app.get('/session/:id', (req, resp) => {
 });
 
 app.get('/session/', (req, resp) => {
-    const bridge = req.bridge;
+    const sm = req.bridge.sm;
     const items = [];
     const publicAddress = req.headers.host;
-    for (const session of bridge.sm.getSessions()) {
+    for (const session of sm.getSessions()) {
         const item = session.toJSON();
         item.wsPath = `${publicAddress}/session/${session.id}`;
         items.push(item);

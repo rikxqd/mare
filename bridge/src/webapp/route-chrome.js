@@ -6,12 +6,7 @@ const versionPath = libpath.resolve('./src/webapp/assets/version.json');
 const app = express();
 
 app.get('/json/version', (req, resp) => {
-    resp.sendFile(versionPath, (err) => {
-        if (err) {
-            console.error(err);
-            resp.status(err.status).end();
-        }
-    });
+    resp.sendFile(versionPath);
 });
 
 app.get('/json', (req, resp) => {

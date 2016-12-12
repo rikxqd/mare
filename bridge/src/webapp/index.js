@@ -13,8 +13,9 @@ app.use(routeSession);
 app.use(routeMisc);
 
 app.get('/', (req, resp) => {
+    const name = 'webapp';
     const version = req.packsageJSON.version;
-    resp.json({version});
+    resp.json({name, version});
 });
 
 const WebApp = function(packsageJSON) {

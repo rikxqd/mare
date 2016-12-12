@@ -22,18 +22,18 @@ export default class SessionNewPage extends React.Component {
     save = async (value) => {
         const result = await sdk.newSession(value);
 
-        if (result.success) {
+        if (result.ok) {
             const url = `/session/id/${value.id}`;
             const link = <a href={url} onClick={href(url)}>点击转到详情页</a>;
             const alert = {
-                type: 'success',
+                type: 'ok',
                 desc: <span>创建会话 {value.id} 成功，{link}。</span>,
             };
             this.setState({alert, done: true});
             return;
         }
 
-        if (result.idExisted) {
+        if (result.existed) {
             const alert = {
                 type: 'error',
                 desc: '会话 ID 已存在',
