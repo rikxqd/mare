@@ -19,8 +19,8 @@ app.post('/session/new', (req, resp) => {
 
     const creator = 'webapp';
     const expired = -1;
-    sm.addSession(id, {title, expired, creator});
-    sm.saveSessionToStorage(id);
+    const session = sm.addSession(id, {title, expired, creator});
+    session.saveToStorage(id);
     resp.json({success: true});
 });
 

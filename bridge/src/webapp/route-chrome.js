@@ -17,7 +17,9 @@ app.get('/json/version', (req, resp) => {
 app.get('/json', (req, resp) => {
     const bridge = req.bridge;
     const frontendConfig = bridge.config.frontend;
-    const publicAddress = req.headers.host || `${frontendConfig.host}:${frontendConfig.port}`;
+    const listenAddress = `${frontendConfig.host}:${frontendConfig.port}`;
+
+    const publicAddress = req.headers.host || listenAddress;
     const faviconUrl = `${req.protocol}://${publicAddress}/favicon.ico`;
 
     const items = [];

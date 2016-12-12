@@ -8,7 +8,7 @@ const config = {
         database: 'mongodb://localhost:27017/ldb',
     },
     session: {
-        expire: 10,
+        expire: 30,
     },
     frontend: {
         host: '0.0.0.0',
@@ -29,7 +29,6 @@ console.info(bridge);
 bridge.mount(webapp);
 bridge.start();
 
-// debug
 process.on('unhandledRejection', (reason, promise) => {
     console.error({promise, reason});
 });

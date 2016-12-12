@@ -17,9 +17,10 @@ export class SessionStore extends EventEmitter {
     }
 
     update = async (session) => {
-        const doc = Object.assign({_id: session.id}, session);
+        const query = {_id: session.id};
+        const doc = Object.assign({}, query, session);
         delete doc.id;
-        await this.cln.update({_id: session.id}, doc, {upsert: true});
+        await this.cln.findOneAndReplace(query, doc, {upsert: true});
     }
 
     remove = async (sessionId) => {

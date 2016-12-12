@@ -16,9 +16,7 @@ export class SessionManager extends EventEmitter {
     }
 
     restoreFromStorage = async () => {
-        const storage = this.storage;
-        const sessionStore = storage.getSessionStore();
-        const docs = await sessionStore.get();
+        const docs = await this.storage.loadSessions();
 
         const expired = [];
         const fresh = [];
@@ -35,13 +33,11 @@ export class SessionManager extends EventEmitter {
         }
 
         for (const session of expired) {
-            const dataStore = storage.getSessionDataStore(session.id);
             console.info('clean-expired-session', session.id);
             await Promise.all([
-                dataStore.drop(),
-                sessionStore.remove(session.id),
+                this.storage.removeSession(session.id),
+                this.storage.removeSessionData(session.id),
             ]);
-            dataStore.destroy();
         }
 
         for (const session of fresh) {
@@ -115,13 +111,6 @@ export class SessionManager extends EventEmitter {
             session = this.addSession(id, {title, expire, creator});
         }
         session.attachBackend(ws);
-    }
-
-    saveSessionToStorage(id) {
-        const session = this.sessions[id];
-        if (session) {
-            session.saveToStorage();
-        }
     }
 
     onSessionExpire = (id) => {

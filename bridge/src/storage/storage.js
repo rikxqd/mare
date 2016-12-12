@@ -41,4 +41,23 @@ export class Storage extends EventEmitter {
         return new SessionDataStore(cln);
     }
 
+    removeSessionData = async (sessionId) => {
+        await this.database.dropCollection(`session-data.${sessionId}`);
+    }
+
+    logging = async (type, log) => {
+        await this.getLoggingStore().append('session', log);
+    }
+
+    loadSessions = async () => {
+        return await this.getSessionStore().get();
+    }
+
+    saveSession = async (session) => {
+        await this.getSessionStore().update(session);
+    }
+
+    removeSession = async (sessionId) => {
+        await this.getSessionStore().remove(sessionId);
+    }
 }

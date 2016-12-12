@@ -101,6 +101,7 @@ export class Session extends EventEmitter {
         }, now);
         this.saveToStorage();
 
+        // 推送一些配置给前端
         this.adapter.replayFrontendEvents();
     }
 
@@ -156,13 +157,6 @@ export class Session extends EventEmitter {
         }, this.expire  * 1000);
     }
 
-    logging(tag, content, time) {
-        time = time || mktime();
-        const log = {tag, content, time, session: this.id};
-        const loggingStore = this.storage.getLoggingStore();
-        loggingStore.append('session', log);
-    }
-
     cleanup() {
         this.adapter.close();
         this.store.drop();
@@ -176,15 +170,19 @@ export class Session extends EventEmitter {
         this.store = null;
     }
 
-    removeFromStorage() {
-        const store = this.storage.getSessionStore();
-        store.remove(this.id);
+    removeFromStorage = async () => {
+        await this.storage.removeSession(this.id);
     }
 
-    saveToStorage() {
-        const doc = this.toPersistentDoc();
-        const store = this.storage.getSessionStore();
-        store.update(doc);
+    saveToStorage = async() => {
+        const doc = this.toDoc();
+        await this.storage.saveSession(doc);
+    }
+
+    logging = async (tag, content, time) => {
+        time = time || mktime();
+        const log = {tag, content, time, session: this.id};
+        await this.storage.logging('session', log);
     }
 
     toJSON() {
@@ -214,7 +212,7 @@ export class Session extends EventEmitter {
         };
     }
 
-    toPersistentDoc() {
+    toDoc() {
         return {
             id: this.id,
             title: this.title,
