@@ -42,7 +42,10 @@ export class Storage extends EventEmitter {
     }
 
     removeSessionData = async (sessionId) => {
-        await this.database.dropCollection(`session-data.${sessionId}`);
+        try {
+            await this.database.dropCollection(`session-data.${sessionId}`);
+        } catch (e) {
+        }
     }
 
     logging = async (type, log) => {

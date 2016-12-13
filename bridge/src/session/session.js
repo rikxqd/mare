@@ -100,9 +100,6 @@ export class Session extends EventEmitter {
             sessionArgs: ws.location.query,
         }, now);
         this.saveToStorage();
-
-        // 推送一些配置给前端
-        this.adapter.replayFrontendEvents();
     }
 
     attachBackend(ws) {
@@ -119,8 +116,6 @@ export class Session extends EventEmitter {
             sessionArgs: ws.location.query,
         }, now);
         this.saveToStorage();
-
-        // TODO 推送一些配置给后端
     }
 
     onAdapterWebSocketClose = (side) => {

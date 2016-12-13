@@ -1,10 +1,23 @@
+import libpath from 'path';
 import EventEmitter from 'events';
+
+const resolveHome = (filepath) => {
+    if (filepath[0] === '~') {
+        return libpath.join(process.env.HOME, filepath.slice(1));
+    }
+    return filepath;
+};
 
 export class SessionDataStore extends EventEmitter {
 
     constructor(cln) {
         super();
         this.cln = cln;
+        this.project = {
+            id: 'lualib',
+            sourceRoot: resolveHome('~/work/ldb/lualib/'),
+            mainFile: 'test2.lua',
+        };
     }
 
     destroy() {
@@ -13,6 +26,16 @@ export class SessionDataStore extends EventEmitter {
 
     drop = async () => {
         this.cln.drop();
+    }
+
+    eventGetByMethod = async (method) => {
+        const query = {_type: 'event', method};
+        const docs = await this.cln.find(query).toArray();
+        for (const doc of docs) {
+            delete doc._id;
+            delete doc._type;
+        }
+        return docs;
     }
 
     eventGetAll = async () => {

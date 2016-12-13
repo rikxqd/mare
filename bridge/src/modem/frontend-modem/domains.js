@@ -1,7 +1,11 @@
 import Log from './Log';
 import Page from './Page';
+import Runtime from './Runtime';
+import Debugger from './Debugger';
 
 export default {
     Log,
     Page,
+    Runtime,
+    Debugger,
 };

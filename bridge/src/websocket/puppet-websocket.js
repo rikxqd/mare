@@ -59,6 +59,7 @@ export class PuppetWebSocket extends EventEmitter {
 
     onSocketData = (data) => {
         const dataString = data.toString();
+        console.log('aa', dataString);
         this.feed(dataString);
     }
 

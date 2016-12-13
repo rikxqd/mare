@@ -143,12 +143,4 @@ export class Adapter extends EventEmitter {
         //this.bews.send(data)
     }
 
-    replayFrontendEvents = async () => {
-        const events = await this.store.eventGetAll();
-        for (const event of events) {
-            const sendData = JSON.stringify(event);
-            this.fews.send(sendData);
-        }
-    }
-
 }
