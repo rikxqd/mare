@@ -1,20 +1,37 @@
 import EventEmitter from 'events';
+import * as msgpack from 'msgpack-lite';
 import WebSocket from 'ws';
 import liburl from 'url';
 
-const parseMessages = (data) => {
-    let messages = null;
-    let chunk = '';
-
-    const parts = data.split('\r\n');
-    const length = parts.length;
-    if (length === 1) {
-        chunk = parts[0];
-    } else if (length > 1) {
-        chunk = parts.splice(-1)[0];
-        messages = parts;
+const parseCommand = (data) => {
+    let command = null;
+    if (data.length <= 8) {
+        return {command, chunk: data};
     }
-    return {messages, chunk};
+
+    const pack_length = data.readUIntLE(0, 8);
+    if (data.length < (8 + pack_length)) {
+        return {command, chunk: data};
+    }
+
+    const pack_data = data.slice(8, 8 + pack_length);
+    const chunk = data.slice(8 + pack_length);
+    command = msgpack.decode(pack_data);
+    return {command, chunk};
+};
+
+const parseCommands = (data) => {
+    const commands = [];
+    let chunk = data;
+    while (true) {
+        const result = parseCommand(chunk);
+        chunk = result.chunk;
+        if (result.command === null) {
+            break;
+        }
+        commands.push(result.command);
+    }
+    return {commands, chunk};
 };
 
 export class PuppetWebSocket extends EventEmitter {
@@ -23,7 +40,7 @@ export class PuppetWebSocket extends EventEmitter {
         super();
         this.socket = socket;
         this.handshaked = false;
-        this.chunk = '';
+        this.chunk = Buffer.alloc(0);
         this.upgradeReq = null;
         this.readyState = WebSocket.OPEN;
         this.initSocketListeners();
@@ -36,20 +53,34 @@ export class PuppetWebSocket extends EventEmitter {
     }
 
     feed(newData) {
-        const data = this.chunk + newData;
-        const {messages, chunk} = parseMessages(data);
+        const data = Buffer.concat([this.chunk, newData]);
+        const {commands, chunk} = parseCommands(data);
         this.chunk = chunk;
-        if (!this.handshaked) {
-            const message = messages.shift();
-            this.doHandShake(message);
+        if (commands.length === 0) {
+            return;
         }
-        for (const message of messages) {
-            this.emit('message', message);
+
+        for (const command of commands) {
+            const [type, data] = command;
+            if (type === 'ping') {
+                continue;
+            }
+            if (type === 'handshake') {
+                this.doHandShake(data);
+                continue;
+            }
+            if (type === 'message') {
+                if (this.handshaked) {
+                    this.emit('message', data);
+                }
+                continue;
+            }
+            console.warn('ignore command', command);
         }
     }
 
-    doHandShake(message) {
-        const location = liburl.parse(message.trim(), true);
+    doHandShake(url) {
+        const location = liburl.parse(url.trim(), true);
         this.upgradeReq = {
             url: location.href,
         };
@@ -59,8 +90,8 @@ export class PuppetWebSocket extends EventEmitter {
 
     onSocketData = (data) => {
         const dataString = data.toString();
-        console.log('aa', dataString);
-        this.feed(dataString);
+        console.log('data', dataString);
+        this.feed(data);
     }
 
     onSocketClose = (hadError) =>  {

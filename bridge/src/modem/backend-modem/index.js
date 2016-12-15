@@ -15,8 +15,9 @@ export class BackendModem extends EventEmitter {
     }
 
     deliver = async (msg, store) => {
-        // TODO 暂时全输出控制台
-        this.consoleLogging(msg, store);
+        if (msg.method === 'console') {
+            this.consoleLogging(msg.params, store);
+        }
     }
 
     consoleLogging = async (data, store) => {
@@ -26,7 +27,7 @@ export class BackendModem extends EventEmitter {
                 entry: {
                     source: 'abcd',
                     level: 'log',
-                    text: data,
+                    text: JSON.stringify(data, null, 4),
                     timestamp: new Date().getTime(),
                 },
             },

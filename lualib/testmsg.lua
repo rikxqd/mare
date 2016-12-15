@@ -1,3 +1,9 @@
+local rdebug = require "remotedebug"
+
+if not pcall(rdebug.start, "debugbackend") then
+	print "debugger disable"
+end
+
 local mp = require 'MessagePack'
 
 mp.set_number'float'
@@ -55,4 +61,4 @@ end
 mpac = mp.pack(c)
 
 
-print(mpac)
+print(string.format('%q', mpac))
