@@ -92,6 +92,7 @@ export class PuppetWebSocket extends EventEmitter {
         const dataString = data.toString();
         console.log('data', dataString);
         this.feed(data);
+        this.socket.write('ok');
     }
 
     onSocketClose = (hadError) =>  {

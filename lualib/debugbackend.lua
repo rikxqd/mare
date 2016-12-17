@@ -92,6 +92,7 @@ function Client:raw_recv()
             print('colsed')
         end
         self.so = nil
+        self.handshaked = false
         return false
     end
 
@@ -105,7 +106,9 @@ end
 
 function Client:send(data)
     data = string.pack('<s8', data)
-    return self:raw_send(data)
+    local ok, err = self:raw_send(data)
+    client:raw_recv()
+    return ok
 end
 
 function Client:command(type, data)
@@ -125,8 +128,8 @@ function Client:handshake()
 end
 
 function Client:message(data)
-    self:ping() -- 卧槽，非得要两次
-    if not self:ping() then
+    self:ping()
+    if self.so == nil then
         self:reconnect()
     end
     if not self.handshaked then
