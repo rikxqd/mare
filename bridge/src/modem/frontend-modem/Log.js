@@ -1,7 +1,7 @@
 const Log = {};
 
 Log.enable = async (req, store, modem) => {
-    modem.replayFrontendEvents(store);
+    modem.replayFrontendLogEvents(store);
     return null;
 };
 

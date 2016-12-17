@@ -1,8 +1,6 @@
 local lsocket = require 'lsocket'
 local rdebug = require 'remotedebug'
 local msgpack = require 'MessagePack'
-local hook = require 'debughook'
-local aux = require 'debugaux'
 
 local dumpable
 dumpable = function(table, level)
@@ -137,10 +135,18 @@ function Client:message(data)
     self:command('message', data)
 end
 
-function Client:consoleLog(data)
+function Client:consoleTable(data)
     local message = {
-        method= 'console',
-        params= dumpable(data),
+        method= 'consoleTable',
+        params= data,
+    }
+    self:message(message)
+end
+
+function Client:consolePrint(data)
+    local message = {
+        method= 'consolePrint',
+        params= data,
     }
     self:message(message)
 end
@@ -148,11 +154,44 @@ end
 client = Client:new()
 client:connect('127.0.0.1', 8083)
 
+function func_args()
+	local i = 1
+    local args = {}
+	while true do
+		local name, v = rdebug.getlocal(1, i)
+		if name == nil then
+			break
+		end
+        if rdebug.type(v) == 'userdata' then
+            break
+        end
+		table.insert(args, rdebug.value(v))
+		i = i + 1
+	end
+    return args
+end
 
-hook.probe("@testmsg.lua",16, function()
-    print(1)
-	local f = aux.frame(1)
-    client:consoleLog(f)
+local last_info = {}
+rdebug.sethook(function(event, line)
+    local info = rdebug.getinfo(1)
+    if info == nil then
+        return
+    end
+    if event == 'call' and info.what == 'C' and info.name == 'print' then
+        local args = func_args()
+        local value = table.concat(args, '\t')
+        client:consolePrint({
+            file= last_info.source,
+            value= value,
+            line= last_info.currentline,
+        });
+        client:consoleTable({
+            last_info= last_info,
+            info= info,
+        });
+    end
+    if event == 'line' then
+        last_info = info
+    end
 end)
-
-rdebug.sethook(hook.hook)
+rdebug.hookmask('crl')

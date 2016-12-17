@@ -95,8 +95,8 @@ export class FrontendModem extends EventEmitter {
                     endColumn: 0,
                     endLine: lines.length,
                     executionContextAuxData: {
-                        'frameId': '1',
-                        'isDefault': true,
+                        frameId: '1',
+                        isDefault: true,
                     },
                     executionContextId: 1,
                     hasSourceURL: false,
@@ -112,8 +112,16 @@ export class FrontendModem extends EventEmitter {
         }
     }
 
-    replayFrontendEvents = async (store) => {
+    replayFrontendLogEvents = async (store) => {
         const method = 'Log.entryAdded';
+        const events = await store.eventGetByMethod(method);
+        for (const event of events) {
+            this.sendFrontend(event);
+        }
+    }
+
+    replayFrontendRuntimeEvents = async (store) => {
+        const method = 'Runtime.consoleAPICalled';
         const events = await store.eventGetByMethod(method);
         for (const event of events) {
             this.sendFrontend(event);
