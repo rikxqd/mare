@@ -23,7 +23,7 @@ dumpable = function(table, level)
             value_type = string.format('[%s]', k)
         elseif value_type == 'table' then
             if level < 2 then
-                value_repr = dumpable(v)
+                value_repr = dumpable(v, level + 1)
             else
                 value_repr = '[level limit]'
             end
@@ -138,7 +138,7 @@ end
 function Client:consoleTable(data)
     local message = {
         method= 'consoleTable',
-        params= data,
+        params= dumpable(data),
     }
     self:message(message)
 end
@@ -154,11 +154,11 @@ end
 client = Client:new()
 client:connect('127.0.0.1', 8083)
 
-function func_args()
+function func_args(level)
 	local i = 1
     local args = {}
 	while true do
-		local name, v = rdebug.getlocal(1, i)
+		local name, v = rdebug.getlocal(level, i)
 		if name == nil then
 			break
 		end
@@ -171,27 +171,90 @@ function func_args()
     return args
 end
 
-local last_info = {}
-rdebug.sethook(function(event, line)
+function func_varargs(level)
+	local i = -1
+    local args = {}
+	while true do
+		local name, v = rdebug.getlocal(level, i)
+		if name == nil then
+			break
+		end
+        if rdebug.type(v) == 'userdata' then
+            break
+        end
+		table.insert(args, rdebug.value(v))
+		i = i - 1
+	end
+    return args
+end
+
+local handlers = {}
+
+function handlers.do_print(event, line)
     local info = rdebug.getinfo(1)
     if info == nil then
         return
     end
     if event == 'call' and info.what == 'C' and info.name == 'print' then
-        local args = func_args()
+        local args = func_args(1)
         local value = table.concat(args, '\t')
+        local up_info = rdebug.getinfo(2)
         client:consolePrint({
-            file= last_info.source,
             value= value,
-            line= last_info.currentline,
-        });
-        client:consoleTable({
-            last_info= last_info,
-            info= info,
+            type= 'log',
+            stacks= {
+                {
+                    file= up_info.source,
+                    line= up_info.currentline,
+                    func= 'print',
+                }
+            }
         });
     end
-    if event == 'line' then
-        last_info = info
+end
+
+function handlers.do_trace(event, line)
+    if event:find('$console-') ~= 1 then
+        return
     end
+    local info = rdebug.getinfo(1)
+
+    local args = func_varargs(1)
+    local value = table.concat(args, ' ')
+
+    local stacks = {}
+    local i = 2
+    while true do
+        local info = rdebug.getinfo(i)
+        if info == nil then
+            break
+        end
+        if info.name == nil and info.what == 'C' then
+            break
+        end
+        local name = info.name
+        if name == nil and info.what == 'main' then
+            name = '(main)'
+        end
+
+        stack = {
+            file= info.source,
+            line= info.currentline,
+            func= name,
+        }
+        table.insert(stacks, stack)
+        i = i + 1
+    end
+
+    client:consolePrint({
+        value= value,
+        type= event:sub(10),
+        stacks= stacks,
+    });
+end
+
+rdebug.sethook(function(event, line)
+    handlers.do_print(event, line)
+    handlers.do_trace(event, line)
 end)
 rdebug.hookmask('crl')

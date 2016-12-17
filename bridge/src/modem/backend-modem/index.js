@@ -21,22 +21,33 @@ export class BackendModem extends EventEmitter {
             this.printLogging(msg.params, store);
         }
         if (msg.method === 'consoleTable') {
-            //this.consoleLogging(msg.params, store);
+            this.consoleLogging(msg.params, store);
         }
     }
 
     printLogging  = async (data, store) => {
         const project = store.project;
-        let scriptId, url;
-        if (data.file === '=stdin') {
-            this.nonFileScriptParsed(data);
-            scriptId = `${this.nonFileScriptIdCount}-stdin`;
-            url = '';
-        } else {
-            scriptId = data.file.replace('@', '');
-            scriptId = scriptId.replace('./', '');
-            url = `${project.id}/${scriptId}`;
-        }
+
+        const frames = data.stacks.map((s) => {
+            let scriptId, url;
+            if (s.file === '=stdin') {
+                this.nonFileScriptParsed(data);
+                scriptId = `${this.nonFileScriptIdCount}-stdin`;
+                url = '';
+            } else {
+                scriptId = s.file.replace('@', '');
+                scriptId = scriptId.replace('./', '');
+                url = `${project.id}/${scriptId}`;
+            }
+
+            return {
+                columnNumber: 0,
+                functionName: s.func,
+                lineNumber: s.line - 1,  // lua 从 1 开始
+                scriptId: scriptId,
+                url: url,
+            };
+        });
         const resp = {
             method: 'Runtime.consoleAPICalled',
             params: {
@@ -48,18 +59,10 @@ export class BackendModem extends EventEmitter {
                 ],
                 executionContextId: 1,
                 stackTrace: {
-                    callFrames: [
-                        {
-                            columnNumber: 0,
-                            functionName: 'print',
-                            lineNumber: data.line - 1,  // lua 从 1 开始
-                            scriptId: scriptId,
-                            url: url,
-                        },
-                    ],
+                    callFrames: frames,
                 },
                 timestamp: new Date().getTime(),
-                type: 'log',
+                type: data.type,
             },
         };
         store.eventAppendOne(resp);
