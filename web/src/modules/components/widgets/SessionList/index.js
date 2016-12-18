@@ -30,6 +30,18 @@ export default class SessionList extends React.Component {
         this.setState({sessions});
     }
 
+    onFrontendLinkClick = (url, title) => () => {
+        const width = Math.round(screen.width * 0.618);
+        const height = Math.round(screen.height * 0.618);
+        const left = Math.round(screen.width / 2 - width / 2);
+        const top = Math.round(screen.height / 2 - height / 2);
+        const features = `
+            menubar=no,location=no,
+            width=${width},height=${height},
+            top=${top},left=${left}`;
+        window.open(url, title, features);
+    }
+
     renderDebuggerCell = (value, item) => {
         const path = `ws=${item.wsPath}`;
         const url = `/devtools/inspector.html?experiments=true&${path}`;
@@ -39,7 +51,8 @@ export default class SessionList extends React.Component {
                     if (item.frontend.isConnected) {
                         <span className='text-success'>前端已连接</span>;
                     } else {
-                        <a href={url} target='_blank'>打开前端</a>;
+                        <a href={url} target='_blank'
+                            onClick={this.onFrontendLinkClick(url, item.title)}>打开前端</a>;
                     }
                 }}
                 <Icon className={style.cellIcon}
