@@ -1,30 +1,24 @@
-local rdebug = require 'remotedebug'
-rdebug.start('debugbackend')
+local rdebug = require('remotedebug')
+rdebug.start('debug-main')
 
-console = require 'print-lib'
+test_table = {
+    'number 1',
+    [2]= 'number 2',
+    name= 'string name',
+    [true]= 'boolean true',
+    [false]= 'boolean false',
+    [{}]= 'table 0x123456',
+    ['1']= 'string 1',
+    ['name']= 'string name',
+    [function() end]='function 0x123456',
+    table_value= {x=1, y=2, z={'a', 'b'}},
+    func_value= function() end,
+};
 
-print('hello', 'world')
-
-function nest()
-    console.info('info', 'xxx', 'yyy', 'zzz');
-    console.error('error', 'xxx', 'yyy', 'zzz');
-    console.warn('warn', 'xxx', 'yyy', 'zzz');
-    console.trace('trace', 'xxx', 'yyy', 'zzz');
-    console.assert('name');
-    console.group('name');
-    console.log('one')
-    console.log('two')
-    console.log('three')
-    console.groupEnd();
-    console.groupCollapsed('name collapsed');
-    console.log('one')
-    console.log('two')
-    console.log('three')
-    console.groupEnd();
+function print_types()
+    print(1, true, function() end)
+    print(test_table)
 end
 
-function nest1()
-    nest()
-end
-
-nest1()
+print('hello, world')
+print_types()

@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import uuid from 'node-uuid';
 import crypto from 'crypto';
 
 export class BackendModem extends EventEmitter {
@@ -17,11 +18,11 @@ export class BackendModem extends EventEmitter {
     }
 
     deliver = async (msg, store) => {
-        if (msg.method === 'consolePrint') {
+        if (msg.method === 'consoleApi') {
             this.printLogging(msg.params, store);
         }
         if (msg.method === 'consoleTable') {
-            this.consoleLogging(msg.params, store);
+            this.consoleTable(msg.params, store);
         }
     }
 
@@ -48,15 +49,37 @@ export class BackendModem extends EventEmitter {
                 url: url,
             };
         });
+
+        const argsField = [];
+        const keyLength = Object.keys(data.value).length;
+        for (let i = 1; i <= keyLength; i++) {
+            const key = `[${i}]`;
+            const value = data.value[key];
+            const valueType = typeof value;
+            if (valueType === 'object') {
+                const objectId = JSON.stringify({
+                    root: uuid.v4(),
+                    path: [],
+                });
+                store.jsobjAppendOne(objectId, value);
+                argsField.push({
+                    description: 'Table',
+                    objectId: objectId,
+                    type: 'object',
+                });
+            } else {
+                argsField.push({
+                    description: String(value),
+                    type: valueType,
+                    value: value,
+                });
+            }
+        }
+
         const resp = {
             method: 'Runtime.consoleAPICalled',
             params: {
-                args: [
-                    {
-                        type: 'string',
-                        value: data.value,
-                    },
-                ],
+                args: argsField,
                 executionContextId: 1,
                 stackTrace: {
                     callFrames: frames,
@@ -112,4 +135,31 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
+    consoleTable  = async (data, store) => {
+        const objectId = JSON.stringify({
+            root: uuid.v4(),
+            path: [],
+        });
+        const resp = {
+            method: 'Runtime.consoleAPICalled',
+            params: {
+                args: [
+                    {
+                        description: 'Table',
+                        objectId: objectId,
+                        type: 'object',
+                    },
+                ],
+                executionContextId: 1,
+                stackTrace: {
+                    callFrames: [],
+                },
+                timestamp: new Date().getTime(),
+                type: data.type,
+            },
+        };
+        store.eventAppendOne(resp);
+        store.jsobjAppendOne(objectId, data);
+        this.sendFrontend(resp);
+    }
 }

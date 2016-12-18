@@ -63,4 +63,19 @@ export class SessionDataStore extends EventEmitter {
         await this.cln.deleteMany(query);
     }
 
+    jsobjGet = async (jsobj_id) => {
+        const query = {_type: 'jsobj', _jsobj_id: jsobj_id};
+        const doc = await this.cln.findOne(query);
+        delete doc._id;
+        delete doc._type;
+        delete doc._jsobj_id;
+        return doc;
+    }
+
+    jsobjAppendOne = async (jsobj_id, jsobj) => {
+        const query = {_type: 'jsobj', _jsobj_id: jsobj_id};
+        const doc = Object.assign({}, query, jsobj);
+        await this.cln.insertOne(doc);
+    }
+
 }

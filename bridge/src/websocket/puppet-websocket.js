@@ -3,19 +3,22 @@ import * as msgpack from 'msgpack-lite';
 import WebSocket from 'ws';
 import liburl from 'url';
 
+const PACK_HEAD_LEN = 4;
+
 const parseCommand = (data) => {
     let command = null;
-    if (data.length <= 8) {
+
+    if (data.length <= PACK_HEAD_LEN) {
         return {command, chunk: data};
     }
 
-    const pack_length = data.readUIntLE(0, 8);
-    if (data.length < (8 + pack_length)) {
+    const pack_length = data.readUIntLE(0, PACK_HEAD_LEN);
+    if (data.length < (PACK_HEAD_LEN + pack_length)) {
         return {command, chunk: data};
     }
 
-    const pack_data = data.slice(8, 8 + pack_length);
-    const chunk = data.slice(8 + pack_length);
+    const pack_data = data.slice(PACK_HEAD_LEN, PACK_HEAD_LEN + pack_length);
+    const chunk = data.slice(PACK_HEAD_LEN + pack_length);
     command = msgpack.decode(pack_data);
     return {command, chunk};
 };
@@ -89,10 +92,10 @@ export class PuppetWebSocket extends EventEmitter {
     }
 
     onSocketData = (data) => {
-        const dataString = data.toString();
-        console.log('data', dataString);
+        //const dataString = data.toString();
+        //console.log('data', dataString);
+        //console.log('data', data);
         this.feed(data);
-        this.socket.write('ok');
     }
 
     onSocketClose = (hadError) =>  {
