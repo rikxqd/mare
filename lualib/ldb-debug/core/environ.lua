@@ -1,36 +1,29 @@
+local class = require('ldb-debug/utils/oo').class
 local rdebug = require 'remotedebug'
 
 local function expand_value(v)
-	local value_type = rdebug.type(v)
-	if value_type == 'function' then
+    local value_type = rdebug.type(v)
+    if value_type == 'function' then
         return rdebug.value(v)
     end
 
-	if value_type ~= 'table' then
+    if value_type ~= 'table' then
         return v
     end
 
     local table = {}
-	local key, value
-	while true do
-		key, value = rdebug.next(v, key)
-		if key == nil then
-			break
-		end
+    local key, value
+    while true do
+        key, value = rdebug.next(v, key)
+        if key == nil then
+            break
+        end
         table[key] = expand_value(value)
-	end
+    end
     return table
 end
 
-local Debugger = {
-
-    new= function(cls, ...)
-        local self = {}
-        setmetatable(self, cls)
-        cls.__index = cls
-        cls.constructor(self, ...)
-        return self
-    end,
+local Environ = class({
 
     constructor= function(self)
         self.info_items = {}
@@ -132,9 +125,20 @@ local Debugger = {
 
         self.stack_infos = infos
         return infos
+    end,
+
+    sethooks= function(cls, mask, hooks, frontend)
+        rdebug.sethook(function(name, line)
+            local environ = cls:new()
+            local event = {name= name, line= line}
+            for _, hook in ipairs(hooks) do
+                hook(event, environ, frontend)
+            end
+        end)
+        rdebug.hookmask(mask)
     end
-}
+})
 
 return {
-    Debugger= Debugger,
+    Environ= Environ,
 }

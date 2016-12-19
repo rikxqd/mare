@@ -29,7 +29,8 @@ export class BackendModem extends EventEmitter {
     printLogging  = async (data, store) => {
         const project = store.project;
 
-        const frames = data.stacks.map((s) => {
+        const stacks = data.stacks || [];
+        const frames = stacks.map((s) => {
             let scriptId, url;
             if (s.file === '=stdin') {
                 this.nonFileScriptParsed(data);
@@ -85,7 +86,7 @@ export class BackendModem extends EventEmitter {
                     callFrames: frames,
                 },
                 timestamp: new Date().getTime(),
-                type: data.type,
+                type: data.type || 'log',
             },
         };
         store.eventAppendOne(resp);

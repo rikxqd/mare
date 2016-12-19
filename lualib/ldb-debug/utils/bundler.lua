@@ -1,6 +1,10 @@
 local msgpack = require 'MessagePack'
 
-local exports = {
+msgpack.set_array('without_hole')
+msgpack.set_number('double')
+msgpack.set_string('string')
+
+local bundler = {
 
     pack= function(lua_obj)
         return msgpack.pack(lua_obj)
@@ -12,4 +16,4 @@ local exports = {
 
 }
 
-return exports
+return bundler

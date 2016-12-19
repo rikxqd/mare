@@ -1,14 +1,8 @@
+local class = require('ldb-debug/utils/oo').class
+
 local print = function() end
 
-local Logger = {
-
-    new= function(cls, ...)
-        local self = {}
-        setmetatable(self, cls)
-        cls.__index = cls
-        cls.constructor(self, ...)
-        return self
-    end,
+local Logger = class({
 
     constructor= function(self, name)
         self.name = name
@@ -28,7 +22,8 @@ local Logger = {
         local prefix = string.format('[ERR ]%s', self.name)
         print(prefix, string.format(fmt, ...))
     end,
-}
+
+})
 
 return {
     Logger= Logger,

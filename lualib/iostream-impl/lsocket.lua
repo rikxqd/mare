@@ -1,14 +1,10 @@
 local lsocket = require('lsocket')
-local Logger = require('ldb-debug/logger').Logger
 
 local STATUS_OPENED = 1
 local STATUS_CLOSED = 2
 
-local logger = Logger:new('Socket')
+local IOStream = {
 
-local Socket = {
-
-    -- @staticmethod
     new= function(cls, ...)
         local self = {}
         setmetatable(self, cls)
@@ -20,19 +16,19 @@ local Socket = {
     constructor= function(self, props)
         self.host = props.host
         self.port = props.port
-        self.socket_impl = nil
+        self.socket = nil
         self.timeout = 0
         self.status = STATUS_CLOSED
     end,
 
     open= function(self)
-        local so, err = lsocket.connect(self.host, self.port)
+        local socket, err = lsocket.connect(self.host, self.port)
         if err then
-            logger:error(err)
+            print('Error:', err)
         end
 
-        self.socket_impl = so
-        if so then
+        self.socket = socket
+        if socket then
             self.status = STATUS_OPENED
             return true
         else
@@ -42,56 +38,57 @@ local Socket = {
     end,
 
     close= function(self)
-        if self.socket_impl then
-            self.socket_impl:close()
-            self.socket_impl = nil
+        if self.socket then
+            self.socket:close()
+            self.socket = nil
         end
-        if self.status == STATUS_CLOSED then
-            return
-        end
-
         self.status = STATUS_CLOSED
     end,
 
     send= function(self, data)
-        local so = self.socket_impl
+        local socket = self.socket
         local timeout = self.timeout
-        local selects = {so}
+        local selects = {socket}
+        local is_ok = true
 
-        local start = 1
+        local sent = 1
         local length = #data
-        while start <= length do
+        while sent <= length do
             lsocket.select(nil, selects, timeout)
-            local chunk = data:sub(start)
-            local nbytes, err = so:send(chunk)
+            local chunk = data:sub(sent)
+            local nbytes, err = socket:send(chunk)
             if err then
-                logger:error(err)
-                self:close()
-                return false, start
+                print('Error:', err)
+                is_ok = false
+                break
             end
-            start = start + nbytes
+
+            sent = sent + nbytes
         end
-        return true, start
+
+        if not is_ok then
+            self:close()
+        end
+        return is_ok, sent
     end,
 
     recv= function(self)
-        local so = self.socket_impl
+        local socket = self.socket
         local timeout = self.timeout
-        local selects = {so}
+        local selects = {socket}
+        local is_ok = true
 
-        local ok = true
         local chunks = {}
         while true do
             lsocket.select(selects, timeout)
-            chunk, err = so:recv()
+            chunk, err = socket:recv()
             if chunk == nil then
                 if err then
-                    logger:error(err)
+                    print('Error:', err)
                 else
-                    logger:error('remote server closed')
+                    print('Error:', 'remote closed')
                 end
-                self:close()
-                ok = false
+                is_ok = false
                 break
             end
 
@@ -103,7 +100,11 @@ local Socket = {
         end
 
         local data = table.concat(chunks)
-        return ok, data
+
+        if not is_ok then
+            self:close()
+        end
+        return is_ok, data
     end,
 
     is_opened = function(self)
@@ -116,8 +117,4 @@ local Socket = {
 
 }
 
-return {
-    STATUS_OPENED= STATUS_OPENED,
-    STATUS_CLOSED= STATUS_CLOSED,
-    Socket= Socket,
-}
+return IOStream
