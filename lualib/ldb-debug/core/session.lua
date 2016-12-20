@@ -31,7 +31,7 @@ local Session = class({
             logger:log('reconnecting')
             self:connect()
         end
-        return self.iostream:send(rawdata)
+        return self.iostream:write(rawdata)
     end,
 
     recv_rawdata= function(self)
@@ -39,7 +39,7 @@ local Session = class({
             logger:log('reconnecting')
             self:connect()
         end
-        return self.iostream:recv()
+        return self.iostream:read()
     end,
 
     parse_buffer= function(self)

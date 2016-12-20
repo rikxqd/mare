@@ -45,7 +45,7 @@ local IOStream = {
         self.status = STATUS_CLOSED
     end,
 
-    send= function(self, data)
+    write= function(self, data)
         local socket = self.socket
         local timeout = self.timeout
         local selects = {socket}
@@ -72,7 +72,7 @@ local IOStream = {
         return is_ok, sent
     end,
 
-    recv= function(self)
+    read= function(self)
         local socket = self.socket
         local timeout = self.timeout
         local selects = {socket}
