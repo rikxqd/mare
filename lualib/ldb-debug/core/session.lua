@@ -84,12 +84,13 @@ local Session = class({
         self:parse_buffer()
     end,
 
-    send_ping= function(self)
+    send_heartbeat= function(self)
         local data = '\x00'
         self:send(data)
     end,
 
     send_package= function(self, type, args)
+        self:send_heartbeat()
         local pkgdata = bundler.pack({type, args})
         local data = string.pack('<s4', pkgdata)
         self:send(data)

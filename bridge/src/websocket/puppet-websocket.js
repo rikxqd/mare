@@ -5,9 +5,21 @@ import liburl from 'url';
 
 const PACK_HEAD_LEN = 4;
 
-const parseCommand = (data) => {
-    let command = null;
+const trimHeartbeatBytes = (data) => {
+    let i;
+    for (i = 0; i < data.length; i++) {
+        const num = data.readUInt8(i);
+        if (num !== 0) {
+            break;
+        }
+    }
+    return data.slice(i);
+};
 
+const parseCommand = (data) => {
+    data = trimHeartbeatBytes(data);
+
+    let command = null;
     if (data.length <= PACK_HEAD_LEN) {
         return {command, chunk: data};
     }
@@ -65,9 +77,6 @@ export class PuppetWebSocket extends EventEmitter {
 
         for (const command of commands) {
             const [type, data] = command;
-            if (type === 'ping') {
-                continue;
-            }
             if (type === 'handshake') {
                 this.doHandShake(data);
                 continue;
