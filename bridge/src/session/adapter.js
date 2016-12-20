@@ -128,9 +128,8 @@ export class Adapter extends EventEmitter {
         this.fews.send(data);
     }
 
-    onFmSendBackend = async () => {
-        // TODO 还没处理发送序列化
-        //this.bews.send(data)
+    onFmSendBackend = async (msg) => {
+        this.bews.send(msg);
     }
 
     onBmSendFrontend = async (msg) => {
@@ -138,9 +137,8 @@ export class Adapter extends EventEmitter {
         this.fews.send(data);
     }
 
-    onBmSendBackend = async () => {
-        // TODO 还没处理发送序列化
-        //this.bews.send(data)
+    onBmSendBackend = async (msg) => {
+        this.bews.send(msg);
     }
 
 }

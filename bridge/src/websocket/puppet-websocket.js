@@ -128,8 +128,12 @@ export class PuppetWebSocket extends EventEmitter {
         this.readyState = WebSocket.CLOSED;
     }
 
-    send(data) {
-        this.socket.send(data);
+    send(msg) {
+        const pkgdata = msgpack.encode(['message', msg]);
+        const headdata = Buffer.alloc(PACK_HEAD_LEN);
+        headdata.writeUIntLE(pkgdata.length, 0, PACK_HEAD_LEN);
+        this.socket.write(headdata);
+        this.socket.write(pkgdata);
     }
 
 }

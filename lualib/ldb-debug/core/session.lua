@@ -5,6 +5,53 @@ local Behavior = require('ldb-debug/core/behavior').Behavior
 
 local logger = Logger:new('Session')
 
+local trim_heartbeat_bytes = function(data)
+    local start = 1;
+    for i = 1, #data do
+        local num = string.byte(data, i)
+        if (num ~= 0) then
+            start = i
+            break;
+        end
+    end
+    return data:sub(start)
+end
+
+local PACK_HEAD_LEN = 4;
+
+local parse_command= function(data)
+    data = trim_heartbeat_bytes(data);
+
+    local command = nil;
+    if #data <= PACK_HEAD_LEN then
+        return {command=command, chunk= data}
+    end
+
+    local pack_length = string.unpack('<i4', data) 
+    if #data < (PACK_HEAD_LEN + pack_length) then
+        return {command=command, chunk= data}
+    end
+
+    local pack_data = data:sub(PACK_HEAD_LEN + 1, PACK_HEAD_LEN + pack_length)
+    local chunk = data:sub(PACK_HEAD_LEN + pack_length + 1)
+    command = bundler.unpack(pack_data);
+    return {command= command, chunk=chunk};
+end
+
+local parse_commands= function(data)
+    local commands = {}
+    local chunk = data;
+    while true do
+        local result = parse_command(chunk);
+        chunk = result.chunk;
+        if result.command == nil then
+            break
+        end
+        table.insert(commands, result.command)
+    end
+    return {commands= commands, chunk= chunk};
+end
+
 local Session = class({
 
     constructor= function(self, props)
@@ -42,21 +89,33 @@ local Session = class({
         return self.iostream:read()
     end,
 
-    parse_buffer= function(self)
-        logger:log(self.buffer)
+    feed= function(self, new_data)
+        if new_data == '' then
+            return
+        end
+        local data = self.buffer .. new_data
+        local result = parse_commands(data)
+        local commands = result.commands
+        self.buffer = result.chunk
+        if #commands == 0 then
+            return
+        end
 
-        -- TODO
-        self.buffer = ''
-        local messages = {}
-
-        for _, v in ipairs(messages) do
-            self:apply_message(v)
+        for _, v in ipairs(commands) do
+            local type = v[1]
+            local data = v[2]
+            if type == 'message' then
+                self:apply_message(data)
+            else
+                logger:error('unhandle command')
+            end
         end
     end,
 
     apply_message= function(self, message)
         local method = message.method
         local params = message.params
+        print(method, params)
         if method == 'updateBreakPoints' then
             self.behavior:update_breakpoints(params)
         end
@@ -78,10 +137,10 @@ local Session = class({
 
     recv= function(self)
         local ok, recv_data = self:recv_rawdata()
-        if ok then
-            self.buffer = self.buffer .. recv_data
+        if not ok then
+            logger:error('recv data fail')
         end
-        self:parse_buffer()
+        self:feed(recv_data)
     end,
 
     send_heartbeat= function(self)

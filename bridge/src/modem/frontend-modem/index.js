@@ -128,4 +128,10 @@ export class FrontendModem extends EventEmitter {
         }
     }
 
+    pushProjectConfigToBackend = async (store) => {
+        const method = 'updateProjectConfig';
+        const params = store.project.id;
+        this.sendBackend({method, params});
+    }
+
 }

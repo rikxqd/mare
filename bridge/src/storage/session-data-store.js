@@ -17,6 +17,8 @@ export class SessionDataStore extends EventEmitter {
             id: 'lualib',
             sourceRoot: resolveHome('~/work/ldb/lualib/'),
             mainFile: 'test2.lua',
+            breakOnEnter: true,
+            snapshotLimitLevel: 6,
         };
     }
 
@@ -75,6 +77,21 @@ export class SessionDataStore extends EventEmitter {
     jsobjAppendOne = async (jsobj_id, jsobj) => {
         const query = {_type: 'jsobj', _jsobj_id: jsobj_id};
         const doc = Object.assign({}, query, jsobj);
+        await this.cln.insertOne(doc);
+    }
+
+    breakpointGetAll = async () => {
+        const query = {_type: 'breakpoint'};
+        const docs = await this.cln.find(query).toArray();
+        for (const doc of docs) {
+            delete doc._id;
+            delete doc._type;
+        }
+        return docs;
+    }
+
+    breakpointAppendOne = async (event) => {
+        const doc = Object.assign({_type: 'breakpoint'}, event);
         await this.cln.insertOne(doc);
     }
 

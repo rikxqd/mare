@@ -27,10 +27,12 @@ const Debugger = {};
 
 Debugger.enable = async (req, store, modem) => {
     modem.scriptParsed(store);
+    modem.pushProjectConfigToBackend(store);
+    modem.pushProjectConfigToBackend(store);
     return null;
 };
 
-Debugger.setBreakpointByUrl = async (req) => {
+Debugger.setBreakpointByUrl = async (req, store) => {
     const {url, lineNumber, columnNumber} = req.params;
     return {
         breakpointId: `${url}:${lineNumber}:${columnNumber}`,
