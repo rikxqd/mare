@@ -3,21 +3,7 @@ local HEAD_LEN = 4
 local dump_fmt = '<s' .. HEAD_LEN
 local parse_fmt = '<i' .. HEAD_LEN
 
-local strip_zero = function(bytes)
-    local index = 1;
-    for i = 1, #bytes do
-        local num = bytes:byte(i)
-        if (num ~= 0) then
-            index = i
-            break;
-        end
-    end
-    return bytes:sub(index)
-end
-
 local parse_one = function(bytes)
-    bytes = strip_zero(bytes)
-
     if #bytes <= HEAD_LEN then
         return bytes, nil
     end
@@ -38,7 +24,7 @@ local parse = function(bytes)
     local chunk = bytes;
     while true do
         local pkg
-        chunk, pkg = parse_command(chunk);
+        chunk, pkg = parse_one(chunk);
         if pkg == nil then
             break
         end

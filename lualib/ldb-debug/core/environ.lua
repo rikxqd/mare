@@ -1,26 +1,28 @@
 local class = require('ldb-debug/utils/oo').class
 local rdebug = require 'remotedebug'
 
-local function expand_value(v)
-    local value_type = rdebug.type(v)
-    if value_type == 'function' then
-        return rdebug.value(v)
+local function expand_value(value)
+    local type = rdebug.type(value)
+
+    if type == 'function' then
+        local address = rdebug.value(value)
+        return address
     end
 
-    if value_type ~= 'table' then
-        return v
+    if type ~= 'table' then
+        return value
     end
 
-    local table = {}
-    local key, value
+    local tbl = {}
+    local next_key, next_value
     while true do
-        key, value = rdebug.next(v, key)
-        if key == nil then
+        next_key, next_value = rdebug.next(value, next_key)
+        if next_key == nil then
             break
         end
-        table[key] = expand_value(value)
+        tbl[next_key] = expand_value(next_value)
     end
-    return table
+    return tbl
 end
 
 local Environ = class({

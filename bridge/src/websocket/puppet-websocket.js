@@ -5,20 +5,7 @@ import liburl from 'url';
 
 const PACK_HEAD_LEN = 4;
 
-const trimHeartbeatBytes = (data) => {
-    let i;
-    for (i = 0; i < data.length; i++) {
-        const num = data.readUInt8(i);
-        if (num !== 0) {
-            break;
-        }
-    }
-    return data.slice(i);
-};
-
 const parseCommand = (data) => {
-    data = trimHeartbeatBytes(data);
-
     let command = null;
     if (data.length <= PACK_HEAD_LEN) {
         return {command, chunk: data};
@@ -96,6 +83,13 @@ export class PuppetWebSocket extends EventEmitter {
         this.upgradeReq = {
             url: location.href,
         };
+
+        const pkgdata = msgpack.encode(['handshaked', null]);
+        const headdata = Buffer.alloc(PACK_HEAD_LEN);
+        headdata.writeUIntLE(pkgdata.length, 0, PACK_HEAD_LEN);
+        this.socket.write(headdata);
+        this.socket.write(pkgdata);
+
         this.handshaked = true;
         this.emit('handshake');
     }

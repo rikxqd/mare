@@ -23,7 +23,7 @@ local BreakPoint = class({
             return false
         end
         local same_file = frame.source == self.file
-        local same_line = event.line == self.value
+        local same_line = frame.currentline == self.value
         return same_file and same_line
     end,
 

@@ -14,15 +14,20 @@ local Session = class({
         self.iostream = props.iostream
         self.behavior = Behavior:new()
         self.handshaked = false
+        self.handshaking = false
         self.chunk = ''
     end,
 
     start= function(self)
         logger:log('connecting')
         self:connect()
+        self:send_handshake()
     end,
 
     connect= function(self)
+        self.handshaked = false
+        self.handshaking = false
+        self.chunk = ''
         self.iostream:close()
         self.iostream:open()
     end,
@@ -54,9 +59,13 @@ local Session = class({
         self.chunk = chunk
 
         for _, v in ipairs(pkgs) do
-            local cmd = bundler.decode(v)
+            local cmd = serializer.decode(v)
             local op = cmd[1]
             local args = cmd[2]
+            if op == 'handshaked' then
+                self.handshaked = true
+                self.handshaking = false
+            end
             if op == 'message' then
                 self:apply_message(args)
             else
@@ -68,7 +77,6 @@ local Session = class({
     apply_message= function(self, message)
         local method = message.method
         local params = message.params
-        print(method, params)
         if method == 'setBreakpoints' then
             self.behavior:set_breakpoints(params)
         end
@@ -96,19 +104,21 @@ local Session = class({
         self:feed(data)
     end,
 
-    send_heartbeat= function(self)
-        local data = '\x00'
-        self:send(data)
-    end,
-
     send_package= function(self, op, args)
-        self:send_heartbeat()
         local pkg = serializer.encode({op, args})
         local data = packager.dump(pkg)
         self:send(data)
     end,
 
+    send_heartbeat= function(self)
+        self:send_package('heartbeat', nil)
+    end,
+
     send_handshake= function(self)
+        if self.handshaking then
+            return
+        end
+        self.handshaking = true
         local url = string.format('/session/%s', self.id)
         self:send_package('handshake', url)
     end,
