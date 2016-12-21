@@ -1,56 +1,10 @@
 local class = require('ldb-debug/utils/oo').class
 local Logger = require('ldb-debug/utils/logger').Logger
-local bundler = require('ldb-debug/utils/bundler')
 local Behavior = require('ldb-debug/core/behavior').Behavior
+local serializer = require('ldb-debug/utils/serializer')
+local packager = require('ldb-debug/utils/packager')
 
 local logger = Logger:new('Session')
-
-local trim_heartbeat_bytes = function(data)
-    local start = 1;
-    for i = 1, #data do
-        local num = string.byte(data, i)
-        if (num ~= 0) then
-            start = i
-            break;
-        end
-    end
-    return data:sub(start)
-end
-
-local PACK_HEAD_LEN = 4;
-
-local parse_command= function(data)
-    data = trim_heartbeat_bytes(data);
-
-    local command = nil;
-    if #data <= PACK_HEAD_LEN then
-        return {command=command, chunk= data}
-    end
-
-    local pack_length = string.unpack('<i4', data) 
-    if #data < (PACK_HEAD_LEN + pack_length) then
-        return {command=command, chunk= data}
-    end
-
-    local pack_data = data:sub(PACK_HEAD_LEN + 1, PACK_HEAD_LEN + pack_length)
-    local chunk = data:sub(PACK_HEAD_LEN + pack_length + 1)
-    command = bundler.unpack(pack_data);
-    return {command= command, chunk=chunk};
-end
-
-local parse_commands= function(data)
-    local commands = {}
-    local chunk = data;
-    while true do
-        local result = parse_command(chunk);
-        chunk = result.chunk;
-        if result.command == nil then
-            break
-        end
-        table.insert(commands, result.command)
-    end
-    return {commands= commands, chunk= chunk};
-end
 
 local Session = class({
 
@@ -60,7 +14,7 @@ local Session = class({
         self.iostream = props.iostream
         self.behavior = Behavior:new()
         self.handshaked = false
-        self.buffer = ''
+        self.chunk = ''
     end,
 
     start= function(self)
@@ -73,15 +27,15 @@ local Session = class({
         self.iostream:open()
     end,
 
-    send_rawdata= function(self, rawdata)
+    rawsend= function(self, bytes)
         if self.iostream:is_closed() then
             logger:log('reconnecting')
             self:connect()
         end
-        return self.iostream:write(rawdata)
+        return self.iostream:write(bytes)
     end,
 
-    recv_rawdata= function(self)
+    rawrecv= function(self)
         if self.iostream:is_closed() then
             logger:log('reconnecting')
             self:connect()
@@ -89,23 +43,22 @@ local Session = class({
         return self.iostream:read()
     end,
 
-    feed= function(self, new_data)
-        if new_data == '' then
-            return
-        end
-        local data = self.buffer .. new_data
-        local result = parse_commands(data)
-        local commands = result.commands
-        self.buffer = result.chunk
-        if #commands == 0 then
+    feed= function(self, data)
+        if data == '' then
             return
         end
 
-        for _, v in ipairs(commands) do
-            local type = v[1]
-            local data = v[2]
-            if type == 'message' then
-                self:apply_message(data)
+        local buffer = self.chunk .. data
+        local chunk, pkgs
+        chunk, pkgs = packager.parse(buffer)
+        self.chunk = chunk
+
+        for _, v in ipairs(pkgs) do
+            local cmd = bundler.decode(v)
+            local op = cmd[1]
+            local args = cmd[2]
+            if op == 'message' then
+                self:apply_message(args)
             else
                 logger:error('unhandle command')
             end
@@ -116,31 +69,31 @@ local Session = class({
         local method = message.method
         local params = message.params
         print(method, params)
-        if method == 'updateBreakPoints' then
-            self.behavior:update_breakpoints(params)
+        if method == 'setBreakpoints' then
+            self.behavior:set_breakpoints(params)
         end
-        if method == 'updateBlackboxFiles' then
-            self.behavior:update_blackbox_files(params)
+        if method == 'setBlackboxes' then
+            self.behavior:set_blackboxes(params)
         end
-        if method == 'updateProjectConfig' then
-            self.behavior:update_project_config(params)
+        if method == 'setProject' then
+            self.behavior:set_project(params)
         end
     end,
 
-    send= function(self, send_data)
-        if not self:send_rawdata(send_data) then
-            logger:error('send data fail: ' .. send_data)
+    send= function(self, data)
+        if not self:rawsend(data) then
+            logger:error('send data fail: ' .. data)
             return
         end
         self:recv()
     end,
 
     recv= function(self)
-        local ok, recv_data = self:recv_rawdata()
+        local ok, data = self:rawrecv()
         if not ok then
             logger:error('recv data fail')
         end
-        self:feed(recv_data)
+        self:feed(data)
     end,
 
     send_heartbeat= function(self)
@@ -148,10 +101,10 @@ local Session = class({
         self:send(data)
     end,
 
-    send_package= function(self, type, args)
+    send_package= function(self, op, args)
         self:send_heartbeat()
-        local pkgdata = bundler.pack({type, args})
-        local data = string.pack('<s4', pkgdata)
+        local pkg = serializer.encode({op, args})
+        local data = packager.dump(pkg)
         self:send(data)
     end,
 

@@ -1,73 +1,52 @@
 local class = require('ldb-debug/utils/oo').class
 local Logger = require('ldb-debug/utils/logger').Logger
-local libbp = require('ldb-debug/core/breakpoint')
+local BreakPoint = require('ldb-debug/core/breakpoint').BreakPoint
 
-local LineBreakPoint = libbp.LineBreakPoint
-local ProbeBreakPoint = libbp.ProbeBreakPoint
 local logger = Logger:new('Behavior')
-
-local keymaker = {
-
-    line= function(args)
-        return string.format('line:%s:%d', args.file, args.line)
-    end,
-
-    probe= function(args)
-        return string.format('probe:%s', args.name)
-    end,
-}
 
 local Behavior = class({
 
     constructor= function(self)
-        self.project_config = {
+        self.project = {
             break_on_enter= false,
             snapshot_limit_level= 5,
         }
-        self.blackbox_files = {}
+        self.blackboxes = {}
         self.breakpoints = {}
     end,
 
-    match_blackbox_file= function(self, info)
-        for _, v in iparis(self.blackbox_files) do
-            if info.source == v then
+    match_blackbox= function(self, frame)
+        for _, v in iparis(self.blackboxes) do
+            if frame.source == v then
                 return true
             end
         end
         return false
     end,
 
-    match_breakpoint= function(self, event, info)
+    match_breakpoint= function(self, event, frame)
         for _, v in pairs(self.breakpoints) do
-            if v:match_event(event, info) then
+            if v:match_event(event, frame) then
                 return true
             end
         end
         return false
     end,
 
-    update_breakpoints= function(self, items)
+    set_breakpoints= function(self, urls)
         local breakpoints = {}
-        for i, v in ipairs(items) do
-            local key, breakpoint
-            if v.type == 'line' then
-                key = keymaker.line(v.args)
-                breakpoint = LineBreakPoint:new(args)
-            else
-                key = keymaker.probe(v.args)
-                breakpoint = ProbeBreakPoint:new(args)
-            end
-            breakpoints[key] = breakpoint
+        for i, v in ipairs(urls) do
+            breakpoints[url] = BreakPoint:new(url)
         end
         self.breakpoints = breakpoints
     end,
 
-    update_blackbox_files= function(self, value)
-        self.blackbox_files = value
+    set_blackboxes= function(self, value)
+        self.blackboxes = value
     end,
 
-    update_project_config= function(self, value)
-        self.project_config = value
+    set_project= function(self, value)
+        self.project = value
     end,
 
 })

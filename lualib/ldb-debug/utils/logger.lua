@@ -2,6 +2,10 @@ local class = require('ldb-debug/utils/oo').class
 
 local print = function() end
 
+local LOG = '[LOGG]%s'
+local WARN = '[WARN]%s'
+local ERROR = '[ERRO]%s'
+
 local Logger = class({
 
     constructor= function(self, name)
@@ -9,18 +13,15 @@ local Logger = class({
     end,
 
     log= function(self, fmt, ...)
-        local prefix = string.format('[LOG ]%s', self.name)
-        print(prefix, string.format(fmt, ...))
+        print(LOG:format(self.name), fmt:format(...))
     end,
 
     warn= function(self, fmt, ...)
-        local prefix = string.format('[WARN]%s', self.name)
-        print(prefix, string.format(fmt, ...))
+        print(WARN:format(self.name), fmt:format(...))
     end,
 
     error= function(self, fmt, ...)
-        local prefix = string.format('[ERR ]%s', self.name)
-        print(prefix, string.format(fmt, ...))
+        print(ERROR:format(self.name), fmt:format(...))
     end,
 
 })
