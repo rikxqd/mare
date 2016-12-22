@@ -17,6 +17,6 @@ return function(event, debugger, frontend)
         func= 'print',
     }
 
-    local args = debugger:get_c_func_args(1)
+    local args = debugger:get_locals_array(1)
     frontend:console_api(args, 'log', {uplevel_stack})
 end
