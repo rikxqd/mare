@@ -1,5 +1,5 @@
-local class = require('ldb-debug/utils/oo').class
 local rdebug = require 'remotedebug'
+local class = require('ldb-debug/utils/oo').class
 
 local function expand_value(value)
     local type = rdebug.type(value)
@@ -34,7 +34,7 @@ local Environ = class({
         self.stack_infos = nil
     end,
 
-    get_info= function(self, level)
+    get_frame= function(self, level)
         local key = tostring(level)
         local item = self.info_items[key]
         if item ~= nil then
@@ -101,7 +101,7 @@ local Environ = class({
         return args
     end,
 
-    get_stack_infos= function(self)
+    get_frames= function(self)
         if self.stack_infos then
             return self.stack_infos
         end
@@ -109,7 +109,7 @@ local Environ = class({
         local infos = {}
         local i = 1
         while true do
-            local info = self:get_info(i)
+            local info = self:get_frame(i)
             if info == nil then
                 break
             end

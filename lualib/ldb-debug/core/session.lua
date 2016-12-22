@@ -1,8 +1,8 @@
 local class = require('ldb-debug/utils/oo').class
 local Logger = require('ldb-debug/utils/logger').Logger
-local Behavior = require('ldb-debug/core/behavior').Behavior
 local serializer = require('ldb-debug/utils/serializer')
 local packager = require('ldb-debug/utils/packager')
+local Behavior = require('ldb-debug/core/behavior').Behavior
 
 local logger = Logger:new('Session')
 

@@ -4,24 +4,23 @@ return function(event, debugger, frontend)
         return
     end
 
-    local type = event.name:sub(#prefix + 1)
-    local args = debugger:get_lua_func_args(1)
-
     local stacks = {}
-    local infos = debugger:get_stack_infos()
-    for i = 2, #infos do
-        local info = infos[i]
-        local name = info.name
-        if name == nil and info.what == 'main' then
+    local frames = debugger:get_frames()
+    table.remove(frames, 1)
+    for _, frame in ipairs(frames) do
+        local name = frame.name
+        if name == nil and frame.what == 'main' then
             name = '(main)'
         end
         stack = {
-            file= info.source,
-            line= info.currentline,
+            file= frame.source,
+            line= frame.currentline,
             func= name,
         }
         table.insert(stacks, stack)
     end
 
+    local type = event.name:sub(#prefix + 1)
+    local args = debugger:get_lua_func_args(1)
     frontend:console_api(args, type, stacks);
 end
