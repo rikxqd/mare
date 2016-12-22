@@ -1,7 +1,6 @@
 import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
-
 export class BackendModem extends EventEmitter {
 
     constructor() {
@@ -23,6 +22,9 @@ export class BackendModem extends EventEmitter {
         }
         if (msg.method === 'consoleTable') {
             this.consoleTable(msg.params, store);
+        }
+        if (msg.method === 'debuggerPause') {
+            this.debuggerPause(msg.params, store);
         }
     }
 
@@ -161,6 +163,154 @@ export class BackendModem extends EventEmitter {
         };
         store.eventAppendOne(resp);
         store.jsobjAppendOne(objectId, data);
+        this.sendFrontend(resp);
+    }
+
+    debuggerPause = async() => {
+        const resp = {
+            "method": "Debugger.paused",
+            "params": {
+                "callFrames": [
+                    {
+                        "callFrameId": "{\"ordinal\":0,\"injectedScriptId\":6}",
+                        "functionLocation": {
+                            "columnNumber": 18,
+                            "lineNumber": 8,
+                            "scriptId": "83"
+                        },
+                        "functionName": "haha",
+                        "location": {
+                            "columnNumber": 8,
+                            "lineNumber": 11,
+                            "scriptId": "83"
+                        },
+                        "scopeChain": [
+                            {
+                                "endLocation": {
+                                    "columnNumber": 5,
+                                    "lineNumber": 14,
+                                    "scriptId": "83"
+                                },
+                                "name": "haha",
+                                "object": {
+                                    "className": "Object",
+                                    "description": "Object",
+                                    "objectId": "{\"injectedScriptId\":6,\"id\":11}",
+                                    "type": "object"
+                                },
+                                "startLocation": {
+                                    "columnNumber": 18,
+                                    "lineNumber": 8,
+                                    "scriptId": "83"
+                                },
+                                "type": "local"
+                            },
+                            {
+                                "object": {
+                                    "className": "Window",
+                                    "description": "Window",
+                                    "objectId": "{\"injectedScriptId\":6,\"id\":12}",
+                                    "type": "object"
+                                },
+                                "type": "global"
+                            }
+                        ],
+                        "this": {
+                            "className": "Window",
+                            "description": "Window",
+                            "objectId": "{\"injectedScriptId\":6,\"id\":13}",
+                            "type": "object"
+                        }
+                    },
+                    {
+                        "callFrameId": "{\"ordinal\":1,\"injectedScriptId\":6}",
+                        "functionLocation": {
+                            "columnNumber": 30,
+                            "lineNumber": 7,
+                            "scriptId": "83"
+                        },
+                        "functionName": "custom_console2",
+                        "location": {
+                            "columnNumber": 6,
+                            "lineNumber": 14,
+                            "scriptId": "83"
+                        },
+                        "scopeChain": [
+                            {
+                                "endLocation": {
+                                    "columnNumber": 1,
+                                    "lineNumber": 15,
+                                    "scriptId": "83"
+                                },
+                                "name": "custom_console2",
+                                "object": {
+                                    "className": "Object",
+                                    "description": "Object",
+                                    "objectId": "{\"injectedScriptId\":6,\"id\":14}",
+                                    "type": "object"
+                                },
+                                "startLocation": {
+                                    "columnNumber": 30,
+                                    "lineNumber": 7,
+                                    "scriptId": "83"
+                                },
+                                "type": "local"
+                            },
+                            {
+                                "object": {
+                                    "className": "Window",
+                                    "description": "Window",
+                                    "objectId": "{\"injectedScriptId\":6,\"id\":15}",
+                                    "type": "object"
+                                },
+                                "type": "global"
+                            }
+                        ],
+                        "this": {
+                            "className": "Window",
+                            "description": "Window",
+                            "objectId": "{\"injectedScriptId\":6,\"id\":16}",
+                            "type": "object"
+                        }
+                    },
+                    {
+                        "callFrameId": "{\"ordinal\":2,\"injectedScriptId\":6}",
+                        "functionLocation": {
+                            "columnNumber": 0,
+                            "lineNumber": 0,
+                            "scriptId": "110"
+                        },
+                        "functionName": "",
+                        "location": {
+                            "columnNumber": 0,
+                            "lineNumber": 0,
+                            "scriptId": "110"
+                        },
+                        "scopeChain": [
+                            {
+                                "object": {
+                                    "className": "Window",
+                                    "description": "Window",
+                                    "objectId": "{\"injectedScriptId\":6,\"id\":17}",
+                                    "type": "object"
+                                },
+                                "type": "global"
+                            }
+                        ],
+                        "this": {
+                            "className": "Window",
+                            "description": "Window",
+                            "objectId": "{\"injectedScriptId\":6,\"id\":18}",
+                            "type": "object"
+                        }
+                    }
+                ],
+                "hitBreakpoints": [
+                    "http://localhost:8000/main.js:11:0"
+                ],
+                "reason": "other"
+            }
+        }
         this.sendFrontend(resp);
     }
 }

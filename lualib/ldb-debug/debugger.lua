@@ -1,19 +1,10 @@
 local Session = require('ldb-debug/core/session').Session
-local Frontend = require('ldb-debug/core/frontend').Frontend
 local Environ = require('ldb-debug/core/environ').Environ
 
-local require_hook = function(name)
-    local path = string.format('ldb-debug/hooks/%s', name)
-    return require(path)
-end
+local hooks_dir = 'ldb-debug/hooks/%s'
+local require_hook = function(n) return require(hooks_dir:format(n)) end
 
 local standard = function(IOStream, config)
-
-    local frontend = Frontend:new()
-    Environ:sethooks('crl', {
-        require_hook('print_to_console'),
-        require_hook('console_api'),
-    }, frontend)
 
     local iostream = IOStream:new(config.iostream)
     local session = Session:new({
@@ -22,7 +13,12 @@ local standard = function(IOStream, config)
         iostream= iostream,
     })
 
-    frontend.session = session
+    Environ:sethooks('crl', {
+        require_hook('pretty_print'),
+        require_hook('console_api'),
+        require_hook('interact_debug'),
+    }, session)
+
     session:start()
 end
 

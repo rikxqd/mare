@@ -134,4 +134,19 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
+    setBreakpointByUrl = async (file, line) => {
+        file = file.replace('file:///', '@');
+        line += 1;
+        const url = `line:${file}:${line}`;
+        const method = 'setBreakpoints';
+        const params = [url];
+        this.sendBackend({method, params});
+    }
+
+    debuggerResume = async () => {
+        const method = 'execResume';
+        const params = null;
+        this.sendBackend({method, params});
+    }
+
 }

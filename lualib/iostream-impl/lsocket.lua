@@ -72,9 +72,12 @@ local IOStream = {
         return is_ok, sent
     end,
 
-    read= function(self)
+    read= function(self, timeout)
+        if not timeout then
+            timeout = self.timeout
+        end
+
         local socket = self.socket
-        local timeout = self.timeout
         local selects = {socket}
         local is_ok = true
 

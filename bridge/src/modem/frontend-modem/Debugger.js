@@ -32,8 +32,9 @@ Debugger.enable = async (req, store, modem) => {
     return null;
 };
 
-Debugger.setBreakpointByUrl = async (req, store) => {
+Debugger.setBreakpointByUrl = async (req, store, modem) => {
     const {url, lineNumber, columnNumber} = req.params;
+    modem.setBreakpointByUrl(url, lineNumber);
     return {
         breakpointId: `${url}:${lineNumber}:${columnNumber}`,
         locations: [],
@@ -51,5 +52,10 @@ Debugger.removeBreakpoint = async (req, store) => {
     console.log(req);
     return null;
 };
+
+Debugger.resume = async(req, store, modem) => {
+    modem.debuggerResume()
+    return null
+}
 
 export default Debugger;

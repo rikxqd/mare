@@ -1,4 +1,6 @@
 local rdebug = require('remotedebug')
+console = require 'ldb-host/console'
 rdebug.start('debug-main')
 
-console = require 'ldb-host/console'
+print()
+console.log('')

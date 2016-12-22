@@ -1,7 +1,7 @@
 local IOStream = require('iostream-impl/lsocket')
-local factory = require('ldb-debug/factory')
+local debugger = require('ldb-debug/debugger')
 
-factory.standard(IOStream, {
+debugger.standard(IOStream, {
     iostream= {
         host= '127.0.0.1',
         port= 8083,

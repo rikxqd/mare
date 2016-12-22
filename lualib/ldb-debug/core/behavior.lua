@@ -7,48 +7,73 @@ local logger = Logger:new('Behavior')
 local Behavior = class({
 
     constructor= function(self)
-        self.project = {
-            break_on_enter= false,
-            snapshot_limit_level= 5,
-        }
         self.blackboxes = {}
         self.breakpoints = {}
+        self.movement = nil
+        self.pausing = false
     end,
 
-    match_blackbox= function(self, frame)
-        for _, v in iparis(self.blackboxes) do
-            if frame.source == v then
-                return true
+    match_blackbox= function(self, step)
+        for _, file in ipairs(self.blackboxes) do
+            if step.file == file then
+                return file
             end
         end
-        return false
+        return nil
     end,
 
-    match_breakpoint= function(self, event, frame)
-        for _, v in pairs(self.breakpoints) do
-            if v:match_event(event, frame) then
-                return true
+    match_breakpoint= function(self, step)
+        for _, breakpoint in ipairs(self.breakpoints) do
+            if breakpoint:match(step) then
+                return breakpoint
             end
         end
-        return false
+        return nil
     end,
 
-    set_breakpoints= function(self, urls)
-        local breakpoints = {}
-        for i, v in ipairs(urls) do
-            breakpoints[url] = BreakPoint:new(url)
+    match_movement= function(self, step)
+        if step.event == 'call' and self.movement == 'into' then
+            return 'into'
         end
-        self.breakpoints = breakpoints
+
+        if step.event == 'return' and self.movement == 'out' then
+            return 'out'
+        end
+
+        if self.movement == 'over' then
+            return 'over'
+        end
+
+        return nil
     end,
 
     set_blackboxes= function(self, value)
         self.blackboxes = value
     end,
 
-    set_project= function(self, value)
-        self.project = value
+    set_breakpoints= function(self, urls)
+        local breakpoints = {}
+        for _, url in ipairs(urls) do
+            table.insert(breakpoints, BreakPoint:new(url))
+        end
+        self.breakpoints = breakpoints
     end,
 
+    set_movement= function(self, value)
+        self.movement = value
+    end,
+
+    reset_movement= function(self)
+        self.movement = nil
+    end,
+
+    exec_resume= function(self)
+        self.pausing = false
+    end,
+
+    exec_pause= function(self)
+        self.pausing = true
+    end
 })
 
 return {

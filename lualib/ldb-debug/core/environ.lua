@@ -1,6 +1,23 @@
 local rdebug = require 'remotedebug'
 local class = require('ldb-debug/utils/oo').class
 
+local function print_frame(frame, event)
+    local fmt = 'frame> %-10s  %25s:%-2d  %3s:%s:%-15s'
+    print(fmt:format(event, frame.source, frame.currentline,
+                     frame.what, frame.namewhat, frame.name))
+end
+
+local function print_step(step)
+    local fmt = 'step> %-10s  %25s:%-2d  %3s:%-15s  %s'
+    print(fmt:format(step.event, step.file, step.line,
+                     step.scope, step.func, step.name))
+end
+
+local function print_stack(stack)
+    local fmt = 'stack> %-10s  %25s:%-2d  %15s'
+    print(fmt:format(step.event, step.file, step.line, step.func))
+end
+
 local function expand_value(value)
     local type = rdebug.type(value)
 
@@ -35,7 +52,7 @@ local function get_locals_array(level)
     -- value 依次是 1, 2, userdata, nil
     -- 而且内存地址总是一样的
     -- 最后要根据这个标志移除掉
-   local is_c_func = false
+    local is_c_func = false
 
     i = 1
     while true do
@@ -64,16 +81,32 @@ local function get_locals_array(level)
     return items
 end
 
-local function get_locals_dict(level)
+local function is_c_inner_frame(frame)
+    return frame.what == 'C' and frame.namewhat == ''
+end
+
+local function is_c_frame(frame)
+    return frame.what == 'C' and frame.namewhat ~= ''
+end
+
+local function normalize_frame(frame)
+    local name = frame.name
+    if name == nil and frame.what == 'main' then
+        name = '(*main)'
+    end
+
+    return {
+        file= frame.source,
+        line= frame.currentline,
+        func= name,
+    }
 end
 
 local Environ = class({
 
     constructor= function(self)
         self.frame_cache = {}
-        self.frames_cache = nil
         self.locals_array_cache = {}
-        self.locals_dict_cache = {}
     end,
 
     get_frame= function(self, level)
@@ -87,35 +120,6 @@ local Environ = class({
         return value
     end,
 
-    get_frames= function(self)
-        if self.frames_cache ~= nil then
-            return self.frames_cache or nil
-        end
-
-        local frames = {}
-        local i = 1
-        while true do
-            local frame = self:get_frame(i)
-            if frame == nil then
-                break
-            end
-
-            local name = frame.name
-            if name == nil and frame.what == 'C' then
-                break
-            end
-            if name == nil and frame.what == 'main' then
-                name = '(main)'
-            end
-
-            table.insert(frames, frame)
-            i = i + 1
-        end
-
-        self.frames_cache = frames
-        return frames
-    end,
-
     get_locals_array= function(self, level)
         local value = self.locals_array_cache[level]
         if value ~= nil then
@@ -127,25 +131,80 @@ local Environ = class({
         return value
     end,
 
-    get_locals_dict= function(self, level)
-        local value = self.locals_dict_cache[level]
-        if value ~= nil then
-            return value or nil
+    get_stack= function(self, level)
+        local frame = self:get_frame(level)
+
+        if frame == nil then
+            return nil
+        end
+        if is_c_inner_frame(frame) then
+            return nil
         end
 
-        value = get_locals_dict(level)
-        self.locals_dict_cache[value] = value or false
-        return value
+        local stack = normalize_frame(frame)
+        return stack
     end,
 
-    sethooks= function(cls, mask, hooks, frontend)
-        rdebug.sethook(function(name, line)
+    get_stacks= function(self)
+        local stacks = {}
+        local i = 1
+        while true do
+            local stack = self:get_stack(i)
+            if stack == nil then
+                break
+            end
+            table.insert(stacks, stack)
+            i = i + 1
+        end
+        return stacks
+    end,
+
+    get_step= function(self, event)
+        local frame = self:get_frame(1)
+        local step
+        if is_c_frame(frame) then
+            local frame2 = self:get_frame(2)
+            step = normalize_frame(frame2)
+            step.func = frame.name
+            step.scope = 'c'
+        else
+            step = normalize_frame(frame)
+            step.scope = 'lua'
+        end
+
+        if event == 'line' or event == 'call'
+                or event == 'tail call'
+                or event == 'return' then
+            step.event = event
+        else
+            step.event = 'probe'
+            step.name = event
+        end
+        return step
+    end,
+
+    sethooks= function(cls, mask, hooks, session)
+
+        rdebug.sethook(function(event, line)
             local environ = cls:new()
-            local event = {name= name, line= line}
+            local frame = environ:get_frame(1)
+            --print_frame(frame, event)
+            if is_c_inner_frame(frame) then
+                return
+            end
+
+            local step = environ:get_step(event)
+            print_step(step)
+
             for _, hook in ipairs(hooks) do
-                hook(event, environ, frontend)
+                hook(step, session, environ)
+            end
+
+            while session.behavior.pausing do
+                session:wait_frontend(0.5)
             end
         end)
+
         rdebug.hookmask(mask)
     end
 })
