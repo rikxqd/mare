@@ -70,24 +70,50 @@ end
 local Environ = class({
 
     constructor= function(self)
-        self.info_items = {}
+        self.frame_cache = {}
+        self.frames_cache = nil
         self.locals_array_cache = {}
         self.locals_dict_cache = {}
-        self.stack_infos = nil
     end,
 
     get_frame= function(self, level)
-        local key = tostring(level)
-        local item = self.info_items[key]
-        if item ~= nil then
-            return item.value
+        local value = self.frame_cache[level]
+        if value ~= nil then
+            return value or nil
         end
 
-        local info = rdebug.getinfo(level)
-        self.info_items[key] = {
-            value= info,
-        }
-        return info
+        local value = rdebug.getinfo(level)
+        self.frame_cache[level] = value or false
+        return value
+    end,
+
+    get_frames= function(self)
+        if self.frames_cache ~= nil then
+            return self.frames_cache or nil
+        end
+
+        local frames = {}
+        local i = 1
+        while true do
+            local frame = self:get_frame(i)
+            if frame == nil then
+                break
+            end
+
+            local name = frame.name
+            if name == nil and frame.what == 'C' then
+                break
+            end
+            if name == nil and frame.what == 'main' then
+                name = '(main)'
+            end
+
+            table.insert(frames, frame)
+            i = i + 1
+        end
+
+        self.frames_cache = frames
+        return frames
     end,
 
     get_locals_array= function(self, level)
@@ -110,34 +136,6 @@ local Environ = class({
         value = get_locals_dict(level)
         self.locals_dict_cache[value] = value or false
         return value
-    end,
-
-    get_frames= function(self)
-        if self.stack_infos then
-            return self.stack_infos
-        end
-
-        local infos = {}
-        local i = 1
-        while true do
-            local info = self:get_frame(i)
-            if info == nil then
-                break
-            end
-            if info.name == nil and info.what == 'C' then
-                break
-            end
-            local name = info.name
-            if name == nil and info.what == 'main' then
-                name = '(main)'
-            end
-
-            table.insert(infos, info)
-            i = i + 1
-        end
-
-        self.stack_infos = infos
-        return infos
     end,
 
     sethooks= function(cls, mask, hooks, frontend)
