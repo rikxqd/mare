@@ -29,13 +29,24 @@ local function get_locals_array(level)
     local items = {}
     local i
 
+    -- 似乎 C 函数，参数会多一个奇怪的 userdata
+    -- 例如 print(1, 2})，在 i 为正数时
+    -- name 总是 (*temporary)
+    -- value 依次是 1, 2, userdata, nil
+    -- 而且内存地址总是一样的
+    -- 最后要根据这个标志移除掉
+   local is_c_func = false
+
     i = 1
     while true do
         local name, value = rdebug.getlocal(level, i)
         if name == nil then
-            table.remove(items)
+            if is_c_func then
+                table.remove(items)
+            end
             break
         end
+        is_c_func = name == '(*temporary)'
         table.insert(items, expand_value(value))
         i = i + 1
     end
@@ -53,12 +64,15 @@ local function get_locals_array(level)
     return items
 end
 
+local function get_locals_dict(level)
+end
+
 local Environ = class({
 
     constructor= function(self)
         self.info_items = {}
         self.locals_array_cache = {}
-        self.lua_func_args_items = {}
+        self.locals_dict_cache = {}
         self.stack_infos = nil
     end,
 
@@ -87,29 +101,15 @@ local Environ = class({
         return value
     end,
 
-    get_lua_func_args= function(self, level)
-        local key = tostring(level)
-        local item = self.lua_func_args_items[key]
-        if item ~= nil then
-            return item.value
+    get_locals_dict= function(self, level)
+        local value = self.locals_dict_cache[level]
+        if value ~= nil then
+            return value or nil
         end
 
-        local i = -1
-        local args = {}
-        while true do
-            local name, v = rdebug.getlocal(level, i)
-            print(-1, name, v, type(v), rdebug.type(v), type(rdebug.value(v)), rdebug.value(v))
-            if name == nil then
-                break
-            end
-            table.insert(args, expand_value(v))
-            i = i - 1
-        end
-
-        self.lua_func_args_items[key] = {
-            value= args,
-        }
-        return args
+        value = get_locals_dict(level)
+        self.locals_dict_cache[value] = value or false
+        return value
     end,
 
     get_frames= function(self)

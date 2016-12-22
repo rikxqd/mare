@@ -21,6 +21,6 @@ return function(event, debugger, frontend)
     end
 
     local type = event.name:sub(#prefix + 1)
-    local args = debugger:get_lua_func_args(1)
+    local args = debugger:get_locals_array(1)
     frontend:console_api(args, type, stacks);
 end
