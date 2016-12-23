@@ -58,4 +58,10 @@ Debugger.resume = async(req, store, modem) => {
     return null
 }
 
+Debugger.stepOver = async(req, store, modem) => {
+    modem.debuggerStepOver()
+    modem.debuggerResume()
+    return null
+}
+
 export default Debugger;

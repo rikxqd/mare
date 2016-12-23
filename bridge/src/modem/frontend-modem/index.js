@@ -149,4 +149,10 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
+    debuggerStepOver = async () => {
+        const method = 'setMovement';
+        const params = 'over';
+        this.sendBackend({method, params});
+    }
+
 }

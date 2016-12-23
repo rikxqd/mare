@@ -201,7 +201,7 @@ local Environ = class({
             end
 
             while session.behavior.pausing do
-                session:wait_frontend(0.5)
+                session:wait_frontend(0.1)
             end
         end)
 

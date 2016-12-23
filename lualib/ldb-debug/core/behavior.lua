@@ -33,15 +33,15 @@ local Behavior = class({
 
     match_movement= function(self, step)
         if step.event == 'call' and self.movement == 'into' then
-            return 'into'
+            return self.movement
         end
 
         if step.event == 'return' and self.movement == 'out' then
-            return 'out'
+            return self.movement
         end
 
-        if self.movement == 'over' then
-            return 'over'
+        if step.event == 'line' and self.movement == 'over' then
+            return self.movement
         end
 
         return nil
