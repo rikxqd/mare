@@ -39,19 +39,23 @@ local Session = class({
             local args = command[2]
             logger:log('command: %s', op)
             if op == 'handshaked' then
-                self.handshaked = true
-                self.handshaking = false
+                self:apply_command_handshake()
                 return
             end
             if op == 'message' then
-                self:apple_command_message(args)
+                self:apply_command_message(args)
                 return
             end
             logger:error('unhandle command: %s', op)
         end
     end,
 
-    apple_command_message= function(self, message)
+    apply_command_handshake= function(self)
+        self.handshaked = true
+        self.handshaking = false
+    end,
+
+    apply_command_message= function(self, message)
         local method = message.method
         local params = message.params
         logger:log('message: %s', method)
@@ -97,8 +101,8 @@ local Session = class({
         local message = {
             method= 'consoleApi',
             params= {
-                value= tablson(value),
                 type= type,
+                value= tablson(value),
                 stacks= stacks,
             },
         }
