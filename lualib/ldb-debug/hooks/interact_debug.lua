@@ -16,6 +16,7 @@ return function(step, session, environ)
     local movement = behavior:match_movement(step)
     if movement then
         behavior:reset_movement()
+        local stacks = environ:get_stacks()
         session:debugger_pause()
         return
     end

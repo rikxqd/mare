@@ -15,7 +15,7 @@ end
 
 local function print_stack(stack)
     local fmt = 'stack> %-10s  %25s:%-2d  %15s'
-    print(fmt:format(step.event, step.file, step.line, step.func))
+    print(fmt:format(stack.event, stack.file, stack.line, stack.func))
 end
 
 local function expand_value(value)
@@ -91,8 +91,12 @@ end
 
 local function normalize_frame(frame)
     local name = frame.name
-    if name == nil and frame.what == 'main' then
-        name = '(*main)'
+    if name == nil then
+        if frame.what == 'main' then
+            name = '(*main)'
+        elseif frame.what == 'Lua' then
+            name = '(*tailcall)'
+        end
     end
 
     return {
@@ -194,7 +198,7 @@ local Environ = class({
             end
 
             local step = environ:get_step(event)
-            print_step(step)
+            --print_step(step)
 
             for _, hook in ipairs(hooks) do
                 hook(step, session, environ)

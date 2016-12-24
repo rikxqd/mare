@@ -1,6 +1,6 @@
 local class = require('ldb-debug/utils/oo').class
 
---local print = function() end
+local print = function() end
 
 local LOG = '[LOGG]%s'
 local WARN = '[WARN]%s'

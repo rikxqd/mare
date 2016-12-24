@@ -107,4 +107,3 @@ local BreakPoint = class({
 return {
     BreakPoint= BreakPoint,
 }
-
