@@ -11,6 +11,7 @@ local Behavior = class({
         self.breakpoints = {}
         self.movement = nil
         self.pausing = false
+        self.stack_locals_queue = {}
     end,
 
     match_blackbox= function(self, step)
@@ -54,6 +55,7 @@ local Behavior = class({
     set_breakpoints= function(self, urls)
         local breakpoints = {}
         for _, url in ipairs(urls) do
+            print('breakpoint-url:', url);
             table.insert(breakpoints, BreakPoint:new(url))
         end
         self.breakpoints = breakpoints
@@ -73,7 +75,12 @@ local Behavior = class({
 
     exec_pause= function(self)
         self.pausing = true
-    end
+    end,
+
+    get_stack_locals= function(self, value)
+        local key = tostring(value.id)
+        self.stack_locals_queue[key] = value
+    end,
 })
 
 return {

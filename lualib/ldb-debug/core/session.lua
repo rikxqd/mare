@@ -59,6 +59,7 @@ local Session = class({
         local method = message.method
         local params = message.params
         logger:log('message: %s', method)
+        print(method)
         if method == 'setBreakpoints' then
             self.behavior:set_breakpoints(params)
         end
@@ -70,6 +71,9 @@ local Session = class({
         end
         if method == 'execResume' then
             self.behavior:exec_resume()
+        end
+        if method == 'getStackLocals' then
+            self.behavior:get_stack_locals(params)
         end
     end,
 
@@ -98,7 +102,6 @@ local Session = class({
             self.modem:recv(timeout)
         else
             print('remote closed')
-            self.behavior:exec_resume()
         end
     end,
 
@@ -121,6 +124,26 @@ local Session = class({
             params= {
                 stacks= stacks,
             },
+        }
+        self:send_message(message)
+    end,
+
+    debugger_resumed= function(self)
+        local message = {
+            method= 'debuggerResumed',
+            params= nil,
+        }
+        self:send_message(message)
+    end,
+
+    stack_locals= function(self, item)
+        local message = {
+            method= 'stackLocals',
+            params= {
+                id= item.id,
+                level= item.level,
+                value= tablson(item.value),
+            }
         }
         self:send_message(message)
     end,

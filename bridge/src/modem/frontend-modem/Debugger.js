@@ -1,5 +1,4 @@
 import fs from 'fs';
-import glob from 'glob';
 
 const readFile = (url) => {
     return new Promise((resolve, reject) => {
@@ -12,20 +11,10 @@ const readFile = (url) => {
     });
 };
 
-const globFiles = (pattern) => {
-    return new Promise((resolve, reject) => {
-        glob(pattern, (error, files) => {
-            if (error) {
-                reject(error);
-            }
-            resolve(files);
-        });
-    });
-};
-
 const Debugger = {};
 
 Debugger.enable = async (req, store, modem) => {
+    store.breakpointRemoveAll();
     modem.scriptParsed(store);
     modem.pushProjectConfigToBackend(store);
     modem.pushProjectConfigToBackend(store);
@@ -34,9 +23,11 @@ Debugger.enable = async (req, store, modem) => {
 
 Debugger.setBreakpointByUrl = async (req, store, modem) => {
     const {url, lineNumber, columnNumber} = req.params;
-    modem.setBreakpointByUrl(url, lineNumber);
+    const breakpointId = `${url}:${lineNumber}:${columnNumber}`;
+    await store.breakpointAppendOne({breakpointId});
+    modem.updateBreakpoints(store);
     return {
-        breakpointId: `${url}:${lineNumber}:${columnNumber}`,
+        breakpointId,
         locations: [],
     };
 };
@@ -48,20 +39,22 @@ Debugger.getScriptSource = async (req, store) => {
     return {scriptSource: content};
 };
 
-Debugger.removeBreakpoint = async (req, store) => {
-    console.log(req);
+Debugger.removeBreakpoint = async (req, store, modem) => {
+    const breakpointId = req.params.breakpointId;
+    await store.breakpointRemoveOne(breakpointId);
+    modem.updateBreakpoints(store);
     return null;
 };
 
 Debugger.resume = async(req, store, modem) => {
-    modem.debuggerResume()
-    return null
-}
+    modem.debuggerResume();
+    return null;
+};
 
 Debugger.stepOver = async(req, store, modem) => {
-    modem.debuggerStepOver()
-    modem.debuggerResume()
-    return null
-}
+    modem.debuggerStepOver();
+    modem.debuggerResume();
+    return null;
+};
 
 export default Debugger;

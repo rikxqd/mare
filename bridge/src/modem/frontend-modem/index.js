@@ -53,7 +53,12 @@ export class FrontendModem extends EventEmitter {
         if (func) {
             result = await func(msg, store, this);
         }
-        if (!result) {
+        if (result === 'ignoreme') {
+            console.log('ignore', msg.id);
+            return;
+        }
+
+        if (result === null) {
             result = {};
         }
 
@@ -134,12 +139,20 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
-    setBreakpointByUrl = async (file, line) => {
-        file = file.replace('file:///', '@');
-        line += 1;
-        const url = `line:${file}:${line}`;
+    updateBreakpoints = async (store) => {
+        const breakpoints = await store.breakpointGetAll();
+        const urls = breakpoints.map((bp) => {
+            const text = bp.breakpointId.replace('file:///', '');
+            const parts = text.split(':', 2);
+            const file = '@' + parts[0];
+            const line = parseInt(parts[1]) + 1;
+            const url = `line:${file}:${line}`;
+            console.log(url);
+            return url;
+        });
+
         const method = 'setBreakpoints';
-        const params = [url];
+        const params = urls;
         this.sendBackend({method, params});
     }
 
@@ -152,6 +165,15 @@ export class FrontendModem extends EventEmitter {
     debuggerStepOver = async () => {
         const method = 'setMovement';
         const params = 'over';
+        this.sendBackend({method, params});
+    }
+
+    getStackLocals = async (reqId, level) => {
+        const method = 'getStackLocals';
+        const params = {
+            id: reqId,
+            level: level + 1,
+        };
         this.sendBackend({method, params});
     }
 

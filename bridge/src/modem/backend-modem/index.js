@@ -27,6 +27,12 @@ export class BackendModem extends EventEmitter {
         if (msg.method === 'debuggerPause') {
             this.debuggerPause(msg.params, store);
         }
+        if (msg.method === 'debuggerResumed') {
+            this.debuggerResumed(msg.params, store);
+        }
+        if (msg.method === 'stackLocals') {
+            this.stackLocals(msg.params, store);
+        }
     }
 
     printLogging  = async (data, store) => {
@@ -176,6 +182,18 @@ export class BackendModem extends EventEmitter {
                 injectedScriptId: this.frameScriptIdCount,
             });
             const scopeChain = [
+                {
+                    name: s.func,
+                    object: {
+                        className: 'Object',
+                        description: 'Object',
+                        objectId: JSON.stringify({
+                            localLevel: i,
+                        }),
+                        type: 'object',
+                    },
+                    type: 'local',
+                },
             ];
             return {
                 callFrameId,
@@ -205,9 +223,6 @@ export class BackendModem extends EventEmitter {
 
                 },
                 scopeChain: scopeChain,
-                this: {
-                    type: 'undefined',
-                },
             };
         });
 
@@ -224,6 +239,48 @@ export class BackendModem extends EventEmitter {
                 ],
                 reason: 'other',
             },
+        };
+        this.sendFrontend(resp);
+    }
+
+    stackLocals = async (data) => {
+        const props = [];
+        for (const [key, value] of Object.entries(data.value)) {
+            const valueType = typeof value;
+            let valueFeild;
+            if (valueType === 'object') {
+                valueFeild = {
+                    description: 'Table',
+                    type: 'string',
+                    value: JSON.stringify(value, null, 4),
+                };
+            } else {
+                valueFeild = {
+                    description: String(value),
+                    type: valueType,
+                    value: value,
+                };
+            }
+
+            const prop = {
+                configurable: false,
+                enumerable: true,
+                isOwn: true,
+                name: key,
+                value: valueFeild,
+                writable: false,
+            };
+            props.push(prop);
+        }
+
+        const resp = {id: data.id, result: {result: props}};
+        this.sendFrontend(resp);
+    }
+
+    debuggerResumed = async () => {
+        const resp = {
+            method: 'Debugger.resumed',
+            params: {},
         };
         this.sendFrontend(resp);
     }

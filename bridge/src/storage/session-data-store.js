@@ -90,9 +90,19 @@ export class SessionDataStore extends EventEmitter {
         return docs;
     }
 
-    breakpointAppendOne = async (event) => {
-        const doc = Object.assign({_type: 'breakpoint'}, event);
+    breakpointAppendOne = async (breakpoint) => {
+        const doc = Object.assign({_type: 'breakpoint'}, breakpoint);
         await this.cln.insertOne(doc);
+    }
+
+    breakpointRemoveOne = async (breakpointId) => {
+        const query = {_type: 'breakpoint', breakpointId};
+        await this.cln.deleteMany(query);
+    }
+
+    breakpointRemoveAll = async () => {
+        const query = {_type: 'breakpoint'};
+        await this.cln.deleteMany(query);
     }
 
 }

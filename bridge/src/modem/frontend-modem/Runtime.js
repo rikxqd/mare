@@ -6,12 +6,23 @@ Runtime.enable = async (req, store, modem) => {
     return null;
 };
 
-Runtime.getProperties = async(req, store) => {
+const getRunningProperties = async(req, store, modem, objectId) => {
+    modem.getStackLocals(req.id, objectId.localLevel);
+    return 'ignoreme';
+};
+
+Runtime.getProperties = async(req, store, modem) => {
+
+    const objectId = JSON.parse(req.params.objectId);
+    console.log(objectId.localLevel, objectId.localLevel !== undefined);
+    if (objectId.localLevel !== undefined) {
+        return await getRunningProperties(req, store, modem, objectId);
+    }
+
     if (!req.params.ownProperties) {
         return {result: []};
     }
 
-    const objectId = JSON.parse(req.params.objectId);
     const rootObjectId = JSON.stringify({
         root: objectId.root, path: [],
     });

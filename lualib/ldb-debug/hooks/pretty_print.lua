@@ -8,6 +8,6 @@ return function(step, session, environ)
     end
 
     local stack = environ:get_stack(1)
-    local args = environ:get_locals_array(1)
+    local args = environ:get_locals_array(1, 'call')
     session:console_api(args, 'log', {stack})
 end

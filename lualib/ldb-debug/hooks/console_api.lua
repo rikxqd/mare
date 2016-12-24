@@ -9,7 +9,7 @@ return function(step, session, environ)
     end
 
     local type = step.name:sub(#prefix + 1)
-    local args = environ:get_locals_array(1)
+    local args = environ:get_locals_array(1, step.event)
     local stacks = environ:get_stacks()
     table.remove(stacks, 1)
 
