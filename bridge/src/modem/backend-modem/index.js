@@ -6,6 +6,7 @@ export class BackendModem extends EventEmitter {
     constructor() {
         super();
         this.nonFileScriptIdCount = 0;
+        this.frameScriptIdCount = 0;
     }
 
     sendFrontend(value) {
@@ -166,151 +167,64 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    debuggerPause = async() => {
-        const resp = {
-            "method": "Debugger.paused",
-            "params": {
-                "callFrames": [
-                    {
-                        "callFrameId": "{\"ordinal\":0,\"injectedScriptId\":6}",
-                        "functionLocation": {
-                            "columnNumber": 18,
-                            "lineNumber": 8,
-                            "scriptId": "83"
-                        },
-                        "functionName": "haha",
-                        "location": {
-                            "columnNumber": 8,
-                            "lineNumber": 11,
-                            "scriptId": "83"
-                        },
-                        "scopeChain": [
-                            {
-                                "endLocation": {
-                                    "columnNumber": 5,
-                                    "lineNumber": 14,
-                                    "scriptId": "83"
-                                },
-                                "name": "haha",
-                                "object": {
-                                    "className": "Object",
-                                    "description": "Object",
-                                    "objectId": "{\"injectedScriptId\":6,\"id\":11}",
-                                    "type": "object"
-                                },
-                                "startLocation": {
-                                    "columnNumber": 18,
-                                    "lineNumber": 8,
-                                    "scriptId": "83"
-                                },
-                                "type": "local"
-                            },
-                            {
-                                "object": {
-                                    "className": "Window",
-                                    "description": "Window",
-                                    "objectId": "{\"injectedScriptId\":6,\"id\":12}",
-                                    "type": "object"
-                                },
-                                "type": "global"
-                            }
-                        ],
-                        "this": {
-                            "className": "Window",
-                            "description": "Window",
-                            "objectId": "{\"injectedScriptId\":6,\"id\":13}",
-                            "type": "object"
-                        }
-                    },
-                    {
-                        "callFrameId": "{\"ordinal\":1,\"injectedScriptId\":6}",
-                        "functionLocation": {
-                            "columnNumber": 30,
-                            "lineNumber": 7,
-                            "scriptId": "83"
-                        },
-                        "functionName": "custom_console2",
-                        "location": {
-                            "columnNumber": 6,
-                            "lineNumber": 14,
-                            "scriptId": "83"
-                        },
-                        "scopeChain": [
-                            {
-                                "endLocation": {
-                                    "columnNumber": 1,
-                                    "lineNumber": 15,
-                                    "scriptId": "83"
-                                },
-                                "name": "custom_console2",
-                                "object": {
-                                    "className": "Object",
-                                    "description": "Object",
-                                    "objectId": "{\"injectedScriptId\":6,\"id\":14}",
-                                    "type": "object"
-                                },
-                                "startLocation": {
-                                    "columnNumber": 30,
-                                    "lineNumber": 7,
-                                    "scriptId": "83"
-                                },
-                                "type": "local"
-                            },
-                            {
-                                "object": {
-                                    "className": "Window",
-                                    "description": "Window",
-                                    "objectId": "{\"injectedScriptId\":6,\"id\":15}",
-                                    "type": "object"
-                                },
-                                "type": "global"
-                            }
-                        ],
-                        "this": {
-                            "className": "Window",
-                            "description": "Window",
-                            "objectId": "{\"injectedScriptId\":6,\"id\":16}",
-                            "type": "object"
-                        }
-                    },
-                    {
-                        "callFrameId": "{\"ordinal\":2,\"injectedScriptId\":6}",
-                        "functionLocation": {
-                            "columnNumber": 0,
-                            "lineNumber": 0,
-                            "scriptId": "110"
-                        },
-                        "functionName": "",
-                        "location": {
-                            "columnNumber": 0,
-                            "lineNumber": 0,
-                            "scriptId": "110"
-                        },
-                        "scopeChain": [
-                            {
-                                "object": {
-                                    "className": "Window",
-                                    "description": "Window",
-                                    "objectId": "{\"injectedScriptId\":6,\"id\":17}",
-                                    "type": "object"
-                                },
-                                "type": "global"
-                            }
-                        ],
-                        "this": {
-                            "className": "Window",
-                            "description": "Window",
-                            "objectId": "{\"injectedScriptId\":6,\"id\":18}",
-                            "type": "object"
-                        }
+    debuggerPause = async(data) => {
+        this.frameScriptIdCount += 1;
+
+        const callFrames = data.stacks.map((s, i) => {
+            const callFrameId = JSON.stringify({
+                ordinal: i,
+                injectedScriptId: this.frameScriptIdCount,
+            });
+            const scopeChain = [
+            ];
+            return {
+                callFrameId,
+                functionLocation: {
+                    columnNumber: 0,
+                    lineNumber: s.line - 1,
+                    scriptId: s.file.replace('@', '').replace('./', ''),
+                },
+                functionName: do {
+                    if (s.func.startsWith('(*')) {
+                        '';
+                    } else {
+                        s.func;
                     }
+                },
+                location: {
+                    columnNumber: 0,
+                    lineNumber: s.line - 1,
+                    scriptId: do {
+                        const f = s.file.replace('@', '').replace('./', '');
+                        if (f === '=stdin') {
+                            'test-breakpoint.lua';
+                        } else {
+                            f;
+                        }
+                    },
+
+                },
+                scopeChain: scopeChain,
+                this: {
+                    type: 'undefined',
+                },
+            };
+        });
+
+        const resp = {
+            method: 'Debugger.paused',
+            params: {
+                callFrames,
+                hitBreakpoints: [
+                    do {
+                        const s = data.stacks[0];
+                        const file = s.file.replace('@', '').replace('./', '');
+                        `file:///${file}:${s.line - 1}:0`;
+                    },
                 ],
-                "hitBreakpoints": [
-                    "http://localhost:8000/main.js:11:0"
-                ],
-                "reason": "other"
-            }
-        }
+                reason: 'other',
+            },
+        };
         this.sendFrontend(resp);
     }
 }

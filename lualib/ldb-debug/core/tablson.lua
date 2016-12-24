@@ -3,6 +3,10 @@ local tablson = function(root_table, max_level)
 
     local convert
     convert = function(tbl, level)
+        if tbl == nil then
+            return nil
+        end
+
         if level > max_level then
             return '[level limit]'
         end

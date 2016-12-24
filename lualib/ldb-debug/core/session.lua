@@ -94,7 +94,12 @@ local Session = class({
     end,
 
     wait_frontend= function(self, timeout)
-        self.modem:recv(timeout)
+        if self.modem.iostream:is_opened() then
+            self.modem:recv(timeout)
+        else
+            print('remote closed')
+            self.behavior:exec_resume()
+        end
     end,
 
     console_api= function(self, value, type, stacks)
