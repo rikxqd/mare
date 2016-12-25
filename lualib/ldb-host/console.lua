@@ -1,4 +1,4 @@
-local rdebug = require 'remotedebug'
+local rdebug = require('remotedebug')
 
 local console = {}
 
@@ -34,11 +34,11 @@ function console.group(...)
     rdebug.probe('console-startGroup', ...)
 end
 
-function console.groupCollapsed(...)
+function console.group_collapsed(...)
     rdebug.probe('console-startGroupCollapsed', ...)
 end
 
-function console.groupEnd(...)
+function console.group_end(...)
     rdebug.probe('console-endGroup', ...)
 end
 

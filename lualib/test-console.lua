@@ -1,38 +1,36 @@
-local rdebug = require('remotedebug')
+rdebug = require('remotedebug')
+console = require 'ldb-host/console'
 rdebug.start('debug-main')
 
-console = require 'ldb-host/console'
-
-function semantics()
-    console.log('i am', 'log message');
-    console.debug('i am', 'debug message');
-    console.info('i am', 'info message');
-    console.warn('i am', 'warn message');
-    console.error('i am', 'error message');
-    console.trace('i am', 'trace message');
+semantics = function()
+    console.log('this is', 'log message');
+    console.debug('this is', 'debug message');
+    console.info('this is', 'info message');
+    console.warn('this is', 'warn message');
+    console.error('this is', 'error message');
+    console.trace('this is', 'trace message');
 end
 
-function groups() 
-    console.group('i am', 'expanded group');
+group1 = function()
+    console.group('this is', 'expanded group');
     console.log('one')
     console.log('two')
     console.log('three')
-    console.groupEnd();
+    console.group_end();
+end
 
-    console.groupCollapsed('i am', 'collapsed gruop');
+group2 = function()
+    console.group_collapsed('this is', 'collapsed gruop');
     console.log('one')
     console.log('two')
     console.log('three')
-    console.groupEnd();
+    console.group_end();
 end
 
-function runall()
+main = function()
     semantics()
-    groups()
-end
-
-function main()
-    runall()
+    group1()
+    group2()
 end
 
 main()

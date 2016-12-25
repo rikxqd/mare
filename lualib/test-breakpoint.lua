@@ -1,23 +1,26 @@
-local rdebug = require('remotedebug')
-local console = require 'ldb-host/console'
+rdebug = require('remotedebug')
+console = require('ldb-host/console')
 rdebug.start('debug-main')
 
 sayhi = function(name)
-    print('hi', name)
+    print('hello', name)
     name = 'one'
-    print('hi', 2)
-    name = {three='3'}
-    print('hi', name)
+    print('hello', name)
+    name = 2
+    print('hello', name)
+    name = {three= '3'}
+    print('hello', name)
     name = nil
-    print('hi', name)
+    print('hello', name)
 end
 
-sum = function(x, y)
-    print('%d + %d = %d', x, y, x + y)
+fact = function(n)
+    if n <= 1 then
+        return n
+    end
+    return n * fact(n - 1)
 end
 
-caller = function(func, ...)
-    print('calling', func(...))
+invoke = function(func, ...)
+    print('invoking', func(...))
 end
-
-
