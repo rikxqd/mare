@@ -55,18 +55,24 @@ end
 
 local function expand_to_dict(items)
     local ret = {}
-    local temps = {}
+    local temporaries = {}
+    local varargs = {}
     for _, item in ipairs(items) do
         local name = item[1]
         local value = expand_value(item[2])
         if name == '(*temporary)' then
-            table.insert(temps, value)
+            table.insert(temporaries, value)
+        elseif name == '(*vararg)' then
+            table.insert(varargs, value)
         else
             ret[name] = value
         end
     end
-    if #temps > 0 then
-        ret['(*temporary)'] = temps
+    if #temporaries > 0 then
+        ret['(*temporary)'] = temporaries
+    end
+    if #varargs > 0 then
+        ret['(*vararg)'] = varargs
     end
     return ret
 end
