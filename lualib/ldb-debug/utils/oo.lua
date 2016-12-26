@@ -2,9 +2,7 @@ local new = function(cls, ...)
     local self = {}
     setmetatable(self, cls)
     cls.__index = cls
-    if cls.constructor then
-        cls.constructor(self, ...)
-    end
+    cls.constructor(self, ...)
     return self
 end
 

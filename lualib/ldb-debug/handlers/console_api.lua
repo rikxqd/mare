@@ -3,7 +3,7 @@ return function(step, session, environ)
         return
     end
 
-    local prefix = 'console-'
+    local prefix = '$console.'
     if step.name:find(prefix) ~= 1 then
         return
     end

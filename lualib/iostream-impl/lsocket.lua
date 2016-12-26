@@ -64,9 +64,9 @@ local IOStream = {
         if error then
             self:close()
             return false, error
-        else
-            return true, nil
         end
+
+        return true, nil
     end,
 
     read= function(self, timeout)
@@ -99,9 +99,9 @@ local IOStream = {
         if error then
             self:close()
             return false, error
-        else
-            return true, data
         end
+
+        return true, data
     end,
 
     is_opened = function(self)

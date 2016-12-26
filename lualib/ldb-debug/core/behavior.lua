@@ -55,7 +55,6 @@ local Behavior = class({
     set_breakpoints= function(self, urls)
         local breakpoints = {}
         for _, url in ipairs(urls) do
-            print('breakpoint-url:', url);
             table.insert(breakpoints, BreakPoint:new(url))
         end
         self.breakpoints = breakpoints

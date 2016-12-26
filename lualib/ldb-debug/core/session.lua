@@ -8,11 +8,12 @@ local logger = Logger:new('Session')
 
 local Session = class({
 
-    constructor= function(self, props)
-        self.id = props.id
-        self.args = props.args
+    constructor= function(self, config, iostream)
+        self.id = config.id
+        self.args = config.args
+        self.break_on_start = config.break_on_start
 
-        self.modem = Modem:new(props.iostream)
+        self.modem = Modem:new(iostream)
         self.modem:on('connect', self:on_modem_connect())
         self.modem:on('command', self:on_modem_command())
 
@@ -59,7 +60,6 @@ local Session = class({
         local method = message.method
         local params = message.params
         logger:log('message: %s', method)
-        print(method)
         if method == 'setBreakpoints' then
             self.behavior:set_breakpoints(params)
         end

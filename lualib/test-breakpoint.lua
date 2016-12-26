@@ -1,5 +1,6 @@
 rdebug = require('remotedebug')
 console = require('ldb-host/console')
+debugger = require('ldb-host/debugger')
 rdebug.start('debug-main')
 
 sayhi = function(name)

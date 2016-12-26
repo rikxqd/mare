@@ -81,7 +81,11 @@ local BreakPoint = class({
             return false
         end
 
-        local same_name = frame.source == self.name
+        if step.name:find('$') == 1 then
+            return false
+        end
+
+        local same_name = step.name == self.name
         return same_name
     end,
 

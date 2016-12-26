@@ -2,9 +2,9 @@ local class = require('ldb-debug/utils/oo').class
 
 local print = function() end
 
-local LOG = '[LOGG]%s'
-local WARN = '[WARN]%s'
-local ERROR = '[ERRO]%s'
+local LOG = '[LOGG] %s'
+local WARN = '[WARN] %s'
+local ERROR = '[ERRO] %s'
 
 local Logger = class({
 

@@ -1,7 +1,8 @@
+local rdebug = require('remotedebug')
 local IOStream = require('iostream-impl/lsocket')
-local debugger = require('ldb-debug/debugger')
+local factory = require('ldb-debug/factory')
 
-debugger.standard(IOStream, {
+local debugger = factory.standard(IOStream, {
     iostream= {
         host= '127.0.0.1',
         port= 8083,
@@ -12,6 +13,11 @@ debugger.standard(IOStream, {
             title= 'debug-main',
             expire= -1,
             project= 'ldb-example',
-        }
+        },
+        break_on_start= false,
     },
 });
+
+rdebug.hookmask('crl')
+rdebug.sethook(debugger.hook)
+debugger.start()
