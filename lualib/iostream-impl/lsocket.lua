@@ -23,17 +23,13 @@ local IOStream = {
 
     open= function(self)
         local socket, err = lsocket.connect(self.host, self.port)
-        if err then
-            print('Error:', err)
-        end
-
         self.socket = socket
         if socket then
             self.status = STATUS_OPENED
-            return true
+            return true, nil
         else
             self.status = STATUS_CLOSED
-            return false
+            return false, err
         end
     end,
 
@@ -49,8 +45,8 @@ local IOStream = {
         local socket = self.socket
         local timeout = self.timeout
         local selects = {socket}
-        local is_ok = true
 
+        local error = nil
         local sent = 1
         local length = #data
         while sent <= length do
@@ -58,18 +54,19 @@ local IOStream = {
             local chunk = data:sub(sent)
             local nbytes, err = socket:send(chunk)
             if err then
-                print('Error:', err)
-                is_ok = false
+                error = err
                 break
             end
 
             sent = sent + nbytes
         end
 
-        if not is_ok then
+        if error then
             self:close()
+            return false, error
+        else
+            return true, nil
         end
-        return is_ok, sent
     end,
 
     read= function(self, timeout)
@@ -79,19 +76,14 @@ local IOStream = {
 
         local socket = self.socket
         local selects = {socket}
-        local is_ok = true
 
+        local error = nil
         local chunks = {}
         while true do
             lsocket.select(selects, timeout)
-            chunk, err = socket:recv()
+            local chunk, err = socket:recv()
             if chunk == nil then
-                if err then
-                    print('Error:', err)
-                else
-                    print('Error:', 'remote closed')
-                end
-                is_ok = false
+                error = err or 'remote closed'
                 break
             end
 
@@ -104,10 +96,12 @@ local IOStream = {
 
         local data = table.concat(chunks)
 
-        if not is_ok then
+        if error then
             self:close()
+            return false, error
+        else
+            return true, data
         end
-        return is_ok, data
     end,
 
     is_opened = function(self)
