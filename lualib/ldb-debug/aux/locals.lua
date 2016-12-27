@@ -8,7 +8,7 @@ local filter_c_locals = function(items, event)
     end
 
     -- 会多一个不是手动传进去的 (*temporary) 的 userdata，不明觉厉
-    if event == 'call' then
+    if event == 'call' or event == 'tail call' then
         local i = #items
         while i >= 1 do
             local name = items[i][1]

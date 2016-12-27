@@ -1,5 +1,5 @@
 return function(step, session, environ)
-    if step.event ~= 'call' then
+    if step.event ~= 'call' or step.event ~= 'tail call' then
         return
     end
 
@@ -8,6 +8,6 @@ return function(step, session, environ)
     end
 
     local stack = environ:get_stack(1)
-    local args = environ:get_locals_array(1, 'call')
+    local args = environ:get_locals_array(1, step.event)
     session:console_api(args, 'log', {stack})
 end
