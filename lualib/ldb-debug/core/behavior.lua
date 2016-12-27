@@ -11,7 +11,7 @@ local Behavior = class({
         self.breakpoints = {}
         self.movement = nil
         self.pausing = false
-        self.locals_queue = {}
+        self.stack_scope_queue = {}
     end,
 
     match_blackbox= function(self, step)
@@ -62,21 +62,16 @@ local Behavior = class({
         self.movement = value
     end,
 
-    reset_movement= function(self)
-        self.movement = nil
-    end,
-
     exec_resume= function(self)
         self.pausing = false
     end,
 
-    exec_pause= function(self)
-        self.pausing = true
+    consume_movement= function(self)
+        self.movement = nil
     end,
 
-    get_stack_locals= function(self, value)
-        local key = tostring(value.id)
-        self.locals_queue[key] = value
+    query_stack_scope= function(self, value)
+        table.insert(self.stack_scope_queue, value)
     end,
 })
 

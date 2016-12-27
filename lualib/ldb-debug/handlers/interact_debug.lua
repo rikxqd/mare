@@ -1,60 +1,64 @@
 local aux = require('ldb-debug/aux')
 
-local check_pausable = function(step, session, environ)
-    local behavior = session.behavior
-
-    local filename = behavior:match_blackbox(step)
-    if filename then
-        return
+local is_match_pause_state = function(step, behavior)
+    local blackbox = behavior:match_blackbox(step)
+    if blackbox then
+        return false
     end
 
-    local except = behavior:match_exception(step)
-    if except then
-        local stacks = environ:get_stacks()
-        behavior:exec_pause()
-        session:debugger_pause(stacks)
-        return
+    local exception = behavior:match_exception(step)
+    if exception then
+        return true
     end
 
     local breakpoint = behavior:match_breakpoint(step)
     if breakpoint then
-        local stacks = environ:get_stacks()
-        behavior:exec_pause()
-        session:debugger_pause(stacks)
-        return
+        return true
     end
 
     local movement = behavior:match_movement(step)
     if movement then
-        behavior:reset_movement()
-        local stacks = environ:get_stacks()
-        behavior:exec_pause()
-        session:debugger_pause(stacks)
-        return
+        return true
     end
+
+    return false
 end
 
-local interact_loop = function(step, session, environ)
-    local behavior = session.behavior
-
-    if behavior.pausing then
-        aux.print_step(step, 'PAUSING')
-    end
-
-    while behavior.pausing do
-        session:wait_frontend(0.1)
-        for _, v in pairs(behavior.locals_queue) do
+local process_stack_scope_queue = function(session, behavior, environ) 
+    for _, v in ipairs(behavior.stack_scope_queue) do
+        if v.type == 'locals' then
             v.value = environ:get_locals_dict(v.level, event)
-            session:stack_locals(v)
+        elseif v.type == 'upvalues' then
+            v.value = environ:get_upvalues_dict(v.level, event)
+        else
+            v.value = {}
         end
-        behavior.locals_queue = {}
+        session:stack_scope(v)
+    end
+    behavior.stack_scope_queue = {}
+end
+
+local interact_loop = function(session, behavior, environ)
+    local stacks = environ:get_stacks()
+    session:debugger_pause(stacks)
+
+    behavior.pausing = true
+    while true do
+        session:wait_frontend(0.1)
+        process_stack_scope_queue(session, behavior, environ)
         if not behavior.pausing then
             session:debugger_resumed()
+            break
         end
     end
+
 end
 
 return function(step, session, environ)
-    check_pausable(step, session, environ)
-    interact_loop(step, session, environ)
+    local behavior = session.behavior
+    local need_pause = is_match_pause_state(step, behavior)
+    if need_pause then
+        aux.print_step(step, 'PAUSING')
+        interact_loop(session, behavior, environ)
+    end
 end

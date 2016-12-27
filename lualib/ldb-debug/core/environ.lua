@@ -32,6 +32,10 @@ local Environ = class({
         return value
     end,
 
+    get_upvalues_dict= function(self, level)
+        return aux.get_upvalues_dict(level)
+    end,
+
     get_stack= function(self, level)
         return aux.get_stack(level)
     end,

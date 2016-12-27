@@ -72,8 +72,8 @@ local Session = class({
         if method == 'execResume' then
             self.behavior:exec_resume()
         end
-        if method == 'getStackLocals' then
-            self.behavior:get_stack_locals(params)
+        if method == 'queryStackScope' then
+            self.behavior:query_stack_scope(params)
         end
     end,
 
@@ -135,12 +135,13 @@ local Session = class({
         self:send_message(message)
     end,
 
-    stack_locals= function(self, item)
+    stack_scope= function(self, item)
         local message = {
-            method= 'stackLocals',
+            method= 'stackScope',
             params= {
                 id= item.id,
                 level= item.level,
+                type= item.type,
                 value= tablson(item.value),
             }
         }

@@ -168,11 +168,12 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
-    getStackLocals = async (reqId, level) => {
-        const method = 'getStackLocals';
+    getStackScope = async (reqId, level, type) => {
+        const method = 'queryStackScope';
         const params = {
             id: reqId,
             level: level + 1,
+            type: type,
         };
         this.sendBackend({method, params});
     }

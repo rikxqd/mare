@@ -25,10 +25,19 @@ local function expand_value(value)
     return tbl
 end
 
+local expand_value_safe = function(name, value)
+    if name == '_ENV' then
+        return '[_ENV]'
+    else
+        return expand_value(value)
+    end
+end
+
 local expand_to_array = function(items)
     local ret = {}
     for _, item in ipairs(items) do
-        local value = expand_value(item[2])
+        local name = item[1]
+        local value = expand_value_safe(name, item[2])
         table.insert(ret, value)
     end
     return ret
@@ -41,7 +50,7 @@ local expand_to_dict = function(items)
 
     for _, item in ipairs(items) do
         local name = item[1]
-        local value = expand_value(item[2])
+        local value = expand_value_safe(name, item[2])
 
         if name == '(*temporary)' then
             table.insert(temporaries, value)

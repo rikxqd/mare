@@ -30,8 +30,8 @@ export class BackendModem extends EventEmitter {
         if (msg.method === 'debuggerResumed') {
             this.debuggerResumed(msg.params, store);
         }
-        if (msg.method === 'stackLocals') {
-            this.stackLocals(msg.params, store);
+        if (msg.method === 'stackScope') {
+            this.stackScope(msg.params, store);
         }
     }
 
@@ -188,11 +188,23 @@ export class BackendModem extends EventEmitter {
                         className: 'Object',
                         description: 'Object',
                         objectId: JSON.stringify({
-                            localLevel: i,
+                            localsLevel: i,
                         }),
                         type: 'object',
                     },
                     type: 'local',
+                },
+                {
+                    name: s.func,
+                    object: {
+                        className: 'Object',
+                        description: 'Object',
+                        objectId: JSON.stringify({
+                            upvaluesLevel: i,
+                        }),
+                        type: 'object',
+                    },
+                    type: 'closure',
                 },
             ];
             return {
@@ -202,13 +214,7 @@ export class BackendModem extends EventEmitter {
                     lineNumber: s.line - 1,
                     scriptId: s.file.replace('@', '').replace('./', ''),
                 },
-                functionName: do {
-                    if (s.func.startsWith('(*')) {
-                        '';
-                    } else {
-                        s.func;
-                    }
-                },
+                functionName: s.func,
                 location: {
                     columnNumber: 0,
                     lineNumber: s.line - 1,
@@ -243,7 +249,7 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    stackLocals = async (data) => {
+    stackScope= async (data) => {
         const props = [];
         for (const [key, value] of Object.entries(data.value)) {
             const valueType = typeof value;
