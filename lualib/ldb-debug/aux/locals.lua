@@ -1,5 +1,5 @@
 local rdebug = require('remotedebug')
-local common = require('ldb-debug/aux/common')
+local aux_common = require('ldb-debug/aux/common')
 
 -- 看上去会混进一些 C 里局部变量，在这里处理掉
 local filter_c_locals = function(items, event)
@@ -66,13 +66,13 @@ end
 local get_locals_array = function(level, event)
     local items = get_locals_items(level)
     items = filter_c_locals(items, event)
-    return common.expand_to_array(items)
+    return aux_common.expand_to_array(items)
 end
 
 local get_locals_dict = function(level, event)
     local items = get_locals_items(level)
     items = filter_c_locals(items, event)
-    return common.expand_to_dict(items)
+    return aux_common.expand_to_dict(items)
 end
 
 return {
