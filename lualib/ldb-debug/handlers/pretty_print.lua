@@ -1,5 +1,5 @@
 return function(step, session, environ)
-    if step.event ~= 'call' or step.event ~= 'tail call' then
+    if step.event ~= 'call' or step.event ~= 'tailcall' then
         return
     end
 

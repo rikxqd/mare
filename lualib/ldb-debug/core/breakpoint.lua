@@ -19,33 +19,33 @@ local BreakPoint = class({
         local event = parts[1]
         self.event = event
 
-        if event == 'line' then
-            self.file = parts[2]
-            self.line = tonumber(parts[3])
-            return
-        end
-
-        if event == 'call' then
-            self.file = parts[2]
-            self.func = parts[3]
-            return
-        end
-
-        if event == 'return' then
-            self.file = parts[2]
-            self.func = parts[3]
-            return
-        end
-
         if event == 'probe' then
             self.name = parts[2]
             return
         end
 
+        self.file = parts[2]
+        self.line = tonumber(parts[3])
+
+        if event == 'line' or event == 'tailcall' then
+            return
+        end
+
+        self.func = parts[4]
     end,
 
     match_line= function(self, step)
         if step.event ~= 'line' then
+            return false
+        end
+
+        local same_file = step.file == self.file
+        local same_line = step.line == self.line
+        return same_file and same_line
+    end,
+
+    match_tailcall= function(self, step)
+        if step.event ~= 'tailcall' then
             return false
         end
 
@@ -60,9 +60,9 @@ local BreakPoint = class({
         end
 
         local same_file = step.file == self.file
+        local same_line = step.line == self.line
         local same_func = step.func == self.func
-        local same_scope = step.scope == self.scope
-        return same_file and same_func and same_scope
+        return same_file and same_line and same_func
     end,
 
     match_return= function(self, step)
@@ -71,9 +71,9 @@ local BreakPoint = class({
         end
 
         local same_file = step.file == self.file
+        local same_line = step.line == self.line
         local same_func = step.func == self.func
-        local same_scope = step.scope == self.scope
-        return same_file and same_func and same_scope
+        return same_file and same_line and same_func
     end,
 
     match_probe = function(self, step)
@@ -81,6 +81,7 @@ local BreakPoint = class({
             return false
         end
 
+        -- 以 $ 开头作内部用途，有特殊意义，忽略
         if step.name:find('$') == 1 then
             return false
         end
@@ -92,6 +93,7 @@ local BreakPoint = class({
     match= function(self, step)
         local funcs = {
             self.match_line,
+            self.match_tailcall,
             self.match_call,
             self.match_return,
             self.match_probe,

@@ -14,7 +14,7 @@ local get_step = function(event)
     end
 
     if event == 'line' or event == 'call'
-        or event == 'tail call'
+        or event == 'tailcall'
         or event == 'return' then
         step.event = event
     else
