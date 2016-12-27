@@ -11,7 +11,7 @@ local Behavior = class({
         self.breakpoints = {}
         self.movement = nil
         self.pausing = false
-        self.stack_locals_queue = {}
+        self.locals_queue = {}
     end,
 
     match_blackbox= function(self, step)
@@ -32,15 +32,13 @@ local Behavior = class({
         return nil
     end,
 
+    match_exception= function(self, step)
+        local is_c_return = step.event == 'return' and step.scope == 'c'
+        local is_metamethod = step.func:find('__', 1, true) == 1
+        return is_c_return and is_metamethod
+    end,
+
     match_movement= function(self, step)
-        if step.event == 'call' and self.movement == 'into' then
-            return self.movement
-        end
-
-        if step.event == 'return' and self.movement == 'out' then
-            return self.movement
-        end
-
         if step.event == 'line' and self.movement == 'over' then
             return self.movement
         end
@@ -78,7 +76,7 @@ local Behavior = class({
 
     get_stack_locals= function(self, value)
         local key = tostring(value.id)
-        self.stack_locals_queue[key] = value
+        self.locals_queue[key] = value
     end,
 })
 

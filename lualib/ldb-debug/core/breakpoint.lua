@@ -82,7 +82,7 @@ local BreakPoint = class({
         end
 
         -- 以 $ 开头作内部用途，有特殊意义，忽略
-        if step.name:find('$') == 1 then
+        if step.name:find('$', 1, true) == 1 then
             return false
         end
 

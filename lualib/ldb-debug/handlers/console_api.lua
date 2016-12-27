@@ -4,7 +4,7 @@ return function(step, session, environ)
     end
 
     local prefix = '$console.'
-    if step.name:find(prefix) ~= 1 then
+    if step.name:find(prefix, 1, true) ~= 1 then
         return
     end
 

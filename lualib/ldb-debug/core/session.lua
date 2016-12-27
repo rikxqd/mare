@@ -118,7 +118,6 @@ local Session = class({
     end,
 
     debugger_pause= function(self, stacks)
-        self.behavior:exec_pause()
         local message = {
             method= 'debuggerPause',
             params= {

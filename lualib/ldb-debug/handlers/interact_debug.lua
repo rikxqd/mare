@@ -8,9 +8,18 @@ local check_pausable = function(step, session, environ)
         return
     end
 
+    local except = behavior:match_exception(step)
+    if except then
+        local stacks = environ:get_stacks()
+        behavior:exec_pause()
+        session:debugger_pause(stacks)
+        return
+    end
+
     local breakpoint = behavior:match_breakpoint(step)
     if breakpoint then
         local stacks = environ:get_stacks()
+        behavior:exec_pause()
         session:debugger_pause(stacks)
         return
     end
@@ -19,6 +28,7 @@ local check_pausable = function(step, session, environ)
     if movement then
         behavior:reset_movement()
         local stacks = environ:get_stacks()
+        behavior:exec_pause()
         session:debugger_pause(stacks)
         return
     end
@@ -33,11 +43,11 @@ local interact_loop = function(step, session, environ)
 
     while behavior.pausing do
         session:wait_frontend(0.1)
-        for _, v in pairs(behavior.stack_locals_queue) do
+        for _, v in pairs(behavior.locals_queue) do
             v.value = environ:get_locals_dict(v.level, event)
             session:stack_locals(v)
         end
-        behavior.stack_locals_queue = {}
+        behavior.locals_queue = {}
         if not behavior.pausing then
             session:debugger_resumed()
         end
