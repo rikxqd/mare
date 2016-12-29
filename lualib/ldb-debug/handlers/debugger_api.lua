@@ -1,5 +1,10 @@
 local do_idling = function(session)
-    session:wait_frontend(0)
+    session:heartbeat()
+    session:sync()
+end
+
+local do_reconnect = function(session)
+    session:start()
 end
 
 local do_breakpoints = function(session)
@@ -19,8 +24,14 @@ return function(step, session, environ)
     end
 
     local action = step.name:sub(#prefix + 1)
-    do_idling(session)
-
+    if action == 'idling' then
+        do_idling(session)
+        return
+    end
+    if action == 'reconnect' then
+        do_reconnect(session)
+        return
+    end
     if action == 'breakpoints' then
         do_breakpoints(session)
         return

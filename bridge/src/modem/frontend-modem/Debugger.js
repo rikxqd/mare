@@ -47,6 +47,7 @@ Debugger.removeBreakpoint = async (req, store, modem) => {
 };
 
 Debugger.resume = async(req, store, modem) => {
+    modem.debuggerStepNull();
     modem.debuggerResume();
     return null;
 };

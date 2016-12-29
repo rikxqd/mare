@@ -162,6 +162,12 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
+    debuggerStepNull = async () => {
+        const method = 'setMovement';
+        const params = null;
+        this.sendBackend({method, params});
+    }
+
     debuggerStepOver = async () => {
         const method = 'setMovement';
         const params = 'over';
@@ -169,9 +175,9 @@ export class FrontendModem extends EventEmitter {
     }
 
     getStackScope = async (reqId, level, type) => {
-        const method = 'queryStackScope';
+        const method = 'queryScope';
         const params = {
-            id: reqId,
+            parrot: {id: reqId},
             level: level + 1,
             type: type,
         };

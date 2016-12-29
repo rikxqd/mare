@@ -24,10 +24,10 @@ export class BackendModem extends EventEmitter {
         if (msg.method === 'consoleTable') {
             this.consoleTable(msg.params, store);
         }
-        if (msg.method === 'debuggerPause') {
+        if (msg.method === 'executePaused') {
             this.debuggerPause(msg.params, store);
         }
-        if (msg.method === 'debuggerResumed') {
+        if (msg.method === 'executeResumed') {
             this.debuggerResumed(msg.params, store);
         }
         if (msg.method === 'stackScope') {
@@ -249,7 +249,7 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    stackScope= async (data) => {
+    stackScope = async (data) => {
         const props = [];
         for (const [key, value] of Object.entries(data.value)) {
             const valueType = typeof value;
@@ -279,7 +279,7 @@ export class BackendModem extends EventEmitter {
             props.push(prop);
         }
 
-        const resp = {id: data.id, result: {result: props}};
+        const resp = {id: data.parrot.id, result: {result: props}};
         this.sendFrontend(resp);
     }
 

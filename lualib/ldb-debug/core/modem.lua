@@ -1,55 +1,36 @@
 local class = require('ldb-debug/utils/oo').class
-local Logger = require('ldb-debug/utils/logger').Logger
 local serializer = require('ldb-debug/utils/serializer')
 local packager = require('ldb-debug/utils/packager')
 
-local logger = Logger:new('Modem')
-
 local Modem = class({
 
-    constructor= function(self, iostream)
+    constructor = function(self, iostream)
         self.iostream = iostream;
         self.listeners = {}
         self.chunk = ''
     end,
 
-    connect= function(self)
-        self.chunk = ''
-        self.iostream:close()
-        self.iostream:open()
-        self:emit('connect')
-    end,
-
-    on= function(self, event, listener)
+    on = function(self, event, listener)
         self.listeners[event] = listener
     end,
 
-    emit= function(self, event, ...)
+    emit = function(self, event, ...)
         local listener = self.listeners[event]
-        if not listener then
-            return
+        if listener then
+            listener(...)
         end
-        listener(...)
     end,
 
-    rawsend= function(self, bytes)
-        if self.iostream:is_closed() then
-            logger:log('reconnecting')
-            self:connect()
+    connect = function(self)
+        self.chunk = ''
+        self.iostream:close()
+        if self.iostream:open() then
+            self:emit('connect')
         end
-        return self.iostream:write(bytes)
     end,
 
-    rawrecv= function(self, timeout)
-        if self.iostream:is_closed() then
-            logger:log('reconnecting')
-            self:connect()
-        end
-        return self.iostream:read(timeout)
-    end,
-
-    feed= function(self, data)
-        if data == '' then
+    feed = function(self, data)
+        if not data or data == '' then
             return
         end
 
@@ -64,30 +45,43 @@ local Modem = class({
         end
     end,
 
-    send= function(self, data)
-        if not self:rawsend(data) then
-            logger:error('send data fail: %s', data)
+    write = function(self, data)
+        local ok = self.iostream:write(data)
+        return ok
+    end,
+
+    read = function(self, timeout)
+        local ok, data = self.iostream:read(timeout)
+        if ok then
+            self:feed(data)
+        end
+    end,
+
+    send = function(self, op, args)
+        if not self:is_connecting() then
             return
         end
-        self:recv()
-    end,
 
-    recv= function(self, timeout)
-        local ok, data = self:rawrecv(timeout)
-        if not ok then
-            logger:error('recv data fail')
-        end
-        self:feed(data)
-    end,
-
-    send_package= function(self, op, args)
         local pkg = serializer.encode({op, args})
         local data = packager.dump(pkg)
-        self:send(data)
+        if self:write(data) then
+            self:read()
+        end
+    end,
+
+    recv = function(self, timeout)
+        if not self:is_connecting() then
+            return
+        end
+        self:read(timeout)
+    end,
+
+    is_connecting = function(self)
+        return self.iostream:is_opened()
     end,
 
 })
 
 return {
-    Modem= Modem,
+    Modem = Modem,
 }

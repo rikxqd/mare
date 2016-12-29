@@ -13,5 +13,5 @@ return function(step, session, environ)
     local stacks = environ:get_stacks()
     table.remove(stacks, 1)
 
-    session:console_api(args, type, stacks);
+    session.frontend:console_api(args, type, stacks);
 end

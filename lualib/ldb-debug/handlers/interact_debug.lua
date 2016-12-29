@@ -1,6 +1,8 @@
 local aux = require('ldb-debug/aux')
 
-local is_match_pause_state = function(step, behavior)
+local is_match_pause_state = function(step, session)
+    local behavior = session.behavior
+
     local blackbox = behavior:match_blackbox(step)
     if blackbox then
         return false
@@ -24,41 +26,38 @@ local is_match_pause_state = function(step, behavior)
     return false
 end
 
-local process_stack_scope_queue = function(session, behavior, environ) 
-    for _, v in ipairs(behavior.stack_scope_queue) do
-        if v.type == 'locals' then
-            v.value = environ:get_locals_dict(v.level, event)
-        elseif v.type == 'upvalues' then
-            v.value = environ:get_upvalues_dict(v.level, event)
+local process_scope_queue = function(session, environ)
+    for _, item in ipairs(session.behavior.scope_queue) do
+        if item.type == 'locals' then
+            item.value = environ:get_locals_dict(item.level, event)
+        elseif item.type == 'upvalues' then
+            item.value = environ:get_upvalues_dict(item.level, event)
         else
-            v.value = {}
+            item.value = {}
         end
-        session:stack_scope(v)
+        session.frontend:stack_scope(item)
     end
-    behavior.stack_scope_queue = {}
+    session.behavior.scope_queue = {}
 end
 
-local interact_loop = function(session, behavior, environ)
+local interact_loop = function(session, environ)
     local stacks = environ:get_stacks()
-    session:debugger_pause(stacks)
+    session.behavior:execute_pause(stacks)
+    session.frontend:execute_paused(stacks)
 
-    behavior.pausing = true
-    while true do
-        session:wait_frontend(0.1)
-        process_stack_scope_queue(session, behavior, environ)
-        if not behavior.pausing then
-            session:debugger_resumed()
-            break
-        end
+    while session.behavior:is_pausing() do
+        session:sync(0.1)
+        process_scope_queue(session, environ)
     end
 
+    session.frontend:execute_resumed()
 end
 
 return function(step, session, environ)
-    local behavior = session.behavior
-    local need_pause = is_match_pause_state(step, behavior)
-    if need_pause then
-        aux.print_step(step, 'PAUSING')
-        interact_loop(session, behavior, environ)
+    local need_pause = is_match_pause_state(step, session)
+    if not need_pause then
+        return
     end
+    aux.print_step(step, 'PAUSING')
+    interact_loop(session, environ)
 end
