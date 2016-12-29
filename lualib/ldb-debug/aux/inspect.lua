@@ -31,10 +31,10 @@ local print_stack = function(stack, ...)
 end
 
 return {
-    format_frame= format_frame,
-    format_step= format_step,
-    format_stack= format_stack,
-    print_frame= print_frame,
-    print_step= print_step,
-    print_stack= print_stack,
+    format_frame = format_frame,
+    format_step = format_step,
+    format_stack = format_stack,
+    print_frame = print_frame,
+    print_step = print_step,
+    print_stack = print_stack,
 }

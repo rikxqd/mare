@@ -17,7 +17,7 @@ hell = function()
 
             return function()
                 local name4 = 'name 4'
-                print(level, name1, name2, name3)
+                print(level, name1, name2, name3, name4)
             end
 
         end
@@ -26,11 +26,11 @@ end
 
 sayhi = function(name)
     print('hello', name)
-    name = 'one'
+    name = 1
     print('hello', name)
-    name = 2
+    name = '2'
     print('hello', name)
-    name = {three= '3'}
+    name = {'three'}
     print('hello', name)
     name = nil
     print('hello', name)
@@ -46,3 +46,11 @@ end
 invoke = function(func, ...)
     print('invoking', func(...))
 end
+
+main = function()
+    invoking(hell)
+    invoking(sayhi, 'world')
+    invoking(fact, 5)
+end
+
+--main()

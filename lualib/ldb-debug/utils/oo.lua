@@ -12,5 +12,5 @@ local class = function(body)
 end
 
 return {
-    class= class,
+    class = class,
 }

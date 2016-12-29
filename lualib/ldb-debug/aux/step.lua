@@ -25,5 +25,5 @@ local get_step = function(event)
 end
 
 return {
-    get_step= get_step,
+    get_step = get_step,
 }

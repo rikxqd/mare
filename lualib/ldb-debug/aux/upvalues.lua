@@ -30,6 +30,6 @@ local get_upvalues_dict = function(level)
 end
 
 return {
-    get_upvalues_array= get_upvalues_array,
-    get_upvalues_dict= get_upvalues_dict,
+    get_upvalues_array = get_upvalues_array,
+    get_upvalues_dict = get_upvalues_dict,
 }

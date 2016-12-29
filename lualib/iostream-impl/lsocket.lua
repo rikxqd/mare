@@ -5,7 +5,7 @@ local STATUS_CLOSED = 2
 
 local IOStream = {
 
-    new= function(cls, ...)
+    new = function(cls, ...)
         local self = {}
         setmetatable(self, cls)
         cls.__index = cls
@@ -13,7 +13,7 @@ local IOStream = {
         return self
     end,
 
-    constructor= function(self, props)
+    constructor = function(self, props)
         self.host = props.host
         self.port = props.port
         self.socket = nil
@@ -21,7 +21,7 @@ local IOStream = {
         self.status = STATUS_CLOSED
     end,
 
-    open= function(self)
+    open = function(self)
         local socket, err = lsocket.connect(self.host, self.port)
         self.socket = socket
         if socket then
@@ -33,7 +33,7 @@ local IOStream = {
         end
     end,
 
-    close= function(self)
+    close = function(self)
         if self.socket then
             self.socket:close()
             self.socket = nil
@@ -41,7 +41,7 @@ local IOStream = {
         self.status = STATUS_CLOSED
     end,
 
-    write= function(self, data)
+    write = function(self, data)
         local socket = self.socket
         local timeout = self.timeout
         local selects = {socket}
@@ -69,11 +69,8 @@ local IOStream = {
         return true, nil
     end,
 
-    read= function(self, timeout)
-        if not timeout then
-            timeout = self.timeout
-        end
-
+    read = function(self, timeout)
+        timeout = timeout or self.timeout
         local socket = self.socket
         local selects = {socket}
 
@@ -94,13 +91,12 @@ local IOStream = {
             table.insert(chunks, chunk)
         end
 
-        local data = table.concat(chunks)
-
         if error then
             self:close()
             return false, error
         end
 
+        local data = table.concat(chunks)
         return true, data
     end,
 
@@ -108,7 +104,7 @@ local IOStream = {
         return self.status == STATUS_OPENED
     end,
 
-    is_closed= function(self)
+    is_closed = function(self)
         return self.status == STATUS_CLOSED
     end,
 

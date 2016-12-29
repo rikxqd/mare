@@ -38,6 +38,6 @@ local dump = function(pkg)
 end
 
 return {
-    parse= parse,
-    dump= dump,
+    parse = parse,
+    dump = dump,
 }

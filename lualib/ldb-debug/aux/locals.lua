@@ -76,6 +76,6 @@ local get_locals_dict = function(level, event)
 end
 
 return {
-    get_locals_array= get_locals_array,
-    get_locals_dict= get_locals_dict,
+    get_locals_array = get_locals_array,
+    get_locals_dict = get_locals_dict,
 }

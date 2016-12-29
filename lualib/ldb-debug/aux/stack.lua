@@ -16,5 +16,5 @@ local get_stack = function(level)
 end
 
 return {
-    get_stack= get_stack,
+    get_stack = get_stack,
 }

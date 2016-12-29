@@ -13,8 +13,8 @@ local build = function(IOStream, config, handlers)
     end
 
     return {
-        hook= hook,
-        start= start,
+        hook = hook,
+        start = start,
     }
 end
 
@@ -33,6 +33,6 @@ local standard = function(IOStream, config)
 end
 
 return {
-    build= build,
-    standard= standard,
+    build = build,
+    standard = standard,
 }

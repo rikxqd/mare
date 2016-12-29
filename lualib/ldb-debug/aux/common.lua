@@ -1,12 +1,17 @@
-local fp = require('ldb-debug/utils/fp')
+local lo = require('ldb-debug/utils/lodash')
 local rdebug = require('remotedebug')
 
-local function expand_value(value)
+local function expand_value(value, depth)
+    if depth >= 9 then
+        return
+    end
+    depth = depth + 1
+
     local type = rdebug.type(value)
 
     if type == 'function' then
         local address = rdebug.value(value)
-        return fp.constant(address)
+        return lo.constant(address)
     end
 
     if type ~= 'table' then
@@ -20,16 +25,16 @@ local function expand_value(value)
         if next_key == nil then
             break
         end
-        tbl[next_key] = expand_value(next_value)
+        tbl[next_key] = expand_value(next_value, depth)
     end
     return tbl
 end
 
 local expand_value_safe = function(name, value)
     if name == '_ENV' then
-        return '[_ENV]'
+        return {}
     else
-        return expand_value(value)
+        return expand_value(value, 1)
     end
 end
 
@@ -62,16 +67,16 @@ local expand_to_dict = function(items)
     end
 
     if #temporaries > 0 then
-        ret['(*temporary)'] = temporaries
+        ret['*temporary'] = temporaries
     end
     if #varargs > 0 then
-        ret['(*vararg)'] = varargs
+        ret['*vararg'] = varargs
     end
 
     return ret
 end
 
 return {
-    expand_to_array= expand_to_array,
-    expand_to_dict= expand_to_dict,
+    expand_to_array = expand_to_array,
+    expand_to_dict = expand_to_dict,
 }

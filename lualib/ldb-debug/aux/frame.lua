@@ -16,22 +16,22 @@ local normalize_frame = function(frame)
     local name = frame.name
     if name == nil then
         if frame.what == 'main' then
-            name = '(*main)'
+            name = '*main'
         elseif frame.what == 'Lua' then
-            name = '(*tailcall)'
+            name = '*anonymous'
         end
     end
 
     return {
-        file= frame.source,
-        line= frame.currentline,
-        func= name,
+        file = frame.source,
+        line = frame.currentline,
+        func = name,
     }
 end
 
 return {
-    is_c_inner_frame= is_c_inner_frame,
-    is_c_frame= is_c_frame,
-    get_frame= get_frame,
-    normalize_frame= normalize_frame,
+    is_c_inner_frame = is_c_inner_frame,
+    is_c_frame = is_c_frame,
+    get_frame = get_frame,
+    normalize_frame = normalize_frame,
 }

@@ -13,6 +13,6 @@ local decode = function(bytes)
 end
 
 return {
-    encode= encode,
-    decode= decode,
+    encode = encode,
+    decode = decode,
 }
