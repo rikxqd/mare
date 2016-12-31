@@ -7,6 +7,7 @@ local Modem = class({
     constructor = function(self, iostream)
         self.iostream = iostream;
         self.listeners = {}
+        self.connected = false
         self.chunk = ''
     end,
 
@@ -22,10 +23,22 @@ local Modem = class({
     end,
 
     connect = function(self)
+        self.connected = false
         self.chunk = ''
         self.iostream:close()
         if self.iostream:open() then
+            self.connected = true
             self:emit('connect')
+        end
+    end,
+
+    disconnect = function(self)
+        local connected = self.connected
+        self.connected = false
+        self.chunk = ''
+        self.iostream:close()
+        if connected then
+            self:emit('disconnect')
         end
     end,
 
@@ -47,21 +60,24 @@ local Modem = class({
 
     write = function(self, data)
         local ok = self.iostream:write(data)
-        return ok
+        if not ok then
+            self:disconnect()
+            return false
+        end
+        return true
     end,
 
     read = function(self, timeout)
         local ok, data = self.iostream:read(timeout)
-        if ok then
-            self:feed(data)
+        if not ok then
+            self:disconnect()
+            return false
         end
+        self:feed(data)
+        return true
     end,
 
     send = function(self, op, args)
-        if not self:is_connecting() then
-            return
-        end
-
         local pkg = serializer.encode({op, args})
         local data = packager.dump(pkg)
         if self:write(data) then
@@ -70,14 +86,7 @@ local Modem = class({
     end,
 
     recv = function(self, timeout)
-        if not self:is_connecting() then
-            return
-        end
         self:read(timeout)
-    end,
-
-    is_connecting = function(self)
-        return self.iostream:is_opened()
     end,
 
 })

@@ -14,9 +14,11 @@ local Session = class({
         self.frontend = Frontend:new()
 
         self.modem:on('connect', self:on_modem_connect())
+        self.modem:on('disconnect', self:on_modem_disconnect())
         self.modem:on('command', self:on_modem_command())
         self.frontend:on('message', self:on_frontend_message())
 
+        self.connected = false
         self.handshaked = false
     end,
 
@@ -26,8 +28,16 @@ local Session = class({
 
     on_modem_connect = function(self)
         return function()
+            self.connected = true
             self.handshaked = false
             self:handshake()
+        end
+    end,
+
+    on_modem_disconnect = function(self)
+        return function()
+            self.connected = false
+            self.handshaked = false
         end
     end,
 
@@ -100,7 +110,10 @@ local Session = class({
         local query = libstr.urlencode(self.config.args)
         local url = string.format('/session/%s?%s', self.config.id, query)
         self.modem:send('handshake', url)
-        self.modem:recv(0.1)
+
+        while self.connected and not self.handshaked do
+            self.modem:recv(0.1)
+        end
     end,
 
     message = function(self, message)

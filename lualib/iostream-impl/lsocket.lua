@@ -1,8 +1,5 @@
 local lsocket = require('lsocket')
 
-local STATUS_OPENED = 1
-local STATUS_CLOSED = 2
-
 local IOStream = {
 
     new = function(cls, ...)
@@ -17,20 +14,22 @@ local IOStream = {
         self.host = props.host
         self.port = props.port
         self.socket = nil
-        self.timeout = 0
-        self.status = STATUS_CLOSED
     end,
 
     open = function(self)
         local socket, err = lsocket.connect(self.host, self.port)
-        self.socket = socket
-        if socket then
-            self.status = STATUS_OPENED
-            return true, nil
-        else
-            self.status = STATUS_CLOSED
+        if not socket then
             return false, err
         end
+
+        lsocket.select(nil, {socket}, 1)
+        local ok, err = socket:status()
+        if not ok then
+            return false, err
+        end
+
+        self.socket = socket
+        return true, nil
     end,
 
     close = function(self)
@@ -38,19 +37,21 @@ local IOStream = {
             self.socket:close()
             self.socket = nil
         end
-        self.status = STATUS_CLOSED
     end,
 
     write = function(self, data)
+        if not self.socket then
+            return false, 'not connected'
+        end
+
         local socket = self.socket
-        local timeout = self.timeout
         local selects = {socket}
 
         local error = nil
         local sent = 1
         local length = #data
         while sent <= length do
-            lsocket.select(nil, selects, timeout)
+            lsocket.select(nil, selects, 0)
             local chunk = data:sub(sent)
             local nbytes, err = socket:send(chunk)
             if err then
@@ -62,7 +63,6 @@ local IOStream = {
         end
 
         if error then
-            self:close()
             return false, error
         end
 
@@ -70,7 +70,11 @@ local IOStream = {
     end,
 
     read = function(self, timeout)
-        timeout = timeout or self.timeout
+        if not self.socket then
+            return false, 'not connected'
+        end
+
+        timeout = timeout or 0
         local socket = self.socket
         local selects = {socket}
 
@@ -92,7 +96,6 @@ local IOStream = {
         end
 
         if error then
-            self:close()
             return false, error
         end
 
@@ -101,11 +104,11 @@ local IOStream = {
     end,
 
     is_opened = function(self)
-        return self.status == STATUS_OPENED
+        return self.socket ~= nil
     end,
 
     is_closed = function(self)
-        return self.status == STATUS_CLOSED
+        return self.socket == nil
     end,
 
 }
