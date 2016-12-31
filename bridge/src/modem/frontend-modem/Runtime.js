@@ -75,5 +75,9 @@ Runtime.getProperties = async(req, store, modem) => {
     return {result: props};
 };
 
+Runtime.discardConsoleEntries = async (req, store) => {
+    await store.eventRemoveByMethod('Runtime.consoleAPICalled');
+    return null;
+};
 
 export default Runtime;
