@@ -1,5 +1,6 @@
 local class = require('ldb-debug/utils/oo').class
 local BreakPoint = require('ldb-debug/core/breakpoint').BreakPoint
+local Pace = require('ldb-debug/core/pace').Pace
 
 local Behavior = class({
 
@@ -55,50 +56,12 @@ local Behavior = class({
     end,
 
     match_pause_pace = function(self, step)
-        if self.pause_pace == nil then
+        local pace = self.pause_pace
+        if pace and pace:match(step) then
+            return true, pace.step_type
+        else
             return false, nil
         end
-
-        -- 忽略 C 代码
-        if step.scope == 'c' then
-            return false, nil
-        end
-
-        local step_type = self.pause_pace.step_type
-        local call_depth = self.pause_pace.call_depth
-        local prev_step = self.pause_pace.prev_step
-
-        if step_type == 'over' then
-            if call_depth == 0 and not step.is_call then
-                return true, 'over'
-            end
-            return false, nil
-        end
-
-        if step_type == 'out' then
-            local prev_step_is_return = prev_step and prev_step.is_return
-            if call_depth < 0 and prev_step_is_return then
-                return true, 'out'
-            end
-            return false, nil
-        end
-
-        if step_type == 'into' then
-            local prev_step_is_call = (prev_step and prev_step.is_call
-                                       and prev_step.scope ~= 'c')
-            if call_depth > 0 and prev_step_is_call then
-                return true, 'into'
-            end
-
-            -- 不能进入下一层函数时，行为同 over 了
-            if call_depth == 0 and not step.is_call then
-                return true, 'into'
-            end
-
-            return false, nil
-        end
-
-        return false, nil
     end,
 
     set_skip_all = function(self, value)
@@ -118,11 +81,7 @@ local Behavior = class({
     end,
 
     set_pause_pace = function(self, value)
-        self.pause_pace = {
-            step_type = value,
-            prev_step = nil,
-            call_depth = 0,
-        }
+        self.pause_pace = Pace:new(value)
     end,
 
     finish_pause_pace = function(self)
@@ -130,19 +89,9 @@ local Behavior = class({
     end,
 
     trace_pause_pace = function(self, step)
-        if self.pause_pace == nil then
-            return
+        if self.pause_pace then
+            self.pause_pace:trace(step)
         end
-
-        local depth = self.pause_pace.call_depth
-        if step.event == 'call' or step.event == 'tailcall' then
-            depth = depth + 1
-        elseif step.event == 'return' then
-            depth = depth - 1
-        end
-
-        self.pause_pace.prev_step = step
-        self.pause_pace.call_depth = depth
     end,
 
     execute_pause = function(self, stacks)
