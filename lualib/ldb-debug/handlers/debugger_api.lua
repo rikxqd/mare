@@ -1,17 +1,18 @@
-local do_idling = function(session)
-    session:heartbeat()
-    session:sync()
-end
+local api = {
 
-local do_reconnect = function(session)
-    session:start()
-end
+    idling = function(session)
+        session:heartbeat()
+        session:sync()
+    end,
 
-local do_breakpoints = function(session)
-    for _, v in ipairs(session.behavior.breakpoints) do
-        print(string.format('breakpoint> %s', v.url))
-    end
-end
+    reconnect = function(session)
+        session:start()
+    end,
+
+    behavior = function(session)
+        session.behavior:debug_print()
+    end,
+}
 
 return function(step, session, environ)
     if step.event ~= 'probe' then
@@ -24,17 +25,10 @@ return function(step, session, environ)
     end
 
     local action = step.name:sub(#prefix + 1)
-    if action == 'idling' then
-        do_idling(session)
+    local func = api[action]
+    if func == nil then
         return
     end
-    if action == 'reconnect' then
-        do_reconnect(session)
-        return
-    end
-    if action == 'breakpoints' then
-        do_breakpoints(session)
-        return
-    end
+    func(session)
 end
 

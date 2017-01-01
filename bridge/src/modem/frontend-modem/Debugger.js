@@ -47,14 +47,31 @@ Debugger.removeBreakpoint = async (req, store, modem) => {
 };
 
 Debugger.resume = async(req, store, modem) => {
-    modem.debuggerStepNull();
+    modem.debuggerStepUp(null);
     modem.debuggerResume();
     return null;
 };
 
 Debugger.stepOver = async(req, store, modem) => {
-    modem.debuggerStepOver();
+    modem.debuggerStepUp('over');
     modem.debuggerResume();
+    return null;
+};
+
+Debugger.stepOut = async(req, store, modem) => {
+    modem.debuggerStepUp('out');
+    modem.debuggerResume();
+    return null;
+};
+
+Debugger.stepInto = async(req, store, modem) => {
+    modem.debuggerStepUp('into');
+    modem.debuggerResume();
+    return null;
+};
+
+Debugger.setSkipAllPauses = async(req, store, modem) => {
+    modem.debuggerSkip(req.params.skip);
     return null;
 };
 

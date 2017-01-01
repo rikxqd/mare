@@ -26,9 +26,9 @@ local standard = function(IOStream, config)
 
     return build(IOStream, config, {
         loader('debugger_api'),
+        loader('interact_debug'),
         loader('pretty_print'),
         loader('console_api'),
-        loader('interact_debug'),
     });
 end
 

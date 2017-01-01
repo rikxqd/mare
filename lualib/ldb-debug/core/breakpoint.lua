@@ -3,7 +3,7 @@ local libstr = require('ldb-debug/utils/string')
 
 local BreakPoint = class({
 
-    constructor= function(self, url)
+    constructor = function(self, url)
         self.url = url
         self.event = nil
         self.file = nil
@@ -14,7 +14,7 @@ local BreakPoint = class({
         self:parse_url()
     end,
 
-    parse_url= function(self)
+    parse_url = function(self)
         local parts = libstr.split(self.url, ':')
         local event = parts[1]
         self.event = event
@@ -34,7 +34,7 @@ local BreakPoint = class({
         self.func = parts[4]
     end,
 
-    match_line= function(self, step)
+    match_line = function(self, step)
         if step.event ~= 'line' then
             return false
         end
@@ -44,7 +44,7 @@ local BreakPoint = class({
         return same_file and same_line
     end,
 
-    match_tailcall= function(self, step)
+    match_tailcall = function(self, step)
         if step.event ~= 'tailcall' then
             return false
         end
@@ -54,7 +54,7 @@ local BreakPoint = class({
         return same_file and same_line
     end,
 
-    match_call= function(self, step)
+    match_call = function(self, step)
         if step.event ~= 'call' then
             return false
         end
@@ -65,7 +65,7 @@ local BreakPoint = class({
         return same_file and same_line and same_func
     end,
 
-    match_return= function(self, step)
+    match_return = function(self, step)
         if step.event ~= 'return' then
             return false
         end
@@ -90,7 +90,11 @@ local BreakPoint = class({
         return same_name
     end,
 
-    match= function(self, step)
+    match = function(self, step)
+        if step.event ~= self.event then
+            return false
+        end
+
         local funcs = {
             self.match_line,
             self.match_tailcall,
@@ -111,5 +115,5 @@ local BreakPoint = class({
 })
 
 return {
-    BreakPoint= BreakPoint,
+    BreakPoint = BreakPoint,
 }

@@ -3,12 +3,12 @@ local aux = require('ldb-debug/aux')
 
 local Environ = class({
 
-    constructor= function(self)
+    constructor = function(self)
         self.locals_array_cache = {}
         self.locals_dict_cache = {}
     end,
 
-    get_locals_array= function(self, level, event)
+    get_locals_array = function(self, level, event)
         local key = string.format('%s:%d', event, level)
         local value = self.locals_array_cache[key]
         if value ~= nil then
@@ -20,7 +20,7 @@ local Environ = class({
         return value
     end,
 
-    get_locals_dict= function(self, level, event)
+    get_locals_dict = function(self, level, event)
         local key = string.format('%s:%d', event, level)
         local value = self.locals_dict_cache[key]
         if value ~= nil then
@@ -32,15 +32,15 @@ local Environ = class({
         return value
     end,
 
-    get_upvalues_dict= function(self, level)
+    get_upvalues_dict = function(self, level)
         return aux.get_upvalues_dict(level)
     end,
 
-    get_stack= function(self, level)
+    get_stack = function(self, level)
         return aux.get_stack(level)
     end,
 
-    get_stacks= function(self)
+    get_stacks = function(self)
         local stacks = {}
         local i = 1
         while true do
@@ -54,11 +54,11 @@ local Environ = class({
         return stacks
     end,
 
-    get_step= function(self, event)
+    get_step = function(self, event)
         return aux.get_step(event)
     end,
 })
 
 return {
-    Environ= Environ,
+    Environ = Environ,
 }

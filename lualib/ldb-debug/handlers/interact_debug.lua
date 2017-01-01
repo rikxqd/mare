@@ -2,26 +2,38 @@ local aux = require('ldb-debug/aux')
 
 local is_match_pause_state = function(step, session)
     local behavior = session.behavior
+    local skip, pause, info
 
-    local blackbox = behavior:match_blackbox(step)
-    if blackbox then
+    skip, info = behavior:match_skip_all(step)
+    if skip then
+        print(':skip_all:', info)
         return false
     end
 
-    local exception = behavior:match_exception(step)
-    if exception then
+    skip, info = behavior:match_skip_file(step)
+    if skip then
+        print(':skip_file:', info)
+        return false
+    end
+
+    pause, info = behavior:match_pause_exception(step)
+    if pause then
+        print(':pause_exception:', info)
         return true
     end
 
-    local breakpoint = behavior:match_breakpoint(step)
-    if breakpoint then
+    pause, info = behavior:match_pause_breakpoint(step)
+    if pause then
+        print(':pause_breakpoint:', info)
         return true
     end
 
-    local movement = behavior:match_movement(step)
-    if movement then
+    pause, info = behavior:match_pause_pace(step)
+    if pause then
+        print(':pause_pace:', info)
         return true
     end
+    behavior:trace_pause_pace(step)
 
     return false
 end
@@ -45,12 +57,11 @@ local interact_loop = function(session, environ)
     session.behavior:execute_pause(stacks)
     session.frontend:execute_paused(stacks)
 
+    --session.behavior:debug_print()
     while session.behavior:is_pausing() do
         session:sync(0.1)
         process_scope_queue(session, environ)
     end
-
-    session.frontend:execute_resumed()
 end
 
 return function(step, session, environ)
@@ -58,6 +69,6 @@ return function(step, session, environ)
     if not need_pause then
         return
     end
-    aux.print_step(step, 'PAUSING')
+    --aux.print_step(step, 'PAUSING')
     interact_loop(session, environ)
 end

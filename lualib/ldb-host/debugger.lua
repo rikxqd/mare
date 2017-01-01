@@ -10,8 +10,8 @@ function debugger.reconnect(...)
     rdebug.probe('$debugger.reconnect', ...)
 end
 
-function debugger.breakpoints(...)
-    rdebug.probe('$debugger.breakpoints', ...)
+function debugger.behavior(...)
+    rdebug.probe('$debugger.behavior', ...)
 end
 
 return debugger;

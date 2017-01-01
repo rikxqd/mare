@@ -54,7 +54,6 @@ export class FrontendModem extends EventEmitter {
             result = await func(msg, store, this);
         }
         if (result === 'ignoreme') {
-            console.log('ignore', msg.id);
             return;
         }
 
@@ -151,31 +150,31 @@ export class FrontendModem extends EventEmitter {
             return url;
         });
 
-        const method = 'setBreakpoints';
+        const method = 'behavior.setPauseBreakpoints';
         const params = urls;
         this.sendBackend({method, params});
     }
 
     debuggerResume = async () => {
-        const method = 'execResume';
+        const method = 'behavior.executeResume';
         const params = null;
         this.sendBackend({method, params});
     }
 
-    debuggerStepNull = async () => {
-        const method = 'setMovement';
-        const params = null;
+    debuggerSkip = async (value) => {
+        const method = 'behavior.setSkipAll';
+        const params = value;
         this.sendBackend({method, params});
     }
 
-    debuggerStepOver = async () => {
-        const method = 'setMovement';
-        const params = 'over';
+    debuggerStepUp = async (value) => {
+        const method = 'behavior.setPausePace';
+        const params = value;
         this.sendBackend({method, params});
     }
 
     getStackScope = async (reqId, level, type) => {
-        const method = 'queryScope';
+        const method = 'behavior.queryScope';
         const params = {
             parrot: {id: reqId},
             level: level + 1,

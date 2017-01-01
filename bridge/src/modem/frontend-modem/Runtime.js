@@ -19,7 +19,6 @@ const getUpvaluesProperties = async(req, store, modem, objectId) => {
 Runtime.getProperties = async(req, store, modem) => {
 
     const objectId = JSON.parse(req.params.objectId);
-    console.log(objectId.localLevel, objectId.localLevel !== undefined);
     if (objectId.localsLevel !== undefined) {
         return await getLocalsProperties(req, store, modem, objectId);
     }

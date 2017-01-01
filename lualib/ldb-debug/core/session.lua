@@ -70,23 +70,27 @@ local Session = class({
     apply_message = function(self, message)
         local method = message.method
         local params = message.params
-        if method == 'setBreakpoints' then
-            self.behavior:set_breakpoints(params)
+        if method == 'behavior.setSkipAll' then
+            self.behavior:set_skip_all(params)
             return
         end
-        if method == 'setBlackboxes' then
+        if method == 'behavior.setSkipFiles' then
             self.behavior:set_blackboxes(params)
             return
         end
-        if method == 'setMovement' then
-            self.behavior:set_movement(params)
+        if method == 'behavior.setPauseBreakpoints' then
+            self.behavior:set_pause_breakpoints(params)
             return
         end
-        if method == 'execResume' then
+        if method == 'behavior.setPausePace' then
+            self.behavior:set_pause_pace(params)
+            return
+        end
+        if method == 'behavior.executeResume' then
             self.behavior:execute_resume(params)
             return
         end
-        if method == 'queryScope' then
+        if method == 'behavior.queryScope' then
             self.behavior:query_scope(params)
             return
         end
@@ -127,5 +131,5 @@ local Session = class({
 })
 
 return {
-    Session= Session,
+    Session = Session,
 }

@@ -21,6 +21,11 @@ local get_step = function(event)
         step.event = 'probe'
         step.name = event
     end
+
+    step.is_line = event == 'line'
+    step.is_call = event == 'call' or event == 'tailcall'
+    step.is_return = event == 'return'
+    step.is_probe = event == 'probe'
     return step
 end
 
