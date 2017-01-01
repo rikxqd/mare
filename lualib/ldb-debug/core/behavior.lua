@@ -67,9 +67,6 @@ local Behavior = class({
         local step_type = self.pause_pace.step_type
         local call_depth = self.pause_pace.call_depth
         local prev_step = self.pause_pace.prev_step
-        if prev_step and prev_step.scope == 'c' then
-            prev_step = nil
-        end
 
         if step_type == 'over' then
             if call_depth == 0 and not step.is_call then
@@ -87,14 +84,17 @@ local Behavior = class({
         end
 
         if step_type == 'into' then
-            local prev_step_is_call = prev_step and prev_step.is_call
+            local prev_step_is_call = (prev_step and prev_step.is_call
+                                       and prev_step.scope ~= 'c')
             if call_depth > 0 and prev_step_is_call then
                 return true, 'into'
             end
+
             -- 不能进入下一层函数时，行为同 over 了
             if call_depth == 0 and not step.is_call then
                 return true, 'into'
             end
+
             return false, nil
         end
 
