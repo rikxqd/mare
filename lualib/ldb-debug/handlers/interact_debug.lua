@@ -75,12 +75,13 @@ end
 
 return function(step, session, environ)
     if is_need_skip(step, session) then
-        session.behavior:trace_pause_pace(step)
         return
     end
 
     if is_need_pause(step, session) then
         --aux.print_step(step, 'PAUSING')
         interact_loop(step, session, environ)
+    else
+        session.behavior:trace_pause_pace(step)
     end
 end
