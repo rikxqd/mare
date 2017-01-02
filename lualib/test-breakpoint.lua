@@ -48,36 +48,33 @@ invoke = function(func, ...)
 end
 
 steps = function()
+
     local test1 = function(args)
         local a = 'a'
-        local b = 'b'
-        print('test1', args, a, b)
-        local c = 'c'
     end
+
     local test2 = function(args)
         local a = 'a'
         local b = 'b'
-        print('test2', args, a, b)
-        local c = 'c'
+        return 'ret1'
     end
+
     local test3 = function(args)
         local a = 'a'
         local b = 'b'
-        print('test3', args, a, b)
         local c = 'c'
+        return nil, 'ret2'
     end
 
-    local test_all = function(args)
-        test1(args)
-        test2(args)
-        test3(args)
+    local tester = function(args)
+        print('test1 return', test1(args))
+        print('test2 return', test2(args))
+        print('test3 return', test3(args))
     end
 
-    test_all('1')
-    test_all('2')
-    print(test_all('3'), test_all('4'))
-    test_all('5')
-    test_all('6')
+    tester('1')
+    print(tester('2'), tester('3'))
+    tester('4')
 end
 
 main = function()

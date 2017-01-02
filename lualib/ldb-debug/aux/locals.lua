@@ -1,27 +1,48 @@
 local rdebug = require('remotedebug')
 local aux_common = require('ldb-debug/aux/common')
 
--- 看上去会混进一些 C 里局部变量，在这里处理掉
-local filter_c_locals = function(items, event)
+-- 根据 event 的类型，统一下 (*temporary) 的意义
+local normalize_temporary_items = function(items, event)
     if event == nil then
         return items
     end
 
-    -- 会多一个不是手动传进去的 (*temporary) 的 userdata，不明觉厉
+    -- 会多一个不是手动传进去的 (*temporary) 的 userdata，地址总是一样的
+    -- 所以这里删除最后一个 (*temporary) 元素
+    for i = #items, 1, -1 do
+        local name = items[i][1]
+        if name == '(*temporary)' then
+            table.remove(items, i)
+            break
+        end
+    end
+
+    -- event 为 call 时，对于 C 函数来说，(*temporary) 看上去就是函数参数
+    -- 改成和 Lua 函数的 (*vararg) 一致
     if event == 'call' or event == 'tailcall' then
-        local i = #items
-        while i >= 1 do
-            local name = items[i][1]
+        for _, item in ipairs(items) do
+            local name = item[1]
             if name == '(*temporary)' then
-                table.remove(items, i)
-                break
+                item[1] = '(*vararg)'
             end
-            i = i - 1
+        end
+        return items
+    end
+
+    -- event 为 return 时，(*temporary) 看上去就是函数返回值
+    -- 不过好像判断不了实际返回的个数
+    if event == 'return' then
+        for _, item in ipairs(items) do
+            local name = item[1]
+            if name == '(*temporary)' then
+                item[1] = '(*retarg)'
+            end
         end
         return items
     end
 
     -- event 为 line 时，(*temporary) 看上去是没意义的
+    -- 所以这里全部删掉
     if event == 'line' then
         local filtered = {}
         for _, item in ipairs(items) do
@@ -65,13 +86,13 @@ end
 
 local get_locals_array = function(level, event)
     local items = get_locals_items(level)
-    items = filter_c_locals(items, event)
+    items = normalize_temporary_items(items, event)
     return aux_common.expand_to_array(items)
 end
 
 local get_locals_dict = function(level, event)
     local items = get_locals_items(level)
-    items = filter_c_locals(items, event)
+    items = normalize_temporary_items(items, event)
     return aux_common.expand_to_dict(items)
 end
 

@@ -1,45 +1,50 @@
 local aux = require('ldb-debug/aux')
 
-local is_match_pause_state = function(step, session)
+local is_need_skip = function(step, session)
     local behavior = session.behavior
-    local skip, pause, info
 
-    skip, info = behavior:match_skip_all(step)
-    if skip then
-        print(':skip_all:', info)
-        return false
+    if behavior:match_skip_all(step) then
+        return true
     end
 
-    skip, info = behavior:match_skip_file(step)
-    if skip then
-        print(':skip_file:', info)
-        return false
+    if behavior:match_skip_file(step) then
+        return true
     end
+
+    return false
+end
+
+local is_need_pause = function(step, session)
+    local behavior = session.behavior
+    local pause, info
 
     pause, info = behavior:match_pause_exception(step)
     if pause then
-        print(':pause_exception:', info)
+        print('pause_exception:', info)
         return true
     end
 
     pause, info = behavior:match_pause_breakpoint(step)
     if pause then
-        print(':pause_breakpoint:', info)
+        print('pause_breakpoint:', info)
         return true
     end
 
     pause, info = behavior:match_pause_pace(step)
     if pause then
-        print(':pause_pace:', info)
+        print('pause_pace:', info)
         return true
     end
-    behavior:trace_pause_pace(step)
 
     return false
 end
 
-local process_scope_queue = function(session, environ)
-    for _, item in ipairs(session.behavior.scope_queue) do
+local process_scope_queue = function(step, session, environ)
+    local behavior = session.behavior
+    local frontend = session.frontend
+    local event = step.event
+
+    for _, item in ipairs(behavior.scope_queue) do
         if item.type == 'locals' then
             item.value = environ:get_locals_dict(item.level, event)
         elseif item.type == 'upvalues' then
@@ -47,28 +52,35 @@ local process_scope_queue = function(session, environ)
         else
             item.value = {}
         end
-        session.frontend:stack_scope(item)
+        frontend:stack_scope(item)
     end
-    session.behavior.scope_queue = {}
+
+    behavior.scope_queue = {}
 end
 
-local interact_loop = function(session, environ)
-    local stacks = environ:get_stacks()
-    session.behavior:execute_pause(stacks)
-    session.frontend:execute_paused(stacks)
+local interact_loop = function(step, session, environ)
+    local behavior = session.behavior
+    local frontend = session.frontend
 
-    --session.behavior:debug_print()
-    while session.behavior:is_pausing() do
+    local stacks = environ:get_stacks()
+    behavior:execute_pause(stacks)
+    frontend:execute_paused(stacks)
+
+    --behavior:debug_print()
+    while behavior:is_pausing() do
         session:sync(0.1)
-        process_scope_queue(session, environ)
+        process_scope_queue(step, session, environ)
     end
 end
 
 return function(step, session, environ)
-    local need_pause = is_match_pause_state(step, session)
-    if not need_pause then
+    if is_need_skip(step, session) then
+        session.behavior:trace_pause_pace(step)
         return
     end
-    --aux.print_step(step, 'PAUSING')
-    interact_loop(session, environ)
+
+    if is_need_pause(step, session) then
+        --aux.print_step(step, 'PAUSING')
+        interact_loop(step, session, environ)
+    end
 end
