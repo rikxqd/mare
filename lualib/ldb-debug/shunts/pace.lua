@@ -2,8 +2,8 @@ local class = require('ldb-debug/utils/oo').class
 
 local Pace = class({
 
-    constructor = function(self, step_type)
-        self.step_type = step_type
+    constructor = function(self, props)
+        self.step_type = props.step_type
         self.call_depth = 0
         self.prev_step = nil
     end,
@@ -36,7 +36,7 @@ local Pace = class({
     end,
 
     match = function(self, step)
-        -- 忽略 C 代码
+        -- 忽略进入 C 函数
         if step.scope == 'c' then
             return false
         end
@@ -65,6 +65,12 @@ local Pace = class({
         end
         self.prev_step = step
         self.call_depth = depth
+    end,
+
+    to_string = function(self)
+        local fmt = '<Pace step_type=%s call_depth=%d prev_step.event=%s>'
+        local prev_step_event = self.prev_step and self.prev_step.event
+        return fmt:format(self.step_type, self.call_depth, prev_step_event)
     end
 
 })

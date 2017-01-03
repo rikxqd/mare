@@ -70,16 +70,20 @@ local Session = class({
     apply_message = function(self, message)
         local method = message.method
         local params = message.params
-        if method == 'behavior.setSkipAll' then
-            self.behavior:set_skip_all(params)
+        if method == 'behavior.setSkipSituation' then
+            self.behavior:set_skip_situation(params)
             return
         end
-        if method == 'behavior.setSkipFiles' then
-            self.behavior:set_blackboxes(params)
+        if method == 'behavior.setSkipBlackBoxes' then
+            self.behavior:set_skip_blackboxes(params)
             return
         end
         if method == 'behavior.setPauseBreakpoints' then
             self.behavior:set_pause_breakpoints(params)
+            return
+        end
+        if method == 'behavior.setPauseTrapper' then
+            self.behavior:set_pause_trapper(params)
             return
         end
         if method == 'behavior.setPausePace' then

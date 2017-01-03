@@ -3,6 +3,8 @@ console = require('ldb-host/console')
 debugger = require('ldb-host/debugger')
 rdebug.start('debug-main')
 
+lib = require('test-lib')
+
 hell = function()
     local level = 1
     local name1 = 'name 1'
@@ -44,7 +46,8 @@ fact = function(n)
 end
 
 invoke = function(func, ...)
-    print('invoke', func(...))
+    print('invoke', func, ...)
+    func(...)
 end
 
 steps = function()

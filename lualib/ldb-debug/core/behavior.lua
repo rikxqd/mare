@@ -1,87 +1,102 @@
 local class = require('ldb-debug/utils/oo').class
-local BreakPoint = require('ldb-debug/core/breakpoint').BreakPoint
-local Pace = require('ldb-debug/core/pace').Pace
+local Blackbox = require('ldb-debug/shunts/blackbox').Blackbox
+local Breakpoint = require('ldb-debug/shunts/breakpoint').Breakpoint
+local Pace = require('ldb-debug/shunts/pace').Pace
+local Situation = require('ldb-debug/shunts/situation').Situation
+local Trapper = require('ldb-debug/shunts/trapper').Trapper
 
 local Behavior = class({
 
     constructor = function(self)
-        self.skip_all = false
-        self.skip_files = {}
+        self.skip_situation = nil
+        self.skip_blackboxes = {}
         self.pause_breakpoints = {}
-        self.pause_exception = nil
+        self.pause_trapper = nil
         self.pause_pace = nil
         self.pausing_stacks = nil
         self.scope_queue = {}
     end,
 
-    match_skip_all = function(self)
-        return self.skip_all
+    match_skip_situation = function(self, step)
+        local situation = self.skip_situation
+        if situation and situation:match(step) then
+            return situation
+        end
+        return nil
     end,
 
-    match_skip_file = function(self, step)
-        for _, file in ipairs(self.skip_files) do
-            if step.file == file then
-                return true, file
+    match_skip_blackbox = function(self, step)
+        for _, blackbox in ipairs(self.skip_blackboxes) do
+            if blackbox:match(step) then
+                return blackbox
             end
         end
-        return false, nil
+        return nil
     end,
 
     match_pause_breakpoint = function(self, step)
         for _, breakpoint in ipairs(self.pause_breakpoints) do
             if breakpoint:match(step) then
-                return true, breakpoint.url
+                return breakpoint
             end
         end
-        return false, nil
+        return nil
     end,
 
-    match_pause_exception = function(self, step)
-        if self.pause_exception == nil then
-            return false, nil
+    match_pause_trapper = function(self, step)
+        local trapper = self.pause_trapper
+        if trapper and trapper:match(step) then
+            return trapper
         end
-
-        if self.pause_exception == 'all' then
-            local is_c_return = step.event == 'return' and step.scope == 'c'
-            local is_metamethod = step.func:find('__', 1, true) == 1
-            local match = is_c_return and is_metamethod
-            if match then
-                return true, 'all'
-            else
-                return false, nil
-            end
-        end
-
-        return false, nil
+        return nil
     end,
 
     match_pause_pace = function(self, step)
         local pace = self.pause_pace
         if pace and pace:match(step) then
-            return true, pace.step_type
-        else
-            return false, nil
+            return pace
         end
+        return nil
     end,
 
-    set_skip_all = function(self, value)
-        self.skip_all = value
+    set_skip_situation = function(self, props)
+        if props then
+            self.skip_situation = Situation:new(props)
+            return
+        end
+        self.skip_situation = nil
     end,
 
-    set_skip_files = function(self, value)
-        self.skip_files = value
+    set_skip_blackboxes = function(self, items)
+        local blackboxes = {}
+        for _, props in ipairs(items) do
+            table.insert(blackboxes, Blackbox:new(props))
+        end
+        self.skip_blackboxes = blackboxes
     end,
 
-    set_pause_breakpoints = function(self, urls)
+    set_pause_breakpoints = function(self, items)
         local breakpoints = {}
-        for _, url in ipairs(urls) do
-            table.insert(breakpoints, BreakPoint:new(url))
+        for _, props in ipairs(items) do
+            table.insert(breakpoints, Breakpoint:new(props))
         end
         self.pause_breakpoints = breakpoints
     end,
 
-    set_pause_pace = function(self, value)
-        self.pause_pace = Pace:new(value)
+    set_pause_trapper = function(self, props)
+        if props then
+            self.pause_trapper = Trapper:new(props)
+            return
+        end
+        self.pause_trapper = nil
+    end,
+
+    set_pause_pace = function(self, props)
+        if props then
+            self.pause_pace = Pace:new(props)
+            return
+        end
+        self.pause_pace = nil
     end,
 
     finish_pause_pace = function(self)
@@ -111,24 +126,33 @@ local Behavior = class({
         table.insert(self.scope_queue, value)
     end,
 
-    debug_print = function(self)
-        print('behavior>')
-        print(string.format('  skip_all: %s', self.skip_all))
-        for _, v in ipairs(self.skip_files) do
-            print(string.format('  skip_files: %s', v))
+    to_string = function(self)
+        local shunts = {}
+        if self.skip_situation then
+            table.insert(shunts, self.situation:to_string())
         end
-        for _, v in ipairs(self.pause_breakpoints) do
-            print(string.format('  pause_breakpoints: %s', v.url))
+        for _, blackbox in ipairs(self.skip_blackboxes) do
+            table.insert(shunts, blackbox:to_string())
         end
-        if self.pause_exception then
-            print(string.format('  pause_exception: %s', self.pause_exception))
+        for _, breakpoint in ipairs(self.pause_breakpoints) do
+            table.insert(shunts, breakpoint:to_string())
+        end
+        if self.pause_trapper then
+            table.insert(shunts, self.pause_trapper:to_string())
         end
         if self.pause_pace then
-            print(string.format('  pause_pace: %s %s %s',
-                self.pause_pace.step_type,
-                self.pause_pace.prev_step.event,
-                self.pause_pace.call_depth))
+            table.insert(shunts, self.pause_pace:to_string())
         end
+        for i, v in ipairs(shunts) do
+            shunts[i] = string.format('    %s', v)
+        end
+
+        if #shunts == 0 then
+            return '<Behavior>\n</Behavior>'
+        end
+
+        local children = table.concat(shunts, '\n')
+        return string.format('<Behavior>\n%s\n</Behavior>', children)
     end,
 
 })

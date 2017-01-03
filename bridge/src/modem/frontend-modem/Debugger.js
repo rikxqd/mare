@@ -15,6 +15,7 @@ const Debugger = {};
 
 Debugger.enable = async (req, store, modem) => {
     store.breakpointRemoveAll();
+    store.blackboxRemoveAll();
     modem.scriptParsed(store);
     modem.pushProjectConfigToBackend(store);
     modem.pushProjectConfigToBackend(store);
@@ -24,7 +25,13 @@ Debugger.enable = async (req, store, modem) => {
 Debugger.setBreakpointByUrl = async (req, store, modem) => {
     const {url, lineNumber, columnNumber} = req.params;
     const breakpointId = `${url}:${lineNumber}:${columnNumber}`;
-    await store.breakpointAppendOne({breakpointId});
+    const breakpoint = {
+        breakpointId: breakpointId,
+        event: 'line',
+        file: '@' + url.replace('file:///', ''),
+        line: lineNumber + 1,
+    };
+    await store.breakpointAppendOne(breakpoint);
     modem.updateBreakpoints(store);
     return {
         breakpointId,
@@ -72,6 +79,29 @@ Debugger.stepInto = async(req, store, modem) => {
 
 Debugger.setSkipAllPauses = async(req, store, modem) => {
     modem.debuggerSkip(req.params.skip);
+    return null;
+};
+
+Debugger.setPauseOnExceptions = async(req, store, modem) => {
+    modem.debuggerPauseTrapper(req.params.state);
+    return null;
+};
+
+Debugger.setBlackboxedRanges = async(req, store, modem) => {
+    const scriptId = req.params.scriptId;
+    const positions = req.params.positions;
+    if (positions.length > 0) {
+        const blackbox = {
+            blackboxId: scriptId,
+            file: `@${scriptId}`,
+            start_line: positions[0].lineNumber + 1,
+            end_line: 0,
+        };
+        await store.blackboxAppendOne(blackbox);
+    } else {
+        await store.blackboxRemoveOne(scriptId);
+    }
+    modem.updateBlackboxes(store);
     return null;
 };
 

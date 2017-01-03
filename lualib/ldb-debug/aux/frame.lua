@@ -22,8 +22,12 @@ local normalize_frame = function(frame)
         end
     end
 
+    -- TODO 非入口文件似乎以 @./ 开头
+    -- 暂时去掉，跟 require() 里的写的一样
+    local file = frame.source:gsub('@./', '@')
+
     return {
-        file = frame.source,
+        file = file,
         line = frame.currentline,
         func = name,
     }

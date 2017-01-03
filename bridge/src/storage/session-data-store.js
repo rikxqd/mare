@@ -105,4 +105,29 @@ export class SessionDataStore extends EventEmitter {
         await this.cln.deleteMany(query);
     }
 
+    blackboxGetAll = async () => {
+        const query = {_type: 'blackbox'};
+        const docs = await this.cln.find(query).toArray();
+        for (const doc of docs) {
+            delete doc._id;
+            delete doc._type;
+        }
+        return docs;
+    }
+
+    blackboxAppendOne = async (blackbox) => {
+        const doc = Object.assign({_type: 'blackbox'}, blackbox);
+        await this.cln.insertOne(doc);
+    }
+
+    blackboxRemoveOne = async (blackboxId) => {
+        const query = {_type: 'blackbox', blackboxId};
+        await this.cln.deleteMany(query);
+    }
+
+    blackboxRemoveAll = async () => {
+        const query = {_type: 'blackbox'};
+        await this.cln.deleteMany(query);
+    }
+
 }

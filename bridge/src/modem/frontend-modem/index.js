@@ -138,23 +138,6 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
-    updateBreakpoints = async (store) => {
-        const breakpoints = await store.breakpointGetAll();
-        const urls = breakpoints.map((bp) => {
-            const text = bp.breakpointId.replace('file:///', '');
-            const parts = text.split(':', 2);
-            const file = '@' + parts[0];
-            const line = parseInt(parts[1]) + 1;
-            const url = `line:${file}:${line}`;
-            console.log(url);
-            return url;
-        });
-
-        const method = 'behavior.setPauseBreakpoints';
-        const params = urls;
-        this.sendBackend({method, params});
-    }
-
     debuggerResume = async () => {
         const method = 'behavior.executeResume';
         const params = null;
@@ -162,14 +145,40 @@ export class FrontendModem extends EventEmitter {
     }
 
     debuggerSkip = async (value) => {
-        const method = 'behavior.setSkipAll';
-        const params = value;
+        const method = 'behavior.setSkipSituation';
+        const params = value ? {state: 'always'} : null;
         this.sendBackend({method, params});
     }
 
-    debuggerStepUp = async (value) => {
+    debuggerPauseTrapper = async (value) => {
+        const method = 'behavior.setPauseTrapper';
+        const params = value !== 'none' ? {state: value} : null;
+        this.sendBackend({method, params});
+    }
+
+    updateBreakpoints = async (store) => {
+        const breakpoints = await store.breakpointGetAll();
+        for (const breakpoint of breakpoints) {
+            delete breakpoint.breakpointId;
+        }
+        const method = 'behavior.setPauseBreakpoints';
+        const params = breakpoints;
+        this.sendBackend({method, params});
+    }
+
+    updateBlackboxes = async (store) => {
+        const blackboxes = await store.blackboxGetAll();
+        for (const blackbox of blackboxes) {
+            delete blackbox.blackboxId;
+        }
+        const method = 'behavior.setSkipBlackBoxes';
+        const params = blackboxes;
+        this.sendBackend({method, params});
+    }
+
+    debuggerStepUp = async (step_type) => {
         const method = 'behavior.setPausePace';
-        const params = value;
+        const params = step_type !== null ? {step_type} : null;
         this.sendBackend({method, params});
     }
 

@@ -10,7 +10,7 @@ local api = {
     end,
 
     behavior = function(session)
-        session.behavior:debug_print()
+        print(session.behavior:to_string())
     end,
 }
 
