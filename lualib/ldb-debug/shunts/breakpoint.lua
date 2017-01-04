@@ -7,8 +7,8 @@ local Breakpoint = class({
         self.file = props.file
         self.line = props.line
         self.func = props.func
-        self.scope = props.scope
         self.name = props.name
+        self.cond = props.cond
     end,
 
     match_line = function(self, step)
@@ -76,13 +76,16 @@ local Breakpoint = class({
     end,
 
     to_string = function(self)
-        local names = {'event', 'file', 'line', 'func', 'scope', 'name'}
+        local names = {'event', 'file', 'line', 'func', 'name'}
         local attrs = {}
         for _, name in ipairs(names) do
             local attr = self[name]
             if self[name] then
                 table.insert(attrs, string.format('%s=%s', name, attr))
             end
+        end
+        if self.cond then
+            table.insert(attrs, string.format('cond=%q', self.cond))
         end
         local fmt = '<Breakpoint %s>'
         return fmt:format(table.concat(attrs, ' '))

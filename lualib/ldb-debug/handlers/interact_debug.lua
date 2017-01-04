@@ -1,4 +1,37 @@
 local aux = require('ldb-debug/aux')
+local lo = require('ldb-debug/utils/lodash')
+
+local create_sandbox = function(step, session, environ)
+    local frontend = session.frontend
+    local stacks = environ:get_stacks()
+    local locals = environ:get_locals_dict(1, step.event)
+    local upvalues = environ:get_upvalues_dict(1, step.event)
+    local injects = {
+        print = function(...)
+            frontend:console_api({...}, 'log', stacks)
+        end
+    }
+    local env = lo.assign({}, upvalues, locals, injects)
+    return env
+end
+
+local match_cond = function(step, session, environ, cond)
+    if (not cond) or cond == '' or cond == 'true' then
+        return true
+    end
+    if cond == 'false' then
+        return false
+    end
+
+    local chunk_func = 'return ' .. cond
+    local chunk_name = 'condition'
+    local sandbox = create_sandbox(step, session, environ)
+    local ok, ret = pcall(function()
+        local func = load(chunk_func, chunk_name, 't', sandbox)
+        return func()
+    end)
+    return ok and ret
+end
 
 local is_need_skip = function(step, session)
     local behavior = session.behavior
@@ -17,12 +50,12 @@ local is_need_skip = function(step, session)
     return nil
 end
 
-local is_need_pause = function(step, session)
+local is_need_pause = function(step, session, environ)
     local behavior = session.behavior
     local shunt
 
     shunt = behavior:match_pause_breakpoint(step)
-    if shunt then
+    if shunt and match_cond(step, session, environ, shunt.cond) then
         return shunt
     end
 
@@ -83,7 +116,7 @@ return function(step, session, environ)
         return
     end
 
-    shunt = is_need_pause(step, session)
+    shunt = is_need_pause(step, session, environ)
     if shunt then
         --aux.print_step(step, 'PAUSE')
         print(shunt:to_string())

@@ -23,13 +23,14 @@ Debugger.enable = async (req, store, modem) => {
 };
 
 Debugger.setBreakpointByUrl = async (req, store, modem) => {
-    const {url, lineNumber, columnNumber} = req.params;
+    const {url, lineNumber, columnNumber, condition} = req.params;
     const breakpointId = `${url}:${lineNumber}:${columnNumber}`;
     const breakpoint = {
         breakpointId: breakpointId,
         event: 'line',
         file: '@' + url.replace('file:///', ''),
         line: lineNumber + 1,
+        cond: condition,
     };
     await store.breakpointAppendOne(breakpoint);
     modem.updateBreakpoints(store);
