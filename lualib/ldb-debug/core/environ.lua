@@ -4,6 +4,7 @@ local aux = require('ldb-debug/aux')
 local Environ = class({
 
     constructor = function(self)
+        self.aux = aux
         self.locals_array_cache = {}
         self.locals_dict_cache = {}
     end,

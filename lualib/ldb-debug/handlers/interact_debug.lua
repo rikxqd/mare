@@ -1,127 +1,179 @@
-local aux = require('ldb-debug/aux')
 local lo = require('ldb-debug/utils/lodash')
+local class = require('ldb-debug/utils/oo').class
 
-local create_sandbox = function(step, session, environ)
-    local frontend = session.frontend
-    local stacks = environ:get_stacks()
-    local locals = environ:get_locals_dict(1, step.event)
-    local upvalues = environ:get_upvalues_dict(1, step.event)
-    local injects = {
-        print = function(...)
-            frontend:console_api({...}, 'log', stacks)
-        end
+local create_console_api = function(impl)
+    local alias = {
+        warn = 'warning',
+        group = 'startGroup',
+        group_collapsed = 'startGroupCollapsed',
+        group_end = 'endGroup'
     }
-    local env = lo.assign({}, upvalues, locals, injects)
-    return env
+    local mt = {
+        __index = function(t, k)
+            return function(...) impl(alias[k] or k, ...) end
+        end,
+    }
+    return setmetatable({}, mt)
 end
 
-local match_cond = function(step, session, environ, cond)
-    if (not cond) or cond == '' or cond == 'true' then
-        return true
-    end
-    if cond == 'false' then
-        return false
-    end
+local Interacter = class({
 
-    local chunk_func = 'return ' .. cond
-    local chunk_name = 'condition'
-    local sandbox = create_sandbox(step, session, environ)
-    local ok, ret = pcall(function()
-        local func = load(chunk_func, chunk_name, 't', sandbox)
-        return func()
-    end)
-    return ok and ret
-end
+    constructor = function(self, step, session, environ)
+        self.step = step;
+        self.session = session;
+        self.environ = environ;
+    end,
 
-local is_need_skip = function(step, session)
-    local behavior = session.behavior
-    local shunt
+    get_injects = function(self)
+        local frontend = self.session.frontend
+        local stacks = self.environ:get_stacks()
 
-    shunt = behavior:match_skip_situation(step)
-    if shunt then
-        return shunt
-    end
+        return {
+            print = function(...)
+                frontend:console_api({...}, 'log', stack)
+            end,
+            console = create_console_api(function(type, ...)
+                frontend:console_api({...}, type, stacks)
+            end),
+        }
+    end,
 
-    shunt = behavior:match_skip_blackbox(step)
-    if shunt then
-        return shunt
-    end
+    create_sandbox = function(self)
+        local event = self.step.event
+        local environ = self.environ
 
-    return nil
-end
+        local locals = environ:get_locals_dict(1, event)
+        local upvalues = environ:get_upvalues_dict(1, event)
+        local injects = self:get_injects()
+        local sandbox = lo.assign({}, upvalues, locals, injects)
+        return sandbox
+    end,
 
-local is_need_pause = function(step, session, environ)
-    local behavior = session.behavior
-    local shunt
-
-    shunt = behavior:match_pause_breakpoint(step)
-    if shunt and match_cond(step, session, environ, shunt.cond) then
-        return shunt
-    end
-
-    shunt = behavior:match_pause_trapper(step)
-    if shunt then
-        return shunt
-    end
-
-    shunt = behavior:match_pause_pace(step)
-    if shunt then
-        return shunt
-    end
-
-    return nil
-end
-
-local process_scope_queue = function(step, session, environ)
-    local behavior = session.behavior
-    local frontend = session.frontend
-    local event = step.event
-
-    for _, item in ipairs(behavior.scope_queue) do
-        if item.type == 'locals' then
-            item.value = environ:get_locals_dict(item.level, event)
-        elseif item.type == 'upvalues' then
-            item.value = environ:get_upvalues_dict(item.level, event)
-        else
-            item.value = {}
+    match_cond = function(self, shunt)
+        local cond = shunt.cond
+        if (not cond) or cond == '' or cond == 'true' then
+            return true
         end
-        frontend:stack_scope(item)
-    end
+        if cond == 'false' then
+            return false
+        end
 
-    behavior.scope_queue = {}
-end
+        local chunk_func = 'return ' .. cond
+        local chunk_name = 'condition'
+        local sandbox = self:create_sandbox()
+        local ok, ret = pcall(function()
+            local func = load(chunk_func, chunk_name, 't', sandbox)
+            return func()
+        end)
+        return ok and ret
+    end,
 
-local interact_loop = function(step, session, environ)
-    local behavior = session.behavior
-    local frontend = session.frontend
+    is_need_skip = function(self)
+        local step = self.step
+        local behavior = self.session.behavior
+        local shunt
 
-    --print(behavior:to_string())
-    local stacks = environ:get_stacks()
-    behavior:execute_pause(stacks)
-    frontend:execute_paused(stacks)
+        shunt = behavior:match_skip_situation(step)
+        if shunt then
+            return shunt
+        end
 
-    while behavior:is_pausing() do
-        session:sync(0.1)
-        process_scope_queue(step, session, environ)
-    end
-end
+        shunt = behavior:match_skip_blackbox(step)
+        if shunt then
+            return shunt
+        end
+
+        return nil
+    end,
+
+    is_need_pause = function(self)
+        local step = self.step
+        local behavior = self.session.behavior
+        local shunt
+
+        shunt = behavior:match_pause_breakpoint(step)
+        if shunt and self:match_cond(shunt) then
+            return shunt
+        end
+
+        shunt = behavior:match_pause_trapper(step)
+        if shunt and self:match_cond(shunt) then
+            return shunt
+        end
+
+        shunt = behavior:match_pause_pace(step)
+        if shunt and self:match_cond(shunt) then
+            return shunt
+        end
+
+        return nil
+    end,
+
+    process_scope_queue = function(self)
+        local event = self.step.event
+        local behavior = self.session.behavior
+        local frontend = self.session.frontend
+        local environ = self.environ
+
+        for _, item in ipairs(behavior.scope_queue) do
+            if item.type == 'locals' then
+                item.value = environ:get_locals_dict(item.level, event)
+            elseif item.type == 'upvalues' then
+                item.value = environ:get_upvalues_dict(item.level, event)
+            else
+                item.value = {}
+            end
+            frontend:stack_scope(item)
+        end
+
+        behavior.scope_queue = {}
+    end,
+
+    process_watch_queue = function(self)
+        --TODO
+    end,
+
+    trace_step = function(self)
+        self.session.behavior:trace_step(self.step)
+    end,
+
+    loop = function(self)
+        local environ = self.environ
+        local session = self.session
+        local behavior = session.behavior
+        local frontend = session.frontend
+
+        --print(self.behavior:to_string())
+        local stacks = environ:get_stacks()
+        behavior:execute_pause(stacks)
+        frontend:execute_paused(stacks)
+
+        while behavior:is_pausing() do
+            session:sync(0.1)
+            self:process_scope_queue()
+            self:process_watch_queue()
+        end
+    end,
+
+})
 
 return function(step, session, environ)
-    local shunt
+    local interacter = Interacter:new(step, session, environ)
 
-    shunt = is_need_skip(step, session)
-    if shunt then
-        --aux.print_step(step, 'SKIP')
-        print(shunt:to_string())
+    local skip_shunt = interacter:is_need_skip()
+    if skip_shunt then
+        --environ.aux.print_step(step, 'SKIP')
+        print(skip_shunt:to_string())
         return
     end
 
-    shunt = is_need_pause(step, session, environ)
-    if shunt then
-        --aux.print_step(step, 'PAUSE')
-        print(shunt:to_string())
-        interact_loop(step, session, environ)
-    else
-        session.behavior:trace_pause_pace(step)
+    local pause_shunt = interacter:is_need_pause()
+    if not pause_shunt then
+        interacter:trace_step()
+        return
     end
+
+    --environ.aux.print_step(step, 'PAUSE')
+    print(pause_shunt:to_string())
+    interacter:loop()
 end

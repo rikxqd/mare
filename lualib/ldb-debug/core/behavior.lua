@@ -99,19 +99,9 @@ local Behavior = class({
         self.pause_pace = nil
     end,
 
-    finish_pause_pace = function(self)
-        self.pause_pace = nil
-    end,
-
-    trace_pause_pace = function(self, step)
-        if self.pause_pace then
-            self.pause_pace:trace(step)
-        end
-    end,
-
     execute_pause = function(self, stacks)
         self.pausing_stacks = stacks
-        self:finish_pause_pace()
+        self.pause_pace = nil
     end,
 
     execute_resume = function(self)
@@ -124,6 +114,12 @@ local Behavior = class({
 
     query_scope = function(self, value)
         table.insert(self.scope_queue, value)
+    end,
+
+    trace_step = function(self, step)
+        if self.pause_pace then
+            self.pause_pace:trace(step)
+        end
     end,
 
     to_string = function(self)
