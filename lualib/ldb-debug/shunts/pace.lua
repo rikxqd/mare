@@ -37,7 +37,7 @@ local Pace = class({
 
     match = function(self, step)
         -- 忽略进入 C 函数
-        if step.scope == 'c' then
+        if step.is_call and step.scope == 'c' then
             return false
         end
 

@@ -80,6 +80,13 @@ steps = function()
     tester('4')
 end
 
+probe = function(name)
+    print('begin probe', name)
+    rdebug.probe(name);
+    print('end probe', name)
+end
+
+
 main = function()
     invoke(hell)
     invoke(sayhi, 'world')
