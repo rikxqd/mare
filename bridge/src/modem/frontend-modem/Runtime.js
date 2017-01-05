@@ -79,4 +79,10 @@ Runtime.discardConsoleEntries = async (req, store) => {
     return null;
 };
 
+Runtime.evaluate = async (req, store, modem) => {
+    if (req.params.objectGroup !== 'watch-group') {
+        return null;
+    }
+};
+
 export default Runtime;

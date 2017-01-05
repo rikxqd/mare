@@ -15,6 +15,7 @@ local Behavior = class({
         self.pause_pace = nil
         self.pausing_stacks = nil
         self.scope_queue = {}
+        self.watch_queue = {}
     end,
 
     match_skip_situation = function(self, step)
@@ -114,6 +115,10 @@ local Behavior = class({
 
     query_scope = function(self, value)
         table.insert(self.scope_queue, value)
+    end,
+
+    query_watch = function(self, value)
+        table.insert(self.watch_queue, value)
     end,
 
     trace_step = function(self, step)

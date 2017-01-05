@@ -48,14 +48,27 @@ local Frontend = class({
         self:emit('message', message)
     end,
 
-    stack_scope = function(self, scope)
+    stack_scope = function(self, item)
         local message = {
             method = 'stackScope',
             params = {
-                level = scope.level,
-                type = scope.type,
-                value = tablson(scope.value),
-                parrot = scope.parrot,
+                level = item.level,
+                type = item.type,
+                value = tablson(item.value),
+                parrot = item.parrot,
+            }
+        }
+        self:emit('message', message)
+    end,
+
+    stack_watch = function(self, item)
+        local message = {
+            method = 'stackWatch',
+            params = {
+                code = item.code,
+                value = item.value,
+                error = item.error,
+                parrot = item.parrot,
             }
         }
         self:emit('message', message)

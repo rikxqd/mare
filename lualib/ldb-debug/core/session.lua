@@ -98,6 +98,10 @@ local Session = class({
             self.behavior:query_scope(params)
             return
         end
+        if method == 'behavior.queryWatch' then
+            self.behavior:query_watch(params)
+            return
+        end
     end,
 
     restore_state = function(self)

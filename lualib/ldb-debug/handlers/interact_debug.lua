@@ -49,23 +49,37 @@ local Interacter = class({
         return sandbox
     end,
 
-    match_cond = function(self, shunt)
-        local cond = shunt.cond
-        if (not cond) or cond == '' or cond == 'true' then
-            return true
+    eval_code = function(self, code)
+        if code == 'true' then
+            return true, true
         end
-        if cond == 'false' then
-            return false
+        if code == 'false' then
+            return true, false
         end
 
-        local chunk_func = 'return ' .. cond
+        local chunk_func = 'return ' .. code
         local chunk_name = 'condition'
         local sandbox = self:create_sandbox()
-        local ok, ret = pcall(function()
+        local ok, value = pcall(function()
             local func = load(chunk_func, chunk_name, 't', sandbox)
+            -- TODO func() 执行如果出错，会在下一次调用时出现
+            -- debugger error: ./ldb-debug/aux/frame.lua:12: Must call in debug client
             return func()
         end)
-        return ok and ret
+        if type(value) == 'string' then
+            local find = '%g/ldb%-debug/handlers/interact_debug.lua:%d+: '
+            value = value:gsub(find, '')
+        end
+        return ok, value
+    end,
+
+    match_cond = function(self, shunt)
+        local cond = shunt.cond
+        if (not cond) or cond == '' then
+            return true
+        end
+        local ok, value = self:eval_code(cond)
+        return ok and value
     end,
 
     is_need_skip = function(self)
@@ -130,7 +144,18 @@ local Interacter = class({
     end,
 
     process_watch_queue = function(self)
-        --TODO
+        local behavior = self.session.behavior
+        local frontend = self.session.frontend
+        local environ = self.environ
+
+        for _, item in ipairs(behavior.watch_queue) do
+            local ok, value = self:eval_code(item.code)
+            item.error = not ok
+            item.value = value
+            frontend:stack_watch(item)
+        end
+
+        behavior.watch_queue = {}
     end,
 
     trace_step = function(self)
