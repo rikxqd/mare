@@ -1,6 +1,23 @@
 import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
+
+const treatAsArray = function(table) {
+    const length = Object.keys(table).length;
+    if (length === 0) {
+        return true;
+    }
+    let i = 1;
+    while (true) {
+        if (table[i] === undefined) {
+            break;
+        }
+        i += 1;
+    }
+    return (i - 1) === length;
+};
+
+
 export class BackendModem extends EventEmitter {
 
     constructor() {
@@ -78,10 +95,12 @@ export class BackendModem extends EventEmitter {
                     path: [],
                 });
                 store.jsobjAppendOne(objectId, value);
+                const subtype = treatAsArray(value) ? 'array' : 'object';
                 argsField.push({
                     description: 'Table',
                     objectId: objectId,
                     type: 'object',
+                    subtype,
                 });
             } else {
                 argsField.push({
