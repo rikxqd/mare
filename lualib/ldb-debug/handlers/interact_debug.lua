@@ -58,7 +58,7 @@ local Interacter = class({
         end
 
         local chunk_func = 'return ' .. code
-        local chunk_name = 'condition'
+        local chunk_name = 'eval'
         local sandbox = self:create_sandbox(level)
         local ok, value = pcall(function()
             local func = load(chunk_func, chunk_name, 't', sandbox)

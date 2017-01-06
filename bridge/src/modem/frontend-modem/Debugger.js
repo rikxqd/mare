@@ -107,9 +107,6 @@ Debugger.setBlackboxedRanges = async(req, store, modem) => {
 };
 
 Debugger.evaluateOnCallFrame = async(req, store, modem) => {
-    if (req.params.objectGroup !== 'watch-group') {
-        return null;
-    }
     const level = JSON.parse(req.params.callFrameId).ordinal;
     modem.getStackWatch(req.id, level, req.params.expression);
     return 'ignoreme';
