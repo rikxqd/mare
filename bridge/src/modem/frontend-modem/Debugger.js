@@ -110,7 +110,8 @@ Debugger.evaluateOnCallFrame = async(req, store, modem) => {
     if (req.params.objectGroup !== 'watch-group') {
         return null;
     }
-    modem.getStackWatch(req.id, req.params.expression);
+    const level = JSON.parse(req.params.callFrameId).ordinal;
+    modem.getStackWatch(req.id, level, req.params.expression);
     return 'ignoreme';
 };
 

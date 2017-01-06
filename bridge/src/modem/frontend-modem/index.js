@@ -192,10 +192,11 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
-    getStackWatch = async (reqId, code) => {
+    getStackWatch = async (reqId, level, code) => {
         const method = 'behavior.queryWatch';
         const params = {
             parrot: {id: reqId},
+            level: level + 1,
             code: code,
         };
         this.sendBackend({method, params});

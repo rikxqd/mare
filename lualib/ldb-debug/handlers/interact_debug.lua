@@ -38,18 +38,18 @@ local Interacter = class({
         }
     end,
 
-    create_sandbox = function(self)
+    create_sandbox = function(self, level)
         local event = self.step.event
         local environ = self.environ
 
-        local locals = environ:get_locals_dict(1, event)
-        local upvalues = environ:get_upvalues_dict(1, event)
+        local locals = environ:get_locals_dict(level, event)
+        local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
         local sandbox = lo.assign({}, upvalues, locals, injects)
         return sandbox
     end,
 
-    eval_code = function(self, code)
+    eval_code = function(self, code, level)
         if code == 'true' then
             return true, true
         end
@@ -59,7 +59,7 @@ local Interacter = class({
 
         local chunk_func = 'return ' .. code
         local chunk_name = 'condition'
-        local sandbox = self:create_sandbox()
+        local sandbox = self:create_sandbox(level)
         local ok, value = pcall(function()
             local func = load(chunk_func, chunk_name, 't', sandbox)
             -- TODO func() 执行如果出错，会在下一次调用时出现
@@ -78,7 +78,7 @@ local Interacter = class({
         if (not cond) or cond == '' then
             return true
         end
-        local ok, value = self:eval_code(cond)
+        local ok, value = self:eval_code(cond, 1)
         return ok and value
     end,
 
@@ -149,7 +149,7 @@ local Interacter = class({
         local environ = self.environ
 
         for _, item in ipairs(behavior.watch_queue) do
-            local ok, value = self:eval_code(item.code)
+            local ok, value = self:eval_code(item.code, item.level)
             item.error = not ok
             item.value = value
             frontend:stack_watch(item)
