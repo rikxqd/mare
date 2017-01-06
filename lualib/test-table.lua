@@ -3,6 +3,8 @@ console = require('ldb-host/console')
 debugger = require('ldb-host/debugger')
 rdebug.start('debug-main')
 
+func_key = function() end
+func_table = {}
 tbl = {
     'number 1',
     [2] = 'number 2',
@@ -14,8 +16,8 @@ tbl = {
     words = {'one', 'two', 'three'},
     [false] = 'boolean false',
     [true] = 'boolean true',
-    [function() end] = 'function 0x123456',
-    [{}] = 'table 0x123456',
+    [func_key] = tostring(func_key),
+    [func_table] = tostring(func_table),
 };
 
 main = function()

@@ -17,9 +17,9 @@ local tablson = function(root_table, max_level)
             local key_type = type(k)
             local key_repr
             if key_type == 'function' then
-                key_repr = string.format('%s', k)
+                key_repr = string.format('%s', k())
             elseif key_type == 'table' then
-                key_repr = string.format('%s', k)
+                key_repr = string.format('%s', k())
             elseif key_type == 'userdata' then
                 key_repr = string.format('%s', k)
             else

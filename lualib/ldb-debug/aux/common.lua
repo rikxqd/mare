@@ -30,7 +30,8 @@ local function expand_value(value, cache)
     end
 
     if orig_type == 'table' then
-        local tbl = {}
+        local mt = {__call= lo.constant(orig_address)}
+        local tbl = setmetatable({}, mt)
         cache[cache_key] = tbl
 
         local next_key, next_value
@@ -39,7 +40,9 @@ local function expand_value(value, cache)
             if next_key == nil then
                 break
             end
-            tbl[next_key] = expand_value(next_value, cache)
+
+            local expanded_next_key = expand_value(next_key, cache)
+            tbl[expanded_next_key] = expand_value(next_value, cache)
         end
 
         return tbl
