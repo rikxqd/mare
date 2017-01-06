@@ -202,4 +202,12 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
+    getRepl = async (reqId, code) => {
+        const method = 'behavior.queryRepl';
+        const params = {
+            parrot: {id: reqId},
+            code: code,
+        };
+        this.sendBackend({method, params});
+    }
 }

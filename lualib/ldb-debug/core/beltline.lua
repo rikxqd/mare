@@ -10,7 +10,7 @@ return function(handlers, session, event, line)
 
     local environ = Environ:new()
     local step = environ:get_step(event)
-    aux.print_step(step)
+    --aux.print_step(step)
 
     session:sync()
     for _, handler in ipairs(handlers) do

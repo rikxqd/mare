@@ -14,4 +14,8 @@ function debugger.behavior(...)
     rdebug.probe('$debugger.behavior', ...)
 end
 
+function debugger.repl(...)
+    rdebug.probe('$debugger.repl', ...)
+end
+
 return debugger;

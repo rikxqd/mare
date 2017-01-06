@@ -80,9 +80,11 @@ Runtime.discardConsoleEntries = async (req, store) => {
 };
 
 Runtime.evaluate = async (req, store, modem) => {
-    if (req.params.objectGroup !== 'watch-group') {
+    if (req.params.objectGroup !== 'console') {
         return null;
     }
+    modem.getRepl(req.id, req.params.expression);
+    return 'ignoreme';
 };
 
 export default Runtime;

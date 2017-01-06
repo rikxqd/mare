@@ -36,6 +36,9 @@ export class BackendModem extends EventEmitter {
         if (msg.method === 'stackWatch') {
             this.stackWatch(msg.params, store);
         }
+        if (msg.method === 'repl') {
+            this.repl(msg.params, store);
+        }
     }
 
     printLogging  = async (data, store) => {
@@ -287,6 +290,41 @@ export class BackendModem extends EventEmitter {
     }
 
     stackWatch = async (data) => {
+        const valueType = typeof data.value;
+        let valueFeild;
+        if (valueType === 'object') {
+            valueFeild = {
+                description: 'Table',
+                type: 'string',
+                value: JSON.stringify(data.value, null, 4),
+            };
+        } else {
+            let desc;
+            if (data.value === undefined) {
+                desc = 'nil';
+            } else {
+                desc = String(data.value);
+            }
+            valueFeild = {
+                description: desc,
+                type: valueType,
+                value: data.value,
+            };
+        }
+        const result = {result: valueFeild};
+        if (data.error) {
+            result.exceptionDetails = {
+                columnNumber: 0,
+                lineNumber: 0,
+                text: String(data.value),
+                exceptionId: new Date().getTime(),
+            };
+        }
+        const resp = {id: data.parrot.id, result};
+        this.sendFrontend(resp);
+    }
+
+    repl = async (data) => {
         const valueType = typeof data.value;
         let valueFeild;
         if (valueType === 'object') {

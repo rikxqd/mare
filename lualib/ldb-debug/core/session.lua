@@ -102,6 +102,10 @@ local Session = class({
             self.behavior:query_watch(params)
             return
         end
+        if method == 'behavior.queryRepl' then
+            self.behavior:query_repl(params)
+            return
+        end
     end,
 
     restore_state = function(self)

@@ -1,76 +1,21 @@
 local lo = require('ldb-debug/utils/lodash')
 local class = require('ldb-debug/utils/oo').class
-
-local create_console_api = function(impl)
-    local alias = {
-        warn = 'warning',
-        group = 'startGroup',
-        group_collapsed = 'startGroupCollapsed',
-        group_end = 'endGroup'
-    }
-    local mt = {
-        __index = function(t, k)
-            return function(...) impl(alias[k] or k, ...) end
-        end,
-    }
-    return setmetatable({}, mt)
-end
+local Sandbox = require('ldb-debug/core/sandbox').Sandbox
 
 local Interacter = class({
 
     constructor = function(self, step, session, environ)
-        self.step = step;
-        self.session = session;
-        self.environ = environ;
-    end,
-
-    get_injects = function(self)
-        local frontend = self.session.frontend
-        local stacks = self.environ:get_stacks()
-
-        return {
-            print = function(...)
-                frontend:console_api({...}, 'log', stack)
-            end,
-            console = create_console_api(function(type, ...)
-                frontend:console_api({...}, type, stacks)
-            end),
-        }
-    end,
-
-    create_sandbox = function(self, level)
-        local event = self.step.event
-        local environ = self.environ
-
-        local locals = environ:get_locals_dict(level, event)
-        local upvalues = environ:get_upvalues_dict(level, event)
-        local injects = self:get_injects()
-        local sandbox = lo.assign({}, upvalues, locals, injects)
-        return sandbox
+        self.step = step
+        self.session = session
+        self.environ = environ
+        self.sandbox = nil
     end,
 
     eval_code = function(self, code, level)
-        if code == 'true' then
-            return true, true
+        if not self.sandbox then
+            self.sandbox = Sandbox:new(self.step, self.session, self.environ)
         end
-        if code == 'false' then
-            return true, false
-        end
-
-        local chunk_func = 'return ' .. code
-        local chunk_name = 'eval'
-        local sandbox = self:create_sandbox(level)
-        local ok, value = pcall(function()
-            local func = load(chunk_func, chunk_name, 't', sandbox)
-            -- TODO func() 执行如果出错，会在下一次调用时出现
-            -- debugger error: ./ldb-debug/aux/frame.lua:12: Must call in debug client
-            return func()
-        end)
-        if type(value) == 'string' then
-            local find = '%g/ldb%-debug/handlers/interact_debug.lua:%d+: '
-            value = value:gsub(find, '')
-        end
-        return ok, value
+        return self.sandbox:eval(code, level)
     end,
 
     match_cond = function(self, shunt)

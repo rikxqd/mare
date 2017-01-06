@@ -73,6 +73,19 @@ local Frontend = class({
         }
         self:emit('message', message)
     end,
+
+    repl = function(self, item)
+        local message = {
+            method = 'repl',
+            params = {
+                code = item.code,
+                value = item.value,
+                error = item.error,
+                parrot = item.parrot,
+            }
+        }
+        self:emit('message', message)
+    end
 })
 
 return {

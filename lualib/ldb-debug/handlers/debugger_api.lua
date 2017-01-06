@@ -1,16 +1,35 @@
+local Sandbox = require('ldb-debug/core/sandbox').Sandbox
+
 local api = {
 
-    idling = function(session)
+    idling = function(step, session, environ)
         session:heartbeat()
         session:sync()
     end,
 
-    reconnect = function(session)
+    reconnect = function(step, session, environ)
         session:start()
     end,
 
-    behavior = function(session)
+    behavior = function(step, session, environ)
         print(session.behavior:to_string())
+    end,
+
+    repl = function(step, session, environ)
+        local behavior = session.behavior
+        local frontend = session.frontend
+        local environ = environ
+
+        local sandbox = Sandbox:new(step, session, environ)
+        sandbox.stack_offset = 1
+        for _, item in ipairs(behavior.repl_queue) do
+            local ok, value = sandbox:eval(item.code, 2)
+            item.error = not ok
+            item.value = value
+            frontend:repl(item)
+        end
+
+        behavior.repl_queue = {}
     end,
 }
 
@@ -29,6 +48,6 @@ return function(step, session, environ)
     if func == nil then
         return
     end
-    func(session)
+    func(step, session, environ)
 end
 
