@@ -69,7 +69,7 @@ export class BackendModem extends EventEmitter {
         const argsField = [];
         const keyLength = Object.keys(data.value).length;
         for (let i = 1; i <= keyLength; i++) {
-            const key = `[${i}]`;
+            const key = `${i}`;
             const value = data.value[key];
             const valueType = typeof value;
             if (valueType === 'object') {
