@@ -1,19 +1,19 @@
 local format_frame = function(frame, event)
-    local fmt = '<Frame %-10s  %25s:%-2d  %3s:%s:%-15s>'
+    local fmt = '<frame %-10s  %25s:%-2d  %3s:%s:%-15s>'
     return fmt:format(
         event, frame.source, frame.currentline,
         frame.what, frame.namewhat, frame.name)
 end
 
 local format_step = function(step)
-    local fmt = '<Step %-10s  %25s:%-2d  %3s:%-15s  %s>'
+    local fmt = '<step %-10s  %25s:%-2d  %3s:%-15s  %s>'
     return fmt:format(
         step.event, step.file, step.line,
         step.scope, step.func, step.name)
 end
 
 local format_stack = function(stack)
-    local fmt = '<Stack %-10s  %25s:%-2d  %15s>'
+    local fmt = '<stack %-10s  %25s:%-2d  %15s>'
     return fmt:format(
         stack.event, stack.file, stack.line, stack.func)
 end

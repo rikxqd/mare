@@ -16,7 +16,7 @@ local debugger = factory.standard(IOStream, {
             expire = -1,
         },
     },
-    pause_on_start = false,
+    pause_on_start = config.pause,
 });
 
 rdebug.hookmask(debugger.mask())
@@ -25,6 +25,6 @@ rdebug.sethook(function(event, line)
     rdebug.hookmask(debugger.mask())
 end);
 
-if config.autostart ~= false then
-    debugger.session:start()
+if config.start ~= false then
+    debugger.start()
 end

@@ -27,7 +27,7 @@ local api = {
 
         local args = environ:get_locals_array(1, step.event)[1]
         local debug_print = args and args.debug_print
-        local fmt = '<ReplCode>\n%s\n</ReplCode>'
+        local fmt = '<replcode>\n%s\n</replcode>'
 
         local sandbox = Sandbox:new(step, session, environ)
         sandbox.stack_offset = 1

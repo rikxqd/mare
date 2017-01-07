@@ -17,7 +17,7 @@ hell = function()
             return function()
                 count = count + 1
                 local name = 'level 4'
-                print(strint.format('count in %s: %d', name, count))
+                print(string.format('count in %s: %d', name, count))
             end
         end
     end
