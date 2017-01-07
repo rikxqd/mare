@@ -1,4 +1,4 @@
-local lo = require('ldb-debug/utils/lodash')
+local lo = require('ldb/utils/lodash')
 local rdebug = require('remotedebug')
 
 local function expand_value(value, cache)

@@ -1,4 +1,4 @@
-local Sandbox = require('ldb-debug/core/sandbox').Sandbox
+local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 
 local api = {
 

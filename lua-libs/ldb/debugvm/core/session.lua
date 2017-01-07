@@ -1,8 +1,8 @@
-local class = require('ldb-debug/utils/oo').class
-local libstr = require('ldb-debug/utils/string')
-local Behavior = require('ldb-debug/core/behavior').Behavior
-local Frontend = require('ldb-debug/core/frontend').Frontend
-local Modem = require('ldb-debug/core/modem').Modem
+local class = require('ldb/utils/oo').class
+local libstr = require('ldb/utils/string')
+local Behavior = require('ldb/debugvm/core/behavior').Behavior
+local Frontend = require('ldb/debugvm/core/frontend').Frontend
+local Modem = require('ldb/debugvm/core/modem').Modem
 
 local Session = class({
 

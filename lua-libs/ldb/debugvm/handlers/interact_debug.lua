@@ -1,6 +1,6 @@
-local lo = require('ldb-debug/utils/lodash')
-local class = require('ldb-debug/utils/oo').class
-local Sandbox = require('ldb-debug/core/sandbox').Sandbox
+local lo = require('ldb/utils/lodash')
+local class = require('ldb/utils/oo').class
+local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 
 local Interacter = class({
 

@@ -1,4 +1,4 @@
-local class = require('ldb-debug/utils/oo').class
+local class = require('ldb/utils/oo').class
 
 local Blackbox = class({
 

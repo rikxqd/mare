@@ -1,38 +1,35 @@
 rdebug = require('remotedebug')
-console = require('ldb-host/console')
-debugger = require('ldb-host/debugger')
-rdebug.start('debug-main')
+console = require('ldb/hostvm/console')
+debugger = require('ldb/hostvm/debugger')
+rdebug.start('debug-general')
 
-lib = require('test-lib')
+libmath = require('lib-math')
 
 hell = function()
-    local level = 1
-    local name1 = 'name 1'
-
+    local count = 1
+    local name = 'level 1'
     return function()
-        level = level + 1
-        local name2 = 'name 2'
-
+        count = count + 1
+        local name = 'level 2'
         return function()
-            level = level + 1
-            local name3 = 'name 3'
-
+            count = count + 1
+            local name = 'level 3'
             return function()
-                local name4 = 'name 4'
-                print(level, name1, name2, name3, name4)
+                count = count + 1
+                local name = 'level 4'
+                print(strint.format('count in %s: %d', name, count))
             end
-
         end
     end
 end
 
-sayhi = function(name)
+hello = function(name)
     print('hello', name)
-    name = 1
+    name = 'one'
     print('hello', name)
-    name = '2'
+    name = 'two'
     print('hello', name)
-    name = {'three'}
+    name = 'three'
     print('hello', name)
     name = nil
     print('hello', name)
@@ -46,7 +43,7 @@ fact = function(n)
 end
 
 invoke = function(func, ...)
-    print('invoke', func, ...)
+    print('invoking', func, ...)
     func(...)
 end
 
@@ -54,6 +51,8 @@ steps = function()
 
     local test1 = function(args)
         local a = 'a'
+        local b = 'b'
+        local c = 'c'
     end
 
     local test2 = function(args)
@@ -64,20 +63,18 @@ steps = function()
 
     local test3 = function(args)
         local a = 'a'
-        local b = 'b'
-        local c = 'c'
         return nil, 'ret2'
     end
 
-    local tester = function(args)
+    local period = function(args)
         print('test1 return', test1(args))
         print('test2 return', test2(args))
         print('test3 return', test3(args))
     end
 
-    tester('1')
-    print(tester('2'), tester('3'))
-    tester('4')
+    period('period 1')
+    print(period('period 2'), period('period 3'))
+    period('period 4')
 end
 
 probe = function(name)
@@ -86,11 +83,12 @@ probe = function(name)
     print('end probe', name)
 end
 
-
 main = function()
-    invoke(hell)
-    invoke(sayhi, 'world')
+    hell()()()()
+    invoke(hello, 'world')
     invoke(fact, 5)
+    invoke(steps)
+    invoke(probe, 'test')
 end
 
 --main()

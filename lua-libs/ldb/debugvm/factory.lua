@@ -1,5 +1,5 @@
-local Session = require('ldb-debug/core/session').Session
-local beltline = require('ldb-debug/core/beltline')
+local Session = require('ldb/debugvm/core/session').Session
+local beltline = require('ldb/debugvm/core/beltline')
 
 local build = function(IOStream, config, handlers)
     local iostream = IOStream:new(config.iostream)
@@ -8,18 +8,21 @@ local build = function(IOStream, config, handlers)
     local hook = function(event, line)
         beltline(handlers, session, event, line)
     end
+    local mask = function()
+        return 'crl';
+    end
     local start = function()
         session:start()
     end
-
     return {
         hook = hook,
+        mask = mask,
         start = start,
     }
 end
 
 local standard = function(IOStream, config)
-    local dir = 'ldb-debug/handlers/%s'
+    local dir = 'ldb/debugvm/handlers/%s'
     local loader = function(n) 
         return require(dir:format(n))
     end

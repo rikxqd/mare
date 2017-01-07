@@ -1,5 +1,5 @@
-local aux = require('ldb-debug/aux')
-local Environ = require('ldb-debug/core/environ').Environ
+local aux = require('ldb/debugvm/aux')
+local Environ = require('ldb/debugvm/core/environ').Environ
 
 return function(handlers, session, event, line)
     local frame = aux.get_frame(1)

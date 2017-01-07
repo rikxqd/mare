@@ -1,6 +1,6 @@
 local rdebug = require('remotedebug')
-local IOStream = require('iostream-impl/lsocket')
-local factory = require('ldb-debug/factory')
+local IOStream = require('ldb/iostream/lsocket')
+local factory = require('ldb/debugvm/factory')
 
 local debugger = factory.standard(IOStream, {
     iostream = {
@@ -8,16 +8,18 @@ local debugger = factory.standard(IOStream, {
         port = 8083,
     },
     session = {
-        id = 'abcde',
+        id = 'general',
         args = {
-            title = 'debug-main',
+            title = 'debug-general',
             expire = -1,
-            project = 'ldb-example',
         },
-        break_on_start = false,
     },
+    pause_on_start = false,
 });
 
-rdebug.hookmask('crl')
-rdebug.sethook(debugger.hook)
+rdebug.hookmask(debugger.mask())
+rdebug.sethook(function(event, line) 
+    debugger.hook(event, line)
+    rdebug.hookmask(debugger.mask())
+end);
 debugger.start()

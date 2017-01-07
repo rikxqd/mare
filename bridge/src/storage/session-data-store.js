@@ -14,9 +14,9 @@ export class SessionDataStore extends EventEmitter {
         super();
         this.cln = cln;
         this.project = {
-            id: 'lualib',
-            sourceRoot: resolveHome('~/work/ldb/lualib/'),
-            mainFile: 'test2.lua',
+            id: 'ldb-example',
+            sourceRoot: resolveHome('~/work/ldb/lua-example/'),
+            mainFile: 'host-test.lua',
             breakOnEnter: true,
             snapshotLimitLevel: 6,
         };

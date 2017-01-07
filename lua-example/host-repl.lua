@@ -1,20 +1,22 @@
 rdebug = require('remotedebug')
-console = require('ldb-host/console')
-debugger = require('ldb-host/debugger')
+console = require('ldb/hostvm/console')
+debugger = require('ldb/hostvm/debugger')
+rdebug.start('debug-general')
+
 lsocket = require('lsocket')
-rdebug.start('debug-main')
 
 sleep = function(s)
     lsocket.select(s / 1000)
 end
 
-loop = function()
+main = function()
+    local interval = 200
     local count = 0
     while true do
         debugger.repl()
-        sleep(200)
+        sleep(interval)
         count = count + 1
     end
 end
 
-loop()
+main()

@@ -1,5 +1,5 @@
-local class = require('ldb-debug/utils/oo').class
-local tablson = require('ldb-debug/core/tablson')
+local class = require('ldb/utils/oo').class
+local tablson = require('ldb/utils/tablson')
 
 local Frontend = class({
 

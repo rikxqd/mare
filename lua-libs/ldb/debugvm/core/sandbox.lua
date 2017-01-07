@@ -1,5 +1,5 @@
-local lo = require('ldb-debug/utils/lodash')
-local class = require('ldb-debug/utils/oo').class
+local lo = require('ldb/utils/lodash')
+local class = require('ldb/utils/oo').class
 
 local create_console_api = function(impl)
     local alias = {
@@ -71,7 +71,7 @@ local Sandbox = class({
             end
 
             -- TODO func() 执行如果出错，会在下一次调用时出现
-            -- debugger error: ./ldb-debug/aux/frame.lua:12: Must call in debug client
+            -- debugger error: ./ldb/debugvm/aux/frame.lua:12: Must call in debug client
             return func()
         end)
         if type(value) == 'string' then
