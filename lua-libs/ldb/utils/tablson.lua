@@ -22,6 +22,8 @@ local tablson = function(root_table, max_level)
                 key_repr = string.format('%s', k())
             elseif key_type == 'userdata' then
                 key_repr = string.format('%s', k)
+            elseif key_type == 'boolean' then
+                key_repr = string.format('%s', k)
             else
                 key_repr = string.format('%q', k)
             end
@@ -29,11 +31,13 @@ local tablson = function(root_table, max_level)
             local value_type = type(v)
             local value_repr
             if value_type == 'function' then
-                value_type = string.format('[%s]', v)
-            elseif value_type == 'userdata' then
-                value_type = string.format('[%s]', v)
+                value_repr = string.format('%s', v())
             elseif value_type == 'table' then
                 value_repr = convert(v, level)
+            elseif value_type == 'userdata' then
+                value_repr = string.format('%s', v)
+            elseif key_type == 'boolean' then
+                value_repr = string.format('[%s]', v)
             else
                 value_repr = v
             end

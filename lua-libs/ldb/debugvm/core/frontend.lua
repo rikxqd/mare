@@ -66,7 +66,7 @@ local Frontend = class({
             method = 'stackWatch',
             params = {
                 code = item.code,
-                value = item.value,
+                value = tostring(item.value),
                 error = item.error,
                 parrot = item.parrot,
             }
@@ -79,7 +79,7 @@ local Frontend = class({
             method = 'repl',
             params = {
                 code = item.code,
-                value = item.value,
+                value = tostring(item.value),
                 error = item.error,
                 parrot = item.parrot,
             }
