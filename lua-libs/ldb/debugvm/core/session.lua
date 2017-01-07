@@ -20,9 +20,23 @@ local Session = class({
 
         self.connected = false
         self.handshaked = false
+        self.storage = {}
     end,
 
     start = function(self)
+        if not self.connected then
+            self.modem:connect()
+        end
+    end,
+
+    stop = function(self)
+        if self.connected then
+            self.modem:disconnect()
+        end
+    end,
+
+    restart = function(self)
+        self.modem:disconnect()
         self.modem:connect()
     end,
 

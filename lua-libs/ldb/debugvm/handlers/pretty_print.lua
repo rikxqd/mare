@@ -7,7 +7,13 @@ return function(step, session, environ)
         return
     end
 
+    local config = session.storage['pretty_print']
+    if config and config.mute then
+        return
+    end
+
     local stack = environ:get_stack(1)
     local args = environ:get_locals_array(1, step.event)
-    session.frontend:console_api(args, 'log', {stack})
+    local type = (config and config.type) or 'log'
+    session.frontend:console_api(args, type, {stack})
 end

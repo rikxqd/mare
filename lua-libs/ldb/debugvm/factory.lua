@@ -1,5 +1,8 @@
+local aux = require('ldb/debugvm/aux')
 local Session = require('ldb/debugvm/core/session').Session
 local beltline = require('ldb/debugvm/core/beltline')
+
+local start_args = aux.get_locals_array(0)
 
 local build = function(IOStream, config, handlers)
     local iostream = IOStream:new(config.iostream)
@@ -11,13 +14,11 @@ local build = function(IOStream, config, handlers)
     local mask = function()
         return 'crl';
     end
-    local start = function()
-        session:start()
-    end
+
     return {
         hook = hook,
         mask = mask,
-        start = start,
+        session = session,
     }
 end
 
@@ -36,6 +37,7 @@ local standard = function(IOStream, config)
 end
 
 return {
+    start_args = start_args,
     build = build,
     standard = standard,
 }
