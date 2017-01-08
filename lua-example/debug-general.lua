@@ -1,6 +1,6 @@
 local rdebug = require('remotedebug')
 local IOStream = require('ldb/iostream/lsocket').IOStream
-local Debugger = require('ldb/debugvm/factory').Debugger
+local Debugger = require('ldb/debugvm/debugger').Debugger
 
 local config = Debugger.get_host_args()[2] or {}
 
