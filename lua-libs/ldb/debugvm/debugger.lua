@@ -18,6 +18,7 @@ local Debugger = class({
         self.config = config
         self:init_session(IOStream)
         self:init_handlers()
+        self:init_require_mask_dict()
         self:init_mask()
     end,
 
@@ -31,17 +32,19 @@ local Debugger = class({
         self.handlers = lo.clone(builtin_handlers)
     end,
 
-    init_mask = function(self)
-        local concat = ''
-
+    init_require_mask_dict = function(self)
+        local dict = {}
         for _, handler in ipairs(self.handlers) do
-            concat = concat .. handler.init_hook_mask
+            dict[handler.name] = handler.init_hook_mask
         end
+        self.require_mask_dict = dict
+    end,
 
+    init_mask = function(self)
+        local concat = self:flat_require_mask_dict()
         if self.config.pause_on_start then
             concat = concat .. 'r'
         end
-
         self.mask = libstr.uniqchars(concat)
     end,
 
@@ -77,14 +80,23 @@ local Debugger = class({
 
         local session = self.session
         local handlers = self.handlers
-        local masks = {}
+        environ.require_mask_dict = self.require_mask_dict
 
         session:sync()
         for _, handler in ipairs(handlers) do
+            environ.require_mask_name = handler.name
             handler.handle(step, session, environ)
         end
 
-        --self.mask = libstr.uniqchars(environ.mask_chars)
+        self.mask = self:flat_require_mask_dict()
+    end,
+
+    flat_require_mask_dict = function(self)
+        local mask = ''
+        for _, v in pairs(self.require_mask_dict) do
+            mask = mask .. v
+        end
+        return libstr.uniqchars(mask)
     end,
 
     get_host_args = function(cls)

@@ -125,6 +125,38 @@ local Interacter = class({
         end
     end,
 
+    require_mask = function(self)
+        local behavior = self.session.behavior
+
+        local chars = {}
+
+        for _, breakpoint in ipairs(behavior.pause_breakpoints) do
+            local event = breakpoint.event
+            if event == 'call' or event == 'tailcall' then
+                chars.c = true
+            elseif event == 'return' then
+                chars.r = true
+            elseif event == 'line' then
+                chars.l = true
+            end
+        end
+
+        if behavior.pause_pace then
+            chars.l = true
+            chars.c = true
+            chars.r = true
+        end
+
+        if behavior.pause_trapper then
+            chars.r = true
+        end
+
+        local mask = ''
+        for k, _ in pairs(chars) do
+            mask = mask .. k
+        end
+        self.environ:require_mask(mask)
+    end,
 })
 
 local handle = function(step, session, environ)
@@ -132,24 +164,26 @@ local handle = function(step, session, environ)
 
     local skip_shunt = interacter:is_need_skip()
     if skip_shunt then
-        --environ.aux.print_step(step, 'SKIP')
-        print(skip_shunt:to_string())
+        --print(environ.aux.format_step(step), 'SKIP')
+        interacter:require_mask()
         return
     end
 
     local pause_shunt = interacter:is_need_pause()
     if not pause_shunt then
         interacter:trace_step()
+        interacter:require_mask()
         return
     end
 
-    --environ.aux.print_step(step, 'PAUSE')
-    print(pause_shunt:to_string())
+    --print(environ.aux.format_step(step), 'PAUSE')
+    --print(pause_shunt:to_string())
     interacter:loop()
+    interacter:require_mask()
 end
 
 return {
     name = 'ldb.interact_debug',
     handle = handle,
-    init_hook_mask = 'crl',
+    init_hook_mask = '',
 }

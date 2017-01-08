@@ -7,7 +7,8 @@ local Environ = class({
         self.aux = aux
         self.locals_array_cache = {}
         self.locals_dict_cache = {}
-        self.mask_chars = ''
+        self.require_mask_name = nil
+        self.require_mask_dict = nil
     end,
 
     get_locals_array = function(self, level, event)
@@ -61,7 +62,11 @@ local Environ = class({
     end,
 
     require_mask = function(self, mask)
-        self.mask_chars = self.mask_chars .. mask
+        local name = self.require_mask_name
+        local dict = self.require_mask_dict
+        if mask and name and dict then
+            dict[name] = mask
+        end
     end,
 
 })
