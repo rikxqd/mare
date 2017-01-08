@@ -1,22 +1,24 @@
+local lo = require('ldb/utils/lodash')
+local libstr = require('ldb/utils/string')
 local class = require('ldb/utils/oo').class
 local aux = require('ldb/debugvm/aux')
 local Session = require('ldb/debugvm/core/session').Session
 local Environ = require('ldb/debugvm/core/environ').Environ
 
 local builtin_handlers = {
-    {'debugger_api', require('ldb/debugvm/handlers/debugger_api')},
-    {'interact_debug', require('ldb/debugvm/handlers/interact_debug')},
-    {'pretty_print', require('ldb/debugvm/handlers/pretty_print')},
-    {'console_api', require('ldb/debugvm/handlers/console_api')},
+    require('ldb/debugvm/handlers/debugger_api'),
+    require('ldb/debugvm/handlers/interact_debug'),
+    require('ldb/debugvm/handlers/pretty_print'),
+    require('ldb/debugvm/handlers/console_api'),
 }
 
 local Debugger = class({
 
     constructor = function(self, config, IOStream)
         self.config = config
-        self.mask = 'crl'
         self:init_session(IOStream)
         self:init_handlers()
+        self:init_mask()
     end,
 
     init_session = function(self, IOStream)
@@ -26,11 +28,21 @@ local Debugger = class({
     end,
 
     init_handlers = function(self)
-        local handlers = {}
-        for _, v in ipairs(builtin_handlers) do
-            table.insert(handlers, v)
+        self.handlers = lo.clone(builtin_handlers)
+    end,
+
+    init_mask = function(self)
+        local concat = ''
+
+        for _, handler in ipairs(self.handlers) do
+            concat = concat .. handler.init_hook_mask
         end
-        self.handlers = handlers
+
+        if self.config.pause_on_start then
+            concat = concat .. 'r'
+        end
+
+        self.mask = libstr.uniqchars(concat)
     end,
 
     start = function(self)
@@ -68,47 +80,11 @@ local Debugger = class({
         local masks = {}
 
         session:sync()
-        for _, item in ipairs(handlers) do
-            local handler = item[2]
-            local mask = handler(step, session, environ)
-            if mask then
-                table.insert(masks, mask)
-            end
+        for _, handler in ipairs(handlers) do
+            handler.handle(step, session, environ)
         end
 
-        --self.mask = self:merge_masks(masks)
-    end,
-
-    merge_masks = function(self, masks)
-        local mask_call = false
-        local mask_line = false
-        local mask_return = false
-
-        for _, v in ipairs(masks) do
-            for i = 1, #v + 1 do
-                local char = v:sub(i, i)
-                if char == 'c' then
-                    mask_call = true
-                elseif char == 'r' then
-                    mask_return = true
-                elseif char == 'l' then
-                    mask_return = true
-                end
-            end
-        end
-
-        local merged = ''
-        if mask_call then
-            merged = merged .. 'c'
-        end
-        if mask_return then
-            merged = merged .. 'r'
-        end
-        if mask_line then
-            merged = merged .. 'l'
-        end
-        print('a', merged)
-        return merged
+        --self.mask = libstr.uniqchars(environ.mask_chars)
     end,
 
     get_host_args = function(cls)

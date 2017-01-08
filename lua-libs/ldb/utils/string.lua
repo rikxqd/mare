@@ -15,7 +15,19 @@ local urlencode = function(query)
     return table.concat(items, '&')
 end
 
+local uniqchars = function(chars)
+    local result = ''
+    for i = 1, #chars + 1 do
+        local char = chars:sub(i, i)
+        if not result:find(char, 1, true) then
+            result = result .. char
+        end
+    end
+    return result
+end
+
 return {
     split = split,
     urlencode = urlencode,
+    uniqchars = uniqchars,
 }

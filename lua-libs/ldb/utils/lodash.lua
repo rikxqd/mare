@@ -13,7 +13,16 @@ local constant = function(value)
     return function() return value end
 end
 
+local clone = function(value)
+    local copy = {}
+    for k, v in pairs(value) do
+        copy[k] = v
+    end
+    return copy
+end
+
 return {
     assign = assign,
     constant = constant,
+    clone = clone,
 }

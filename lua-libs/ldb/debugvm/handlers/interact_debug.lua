@@ -127,7 +127,7 @@ local Interacter = class({
 
 })
 
-return function(step, session, environ)
+local handle = function(step, session, environ)
     local interacter = Interacter:new(step, session, environ)
 
     local skip_shunt = interacter:is_need_skip()
@@ -147,3 +147,9 @@ return function(step, session, environ)
     print(pause_shunt:to_string())
     interacter:loop()
 end
+
+return {
+    name = 'ldb.interact_debug',
+    handle = handle,
+    init_hook_mask = 'crl',
+}

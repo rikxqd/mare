@@ -1,4 +1,4 @@
-return function(step, session, environ)
+local handle = function(step, session, environ)
     if step.event ~= 'probe' then
         return
     end
@@ -15,3 +15,9 @@ return function(step, session, environ)
 
     session.frontend:console_api(args, type, stacks);
 end
+
+return {
+    name = 'ldb.console_api',
+    handle = handle,
+    init_hook_mask = '',
+}

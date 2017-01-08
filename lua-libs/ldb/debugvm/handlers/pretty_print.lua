@@ -1,4 +1,4 @@
-return function(step, session, environ)
+local handle = function(step, session, environ)
     if step.event ~= 'call' and step.event ~= 'tailcall' then
         return
     end
@@ -17,3 +17,9 @@ return function(step, session, environ)
     local type = (config and config.type) or 'log'
     session.frontend:console_api(args, type, {stack})
 end
+
+return {
+    name = 'ldb.pretty_print',
+    handle = handle,
+    init_hook_mask = 'c',
+}

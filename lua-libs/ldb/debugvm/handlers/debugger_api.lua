@@ -62,7 +62,7 @@ local api = {
     end,
 }
 
-return function(step, session, environ)
+local handle = function(step, session, environ)
     if step.event ~= 'probe' then
         return
     end
@@ -80,3 +80,8 @@ return function(step, session, environ)
     func(step, session, environ)
 end
 
+return {
+    name = 'ldb.debugger_api',
+    handle = handle,
+    init_hook_mask = '',
+}

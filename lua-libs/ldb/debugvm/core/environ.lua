@@ -7,6 +7,7 @@ local Environ = class({
         self.aux = aux
         self.locals_array_cache = {}
         self.locals_dict_cache = {}
+        self.mask_chars = ''
     end,
 
     get_locals_array = function(self, level, event)
@@ -58,6 +59,11 @@ local Environ = class({
     get_step = function(self, event)
         return aux.get_step(event)
     end,
+
+    require_mask = function(self, mask)
+        self.mask_chars = self.mask_chars .. mask
+    end,
+
 })
 
 return {
