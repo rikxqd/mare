@@ -113,4 +113,6 @@ local IOStream = {
 
 }
 
-return IOStream
+return {
+    IOStream = IOStream,
+}
