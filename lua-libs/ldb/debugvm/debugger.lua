@@ -61,7 +61,7 @@ local Debugger = class({
                 file = step.file,
                 line = step.line,
             }
-            behavior:set_pause_breakpoints({breakpoint})
+            behavior:insert_pause_breakpoint(breakpoint, 1)
         end
 
         session:start()

@@ -3,35 +3,39 @@ local rdebug = require('remotedebug')
 local debugger = {}
 
 function debugger.idling(...)
-    rdebug.probe('$debugger.idling', ...)
+    return rdebug.probe('$debugger.idling', ...)
 end
 
 function debugger.start(...)
-    rdebug.probe('$debugger.start', ...)
+    return rdebug.probe('$debugger.start', ...)
 end
 
 function debugger.stop(...)
-    rdebug.probe('$debugger.stop', ...)
+    return rdebug.probe('$debugger.stop', ...)
 end
 
 function debugger.restart(...)
-    rdebug.probe('$debugger.restart', ...)
+    return rdebug.probe('$debugger.restart', ...)
 end
 
 function debugger.keepalive(...)
-    rdebug.probe('$debugger.keepalive', ...)
+    return rdebug.probe('$debugger.keepalive', ...)
 end
 
 function debugger.setopt(...)
-    rdebug.probe('$debugger.setopt', ...)
+    return rdebug.probe('$debugger.setopt', ...)
 end
 
 function debugger.repl(...)
-    rdebug.probe('$debugger.repl', ...)
+    return rdebug.probe('$debugger.repl', ...)
+end
+
+function debugger.pause(...)
+    return rdebug.probe('$debugger.pause', ...)
 end
 
 function debugger.print_behavior(...)
-    rdebug.probe('$debugger.print_behavior', ...)
+    return rdebug.probe('$debugger.print_behavior', ...)
 end
 
 return debugger;

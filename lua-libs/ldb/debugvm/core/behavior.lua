@@ -85,6 +85,10 @@ local Behavior = class({
         self.pause_breakpoints = breakpoints
     end,
 
+    insert_pause_breakpoint = function(self, props, pos)
+        table.insert(self.pause_breakpoints, pos, Breakpoint:new(props))
+    end,
+
     set_pause_trapper = function(self, props)
         if props then
             self.pause_trapper = Trapper:new(props)

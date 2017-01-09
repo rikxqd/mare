@@ -57,6 +57,16 @@ local api = {
         lo.assign(item, value)
     end,
 
+    pause = function(step, session, environ)
+        local breakpoint = {
+            event = 'return',
+            file = step.file,
+            line = step.line,
+            func = step.func,
+        }
+        session.behavior:insert_pause_breakpoint(breakpoint, 1)
+    end,
+
     print_behavior = function(step, session, environ)
         print(session.behavior:to_string())
     end,
