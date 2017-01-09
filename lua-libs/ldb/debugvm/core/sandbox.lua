@@ -24,6 +24,7 @@ local Sandbox = class({
         self.session = session
         self.environ = environ
         self.stack_offset = 0
+        self.envs = {}
     end,
 
     get_injects = function(self)
@@ -48,14 +49,20 @@ local Sandbox = class({
     end,
 
     get_env = function(self, level)
+        local env = self.envs[level]
+        if env then
+            return env
+        end
+
         local event = self.step.event
         local environ = self.environ
-
         local locals = environ:get_locals_dict(level, event)
         local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
         local fallback = {_LDB=injects}
         local env = lo.assign({}, mirage, injects, upvalues, locals, fallback)
+
+        self.envs[level] = env
         return env
     end,
 
