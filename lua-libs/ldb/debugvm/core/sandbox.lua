@@ -54,7 +54,8 @@ local Sandbox = class({
         local locals = environ:get_locals_dict(level, event)
         local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
-        local env = lo.assign({}, mirage, upvalues, locals, injects)
+        local fallback = {_LDB=injects}
+        local env = lo.assign({}, mirage, injects, upvalues, locals, fallback)
         return env
     end,
 
