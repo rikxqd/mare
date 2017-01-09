@@ -7,7 +7,7 @@ local handle = function(step, session, environ)
         return
     end
 
-    local config = session.storage['pretty_print']
+    local config = session.storage.pretty_print
     if config and config.mute then
         return
     end

@@ -2,7 +2,7 @@ local lo = require('ldb/utils/lodash')
 local class = require('ldb/utils/oo').class
 local mirage = require('ldb/debuglib/core/mirage')
 
-local create_console_api = function(impl)
+local create_console = function(impl)
     local alias = {
         warn = 'warning',
         group = 'startGroup',
@@ -28,16 +28,20 @@ local Sandbox = class({
 
     get_injects = function(self)
         local frontend = self.session.frontend
+        local storage = self.session.storage
         local stacks = self.environ:get_stacks()
         for i = 1, self.stack_offset do
             table.remove(stacks, 1)
         end
 
+        local pp_config = storage.pretty_print
+        local pp_type = (pp_config and pp_config.type) or 'log'
+
         return {
             print = function(...)
-                frontend:console_api({...}, 'log', stacks)
+                frontend:console_api({...}, pp_type, stacks)
             end,
-            console = create_console_api(function(type, ...)
+            console = create_console(function(type, ...)
                 frontend:console_api({...}, type, stacks)
             end),
         }

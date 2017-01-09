@@ -4,7 +4,7 @@ console = require('ldb/hostvm/console')
 debugger = require('ldb/hostvm/debugger')
 rdebug.start('debug-general')
 
-debugger.setopt('pretty_print', {mute=true})
+debugger.setopt('pretty_print', {mute=true, type='debug'})
 
 sleep = function(s)
     lsocket.select(s / 1000)
