@@ -1,5 +1,6 @@
 local lo = require('ldb/utils/lodash')
 local class = require('ldb/utils/oo').class
+local mirage = require('ldb/debuglib/core/mirage')
 
 local create_console_api = function(impl)
     local alias = {
@@ -49,7 +50,7 @@ local Sandbox = class({
         local locals = environ:get_locals_dict(level, event)
         local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
-        local env = lo.assign({}, upvalues, locals, injects)
+        local env = lo.assign({}, mirage, upvalues, locals, injects)
         return env
     end,
 
