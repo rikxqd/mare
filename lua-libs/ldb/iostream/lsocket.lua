@@ -59,7 +59,12 @@ local IOStream = {
                 break
             end
 
-            sent = sent + nbytes
+            if nbytes == false then
+                lsocket.select(nil, selects, 0.1)
+            else
+                sent = sent + nbytes
+            end
+
         end
 
         if error then
