@@ -20,7 +20,7 @@ local debugger = Debugger:new({
 }, IOStream);
 
 rdebug.hookmask(debugger.mask)
-rdebug.sethook(function(event, line) 
+rdebug.sethook(function(event, line)
     debugger:hook(event, line)
     rdebug.hookmask(debugger.mask)
 end);
