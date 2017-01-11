@@ -1,5 +1,5 @@
 local tablson = function(root_table, max_level)
-    max_level = max_level or 5
+    max_level = max_level or 10
 
     local convert
     convert = function(tbl, level)
