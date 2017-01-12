@@ -1,0 +1,20 @@
+import uuid from 'node-uuid';
+import fs from 'fs';
+import * as msgpack from 'msgpack-lite';
+import {TabsonView} from './src/websocket/tabson';
+
+const pack_data = fs.readFileSync('../lua-example/data.msgpack');
+const tabson = msgpack.decode(pack_data);
+const tv = new TabsonView(uuid.v4(), tabson);
+console.log(tabson);
+console.log(tv.query());
+console.log(tv.query(['1']));
+console.log(tv.query(['"1"']));
+console.log(tv.query(['false']));
+console.log(tv.query(['"value_array"', '1']));
+console.log(tv.query(['"value_dict"', '"x"']));
+console.log(tv.query(['"value_func"']));
+console.log(tv.query(['function: 0x120f280']));
+console.log(tv.attrs());
+console.log(tv.attrs(['"value_dict"']));
+console.log(tv.attrs(['"value_array"']));
