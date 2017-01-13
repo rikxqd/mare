@@ -2,7 +2,6 @@ const TYPE_SPECIAL = 0;
 const TYPE_PRIMITIVE = 1;
 const TYPE_REFERENCE = 2;
 
-
 const capitalize = (s) => s[0].toUpperCase() + s.slice(1);
 
 const typeAlias = {
@@ -37,6 +36,7 @@ export class TabsonView {
             return {
                 type: 'string',
                 value: v,
+                description: String(v),
             };
         }
 
@@ -45,6 +45,7 @@ export class TabsonView {
             return {
                 type: type,
                 value: v,
+                description: String(v),
             };
         }
 
@@ -52,7 +53,7 @@ export class TabsonView {
             const ref = refs[v];
             const type = typeAlias[ref.type];
             const desc = capitalize(ref.type);
-            return {type, desc};
+            return {type, description: desc, subtype: 'object'};
         }
     }
 
@@ -68,10 +69,14 @@ export class TabsonView {
                     if (isStringKey) {
                         return keyLeaf.v === JSON.parse(key);
                     } else {
-                        return String(keyLeaf.v) === key;
+                        try {
+                            return keyLeaf.v === JSON.parse(key.slice(1, -1));
+                        } catch (e) {
+                            return false;
+                        }
                     }
                 } else if (keyLeaf.t === TYPE_REFERENCE) {
-                    return keyLeaf.v === key;
+                    return keyLeaf.v === key.slice(1, -1);
                 } else {
                     return false;
                 }
@@ -104,7 +109,9 @@ export class TabsonView {
     query(keys) {
         const leaf = this.findLeaf(keys);
         const val = this.leafToVal(leaf);
-        val.objectId = this.getObjectid(keys);
+        if (val.type === 'object') {
+            val.objectId = this.getObjectid(keys);
+        }
         return val;
     }
 
@@ -123,22 +130,36 @@ export class TabsonView {
                 isOwn: true,
                 writable: false,
             };
+            let keyName;
             if (item.key.t === TYPE_PRIMITIVE) {
                 if (typeof item.key.v === 'string') {
-                    prop.name = `"${item.key.v}"`;
+                    keyName = `"${item.key.v}"`;
+                    prop.name = item.key.v;
+                    prop.enumerable = true;
                 } else {
+                    keyName = `[${String(item.key.v)}]`;
                     prop.name = String(item.key.v);
+                    prop.enumerable = true;
+                    prop.synthetic = true;
                 }
             } else {
+                keyName = `[${String(item.key.v)}]`;
                 prop.name = item.key.v;
+                prop.enumerable = true;
+                prop.synthetic = true;
             }
             const val = this.leafToVal(item.value);
-            if (keys) {
-                val.objectId = this.getObjectid([...keys, prop.name]);
-            } else {
-                val.objectId = this.getObjectid();
+            if (val.type === 'object') {
+                if (keys) {
+                    val.objectId = this.getObjectid([...keys, keyName]);
+                } else {
+                    val.objectId = this.getObjectid([keyName]);
+                }
             }
             prop.value = val;
+            if (keyName[0] === '[') {
+                prop.symbol = this.leafToVal(item.key);
+            }
             props.push(prop);
         }
         return props;

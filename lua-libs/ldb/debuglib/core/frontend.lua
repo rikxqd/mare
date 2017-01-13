@@ -1,5 +1,6 @@
 local class = require('ldb/utils/oo').class
 local tablson = require('ldb/utils/tablson')
+local tabson = require('ldb/utils/tabson')
 
 local Frontend = class({
 
@@ -22,7 +23,7 @@ local Frontend = class({
         local message = {
             method = 'consoleApi',
             params = {
-                value = tablson(args),
+                value = tabson.dump(args),
                 type = type,
                 stacks = stacks,
             },

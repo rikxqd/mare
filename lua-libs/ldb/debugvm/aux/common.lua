@@ -48,9 +48,12 @@ local function expand_value(value, cache)
         return tbl
     end
 
-    -- 如果原本就是一个 userdata 类型，暂时不知道怎么处理好
     if orig_type == 'userdata' then
-        return nil
+        return value
+    end
+
+    if orig_type == 'thread' then
+        return coroutine.create(function() end);
     end
 
     return nil

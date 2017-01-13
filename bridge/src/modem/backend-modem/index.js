@@ -1,22 +1,7 @@
 import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
-
-const treatAsArray = function(table) {
-    const length = Object.keys(table).length;
-    if (length === 0) {
-        return true;
-    }
-    let i = 1;
-    while (true) {
-        if (table[i] === undefined) {
-            break;
-        }
-        i += 1;
-    }
-    return (i - 1) === length;
-};
-
+import {TabsonView} from '../../websocket/tabson';
 
 export class BackendModem extends EventEmitter {
 
@@ -36,10 +21,7 @@ export class BackendModem extends EventEmitter {
 
     deliver = async (msg, store) => {
         if (msg.method === 'consoleApi') {
-            this.printLogging(msg.params, store);
-        }
-        if (msg.method === 'consoleTable') {
-            this.consoleTable(msg.params, store);
+            this.consoleApi(msg.params, store);
         }
         if (msg.method === 'executePaused') {
             this.debuggerPause(msg.params, store);
@@ -58,7 +40,7 @@ export class BackendModem extends EventEmitter {
         }
     }
 
-    printLogging  = async (data, store) => {
+    consoleApi  = async (data, store) => {
         const project = store.project;
 
         const stacks = data.stacks || [];
@@ -83,33 +65,11 @@ export class BackendModem extends EventEmitter {
             };
         });
 
-        const argsField = [];
-        const keyLength = Object.keys(data.value).length;
-        for (let i = 1; i <= keyLength; i++) {
-            const key = `${i}`;
-            const value = data.value[key];
-            const valueType = typeof value;
-            if (valueType === 'object') {
-                const objectId = JSON.stringify({
-                    root: uuid.v4(),
-                    path: [],
-                });
-                store.jsobjAppendOne(objectId, value);
-                const subtype = treatAsArray(value) ? 'array' : 'object';
-                argsField.push({
-                    description: 'Table',
-                    objectId: objectId,
-                    type: 'object',
-                    subtype,
-                });
-            } else {
-                argsField.push({
-                    description: String(value),
-                    type: valueType,
-                    value: value,
-                });
-            }
-        }
+        const props = {id: uuid.v4(), group: 'console'};
+        const docId = JSON.stringify(props);
+        store.jsobjAppendOne(docId, data.value);
+        const tv = new TabsonView(props, data.value);
+        const argsField = tv.attrs().map((e) => e.value);
 
         const resp = {
             method: 'Runtime.consoleAPICalled',
@@ -152,50 +112,6 @@ export class BackendModem extends EventEmitter {
                 url: '',
             },
         });
-    }
-
-    consoleLogging = async (data, store) => {
-        const resp = {
-            method: 'Log.entryAdded',
-            params: {
-                entry: {
-                    source: 'abcd',
-                    level: 'log',
-                    text: JSON.stringify(data, null, 4),
-                    timestamp: new Date().getTime(),
-                },
-            },
-        };
-        store.eventAppendOne(resp);
-        this.sendFrontend(resp);
-    }
-
-    consoleTable  = async (data, store) => {
-        const objectId = JSON.stringify({
-            root: uuid.v4(),
-            path: [],
-        });
-        const resp = {
-            method: 'Runtime.consoleAPICalled',
-            params: {
-                args: [
-                    {
-                        description: 'Table',
-                        objectId: objectId,
-                        type: 'object',
-                    },
-                ],
-                executionContextId: 1,
-                stackTrace: {
-                    callFrames: [],
-                },
-                timestamp: new Date().getTime(),
-                type: data.type,
-            },
-        };
-        store.eventAppendOne(resp);
-        store.jsobjAppendOne(objectId, data);
-        this.sendFrontend(resp);
     }
 
     debuggerPause = async(data) => {

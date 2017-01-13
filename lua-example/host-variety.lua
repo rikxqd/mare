@@ -21,7 +21,7 @@ main = function()
     print(fmt:format('key_userdata', key_userdata), key_userdata)
     print(fmt:format('value_func', value_func), value_func)
     print(fmt:format('value_dict', value_dict), value_dict)
-    print(fmt:format('value_array', value_array, value_array))
+    print(fmt:format('value_array', value_array), value_array)
     print(fmt:format('value_userdata', value_userdata, value_userdata))
     print(fmt:format('variety', variety), variety)
 end

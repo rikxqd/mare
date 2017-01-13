@@ -1,3 +1,4 @@
+import {TabsonView} from '../../websocket/tabson';
 const Runtime = {};
 
 Runtime.enable = async (req, store, modem) => {
@@ -19,59 +20,23 @@ const getUpvaluesProperties = async(req, store, modem, objectId) => {
 Runtime.getProperties = async(req, store, modem) => {
 
     const objectId = JSON.parse(req.params.objectId);
-    if (objectId.localsLevel !== undefined) {
+    if (objectId.group === 'locals') {
         return await getLocalsProperties(req, store, modem, objectId);
     }
-    if (objectId.upvaluesLevel !== undefined) {
+    if (objectId.group === 'upvalues') {
         return await getUpvaluesProperties(req, store, modem, objectId);
     }
+
+    const docId = {id: objectId.id, group: objectId.group};
+    const jsobj = await store.jsobjGet(JSON.stringify(docId));
+    const tv = new TabsonView(docId, jsobj);
+    const attrs = tv.attrs(objectId.keys);
 
     if (!req.params.ownProperties) {
         return {result: []};
     }
 
-    const rootObjectId = JSON.stringify({
-        root: objectId.root, path: [],
-    });
-    const root = await store.jsobjGet(rootObjectId);
-    let jsobj = root;
-    for (const path of objectId.path) {
-        jsobj = jsobj[path];
-    }
-
-    const props = [];
-    for (const [key, value] of Object.entries(jsobj)) {
-        const valueType = typeof value;
-        let valueFeild;
-        if (valueType === 'object') {
-            const path = [...objectId.path, key];
-            valueFeild = {
-                description: 'Table',
-                objectId: JSON.stringify({
-                    root: objectId.root,
-                    type: valueType,
-                    path: path,
-                }),
-            };
-        } else {
-            valueFeild = {
-                description: String(value),
-                type: valueType,
-                value: value,
-            };
-        }
-
-        const prop = {
-            configurable: false,
-            enumerable: true,
-            isOwn: true,
-            name: key,
-            value: valueFeild,
-            writable: false,
-        };
-        props.push(prop);
-    }
-    return {result: props};
+    return {result: attrs};
 };
 
 Runtime.discardConsoleEntries = async (req, store) => {
