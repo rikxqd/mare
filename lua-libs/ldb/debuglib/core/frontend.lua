@@ -80,7 +80,7 @@ local Frontend = class({
             method = 'repl',
             params = {
                 code = item.code,
-                value = tostring(item.value),
+                value = tabson.dump(item.value),
                 error = item.error,
                 parrot = item.parrot,
             }

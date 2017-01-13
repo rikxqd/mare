@@ -259,38 +259,23 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    repl = async (data) => {
-        const valueType = typeof data.value;
-        let valueFeild;
-        if (valueType === 'object') {
-            valueFeild = {
-                description: 'Table',
-                type: 'string',
-                value: JSON.stringify(data.value, null, 4),
-            };
-        } else {
-            let desc;
-            if (data.value === undefined) {
-                desc = 'nil';
-            } else {
-                desc = String(data.value);
-            }
-            valueFeild = {
-                description: desc,
-                type: valueType,
-                value: data.value,
-            };
-        }
+    repl = async (data, store) => {
+        const props = {id: uuid.v4(), group: 'repl'};
+        const docId = JSON.stringify(props);
+        store.jsobjAppendOne(docId, data.value);
+        const tv = new TabsonView(props, data.value);
+        const valueFeild = tv.query();
         const result = {result: valueFeild};
         if (data.error) {
             result.exceptionDetails = {
                 columnNumber: 0,
                 lineNumber: 0,
-                text: String(data.value),
+                text: valueFeild.value.description,
                 exceptionId: new Date().getTime(),
             };
         }
         const resp = {id: data.parrot.id, result};
+        console.log(resp);
         this.sendFrontend(resp);
     }
 

@@ -42,10 +42,11 @@ export class TabsonView {
 
         if (t === TYPE_PRIMITIVE) {
             const type = typeof v;
+            const desc = v === undefined ? 'nil' : String(v);
             return {
                 type: type,
                 value: v,
-                description: String(v),
+                description: desc,
             };
         }
 
@@ -115,6 +116,38 @@ export class TabsonView {
         return val;
     }
 
+    attr() {
+        const prop = {
+            configurable: false,
+            enumerable: true,
+            isOwn: true,
+            writable: false,
+        };
+        let keyName;
+        const root = this.tabson.root;
+        if (root.t === TYPE_PRIMITIVE) {
+            if (typeof root.v === 'string') {
+                keyName = `"${root.v}"`;
+                prop.name = root.v;
+                prop.enumerable = true;
+            } else {
+                keyName = `[${String(root.v)}]`;
+                prop.name = String(root.v);
+                prop.enumerable = true;
+            }
+        } else {
+            keyName = `[${String(root.v)}]`;
+            prop.name = root.v;
+            prop.enumerable = true;
+        }
+        const val = this.leafToVal(root);
+        prop.value = val;
+        if (val.type === 'object') {
+            val.objectId = this.getObjectid([keyName]);
+        }
+        return prop;
+    }
+
     attrs(keys) {
         const leaf = this.findLeaf(keys);
         const ref = this.tabson.refs[leaf.v];
@@ -140,13 +173,11 @@ export class TabsonView {
                     keyName = `[${String(item.key.v)}]`;
                     prop.name = String(item.key.v);
                     prop.enumerable = true;
-                    prop.synthetic = true;
                 }
             } else {
                 keyName = `[${String(item.key.v)}]`;
                 prop.name = item.key.v;
                 prop.enumerable = true;
-                prop.synthetic = true;
             }
             const val = this.leafToVal(item.value);
             if (val.type === 'object') {
