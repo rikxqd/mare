@@ -5,7 +5,8 @@ import {TabsonView} from './src/websocket/tabson';
 
 const pack_data = fs.readFileSync('../lua-example/data.msgpack');
 const tabson = msgpack.decode(pack_data);
-const tv = new TabsonView(uuid.v4(), tabson);
+const props = {id: uuid.v4(), group: 'console'};
+const tv = new TabsonView(props, tabson);
 console.log(tabson);
 console.log(tv.query());
 console.log(tv.query(['1']));

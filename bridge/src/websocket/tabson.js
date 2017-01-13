@@ -2,9 +2,6 @@ const TYPE_SPECIAL = 0;
 const TYPE_PRIMITIVE = 1;
 const TYPE_REFERENCE = 2;
 
-const getObjectid = function(id, keys = []) {
-    return JSON.stringify([id, ...keys]);
-};
 
 const capitalize = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -17,9 +14,19 @@ const typeAlias = {
 
 export class TabsonView {
 
-    constructor(id, tabson) {
-        this.id = id;
+    constructor(props, tabson) {
+        this.props = props;
         this.tabson = tabson;
+    }
+
+    getObjectid(keys) {
+        let obj;
+        if (keys) {
+            obj = Object.assign({}, {keys}, this.props);
+        } else {
+            obj = this.props;
+        }
+        return JSON.stringify(obj);
     }
 
     leafToVal(leaf) {
@@ -97,7 +104,7 @@ export class TabsonView {
     query(keys) {
         const leaf = this.findLeaf(keys);
         const val = this.leafToVal(leaf);
-        val.objectId = getObjectid(this.id, keys);
+        val.objectId = this.getObjectid(keys);
         return val;
     }
 
@@ -127,9 +134,9 @@ export class TabsonView {
             }
             const val = this.leafToVal(item.value);
             if (keys) {
-                val.objectId = getObjectid(this.id, [...keys, prop.name]);
+                val.objectId = this.getObjectid([...keys, prop.name]);
             } else {
-                val.objectId = getObjectid(this.id);
+                val.objectId = this.getObjectid();
             }
             prop.value = val;
             props.push(prop);
