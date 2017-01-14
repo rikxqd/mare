@@ -1,5 +1,4 @@
 local class = require('ldb/utils/oo').class
-local tablson = require('ldb/utils/tablson')
 local tabson = require('ldb/utils/tabson')
 
 local Frontend = class({
@@ -55,7 +54,7 @@ local Frontend = class({
             params = {
                 level = item.level,
                 type = item.type,
-                value = tablson(item.value),
+                value = tabson.dump(item.value),
                 parrot = item.parrot,
             }
         }

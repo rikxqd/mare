@@ -80,6 +80,12 @@ export class SessionDataStore extends EventEmitter {
         await this.cln.insertOne(doc);
     }
 
+    jsobjReplaceOne = async (jsobj_id, jsobj) => {
+        const query = {_type: 'jsobj', _jsobj_id: jsobj_id};
+        const doc = Object.assign({}, query, jsobj);
+        await this.cln.findOneAndReplace(query, doc);
+    }
+
     breakpointGetAll = async () => {
         const query = {_type: 'breakpoint'};
         const docs = await this.cln.find(query).toArray();

@@ -12,7 +12,9 @@ local get_upvalues_items = function(level)
         if name == nil then
             break
         end
-        table.insert(items, {name, value})
+        if name ~= '_ENV' then
+            table.insert(items, {name, value})
+        end
         i = i + 1
     end
 

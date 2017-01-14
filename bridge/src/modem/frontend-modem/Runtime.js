@@ -8,12 +8,12 @@ Runtime.enable = async (req, store, modem) => {
 };
 
 const getLocalsProperties = async(req, store, modem, objectId) => {
-    modem.getStackScope(req.id, objectId.localsLevel, 'locals');
+    modem.getStackScope(req.id, objectId.level, objectId.keys, 'locals');
     return 'ignoreme';
 };
 
 const getUpvaluesProperties = async(req, store, modem, objectId) => {
-    modem.getStackScope(req.id, objectId.upvaluesLevel, 'upvalues');
+    modem.getStackScope(req.id, objectId.level, objectId.keys, 'upvalues');
     return 'ignoreme';
 };
 

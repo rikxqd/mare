@@ -129,7 +129,8 @@ export class BackendModem extends EventEmitter {
                         className: 'Object',
                         description: 'Object',
                         objectId: JSON.stringify({
-                            localsLevel: i,
+                            level: i,
+                            group: 'locals',
                         }),
                         type: 'object',
                     },
@@ -141,7 +142,8 @@ export class BackendModem extends EventEmitter {
                         className: 'Object',
                         description: 'Object',
                         objectId: JSON.stringify({
-                            upvaluesLevel: i,
+                            level: i,
+                            group: 'upvalues',
                         }),
                         type: 'object',
                     },
@@ -190,37 +192,15 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    stackScope = async (data) => {
-        const props = [];
-        for (const [key, value] of Object.entries(data.value)) {
-            const valueType = typeof value;
-            let valueFeild;
-            if (valueType === 'object') {
-                valueFeild = {
-                    description: 'Table',
-                    type: 'string',
-                    value: JSON.stringify(value, null, 4),
-                };
-            } else {
-                valueFeild = {
-                    description: String(value),
-                    type: valueType,
-                    value: value,
-                };
-            }
-
-            const prop = {
-                configurable: false,
-                enumerable: true,
-                isOwn: true,
-                name: key,
-                value: valueFeild,
-                writable: false,
-            };
-            props.push(prop);
-        }
-
-        const resp = {id: data.parrot.id, result: {result: props}};
+    stackScope = async (data, store) => {
+        const props = {id: uuid.v4(), group: `${data.type}-result`};
+        const docId = JSON.stringify(props);
+        store.jsobjAppendOne(docId, data.value);
+        const tv = new TabsonView(props, data.value);
+        const valueFeild = tv.attrs();
+        const result = {result: valueFeild};
+        const resp = {id: data.parrot.id, result};
+        console.log(resp);
         this.sendFrontend(resp);
     }
 

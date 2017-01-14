@@ -54,4 +54,4 @@ main = function()
     test_env()
 end
 
-main()
+--main()

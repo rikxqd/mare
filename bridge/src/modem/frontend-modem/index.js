@@ -182,10 +182,10 @@ export class FrontendModem extends EventEmitter {
         this.sendBackend({method, params});
     }
 
-    getStackScope = async (reqId, level, type) => {
+    getStackScope = async (reqId, level, keys, type) => {
         const method = 'behavior.queryScope';
         const params = {
-            parrot: {id: reqId},
+            parrot: {id: reqId, keys},
             level: level + 1,
             type: type,
         };
