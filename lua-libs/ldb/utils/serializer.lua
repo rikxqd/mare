@@ -2,7 +2,7 @@ local msgpack = require('MessagePack')
 
 msgpack.set_array('without_hole')
 msgpack.set_number('double')
-msgpack.set_string('string')
+msgpack.set_string('binary')
 
 local encode = function(obj)
     return msgpack.pack(obj)

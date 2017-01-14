@@ -83,7 +83,7 @@ export class FrontendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    scriptParsed = async (store) => {
+    scriptParseProject = async (store) => {
         const project = store.project;
         const pattern = `${project.sourceRoot}/**/*.lua`;
         const files = await globFiles(pattern);
@@ -91,29 +91,38 @@ export class FrontendModem extends EventEmitter {
             const path = file.replace(project.sourceRoot, '');
             const content = await readFile(file);
             const lines = content.split('\n');
-            const md5sum = crypto.createHash('md5');
-            md5sum.update(content);
-            this.sendFrontend({
-                method: 'Debugger.scriptParsed',
-                params: {
-                    endColumn: 0,
-                    endLine: lines.length,
-                    executionContextAuxData: {
-                        frameId: '1',
-                        isDefault: true,
-                    },
-                    executionContextId: 1,
-                    hasSourceURL: false,
-                    hash: md5sum.digest('hex').toUpperCase(),
-                    isLiveEdit: false,
-                    scriptId: path,
-                    sourceMapURL: '',
-                    startColumn: 0,
-                    startLine: 0,
-                    url: `file:///${path}`,
-                },
-            });
+            const scriptId = `@./${path}`;
+            this.scriptParsed(scriptId, lines.length);
         }
+    }
+
+    scriptParsed = async (scriptId, endLine = -1) => {
+        if (!scriptId.startsWith('@./')) {
+            return;
+        }
+        const md5sum = crypto.createHash('md5');
+        md5sum.update(scriptId);
+        const path = scriptId.replace('@./', '');
+        this.sendFrontend({
+            method: 'Debugger.scriptParsed',
+            params: {
+                endColumn: 0,
+                endLine: endLine,
+                executionContextAuxData: {
+                    frameId: '1',
+                    isDefault: true,
+                },
+                executionContextId: 1,
+                hasSourceURL: false,
+                hash: md5sum.digest('hex').toUpperCase(),
+                isLiveEdit: false,
+                scriptId: scriptId,
+                sourceMapURL: '',
+                startColumn: 0,
+                startLine: 0,
+                url: `file:///${path}`,
+            },
+        });
     }
 
     replayFrontendLogEvents = async (store) => {

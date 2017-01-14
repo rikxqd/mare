@@ -1,4 +1,4 @@
-import {TabsonView} from '../../websocket/tabson';
+import {Tabson} from '../../tabson';
 const Runtime = {};
 
 Runtime.enable = async (req, store, modem) => {
@@ -27,16 +27,25 @@ Runtime.getProperties = async(req, store, modem) => {
         return await getUpvaluesProperties(req, store, modem, objectId);
     }
 
-    const docId = {id: objectId.id, group: objectId.group};
-    const jsobj = await store.jsobjGet(JSON.stringify(docId));
-    const tv = new TabsonView(docId, jsobj);
-    const attrs = tv.attrs(objectId.keys);
-
     if (!req.params.ownProperties) {
         return {result: []};
     }
 
-    return {result: attrs};
+    const docId = {id: objectId.id, group: objectId.group};
+    const jsobj = await store.jsobjGet(JSON.stringify(docId));
+    const tv = new Tabson(jsobj, docId);
+    const result = tv.props(objectId.paths);
+
+    if (result.internalProperties) {
+        for (const p of result.internalProperties) {
+            if (p.value.subtype === 'internal#location') {
+                const scriptId = p.value.value.scriptId;
+                await modem.scriptParsed(scriptId);
+            }
+        }
+    }
+
+    return result;
 };
 
 Runtime.discardConsoleEntries = async (req, store) => {

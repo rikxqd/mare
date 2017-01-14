@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
-import {TabsonView} from '../../websocket/tabson';
+import {Tabson} from '../../tabson';
 
 export class BackendModem extends EventEmitter {
 
@@ -51,9 +51,9 @@ export class BackendModem extends EventEmitter {
                 scriptId = `${this.nonFileScriptIdCount}-stdin`;
                 url = '';
             } else {
-                scriptId = s.file.replace('@', '');
-                scriptId = scriptId.replace('./', '');
-                url = `${project.id}/${scriptId}`;
+                scriptId = s.file;
+                const path = scriptId.replace('@./', '');
+                url = `${project.id}/${path}`;
             }
 
             return {
@@ -68,8 +68,8 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: 'console'};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new TabsonView(props, data.value);
-        const argsField = tv.attrs().map((e) => e.value);
+        const tv = new Tabson(data.value, props);
+        const argsField = tv.props().result.map((e) => e.value);
 
         const resp = {
             method: 'Runtime.consoleAPICalled',
@@ -155,20 +155,13 @@ export class BackendModem extends EventEmitter {
                 functionLocation: {
                     columnNumber: 0,
                     lineNumber: s.line - 1,
-                    scriptId: s.file.replace('@', '').replace('./', ''),
+                    scriptId: s.file,
                 },
                 functionName: s.func,
                 location: {
                     columnNumber: 0,
                     lineNumber: s.line - 1,
-                    scriptId: do {
-                        const f = s.file.replace('@', '').replace('./', '');
-                        if (f === '=stdin') {
-                            'test-breakpoint.lua';
-                        } else {
-                            f;
-                        }
-                    },
+                    scriptId: s.file,
 
                 },
                 scopeChain: scopeChain,
@@ -196,9 +189,8 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: `${data.type}-result`};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new TabsonView(props, data.value);
-        const valueFeild = tv.attrs();
-        const result = {result: valueFeild};
+        const tv = new Tabson(data.value, props);
+        const result = tv.props();
         const resp = {id: data.parrot.id, result};
         console.log(resp);
         this.sendFrontend(resp);
@@ -243,8 +235,8 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: 'repl'};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new TabsonView(props, data.value);
-        const valueFeild = tv.query();
+        const tv = new Tabson(data.value, props);
+        const valueFeild = tv.value();
         const result = {result: valueFeild};
         if (data.error) {
             result.exceptionDetails = {

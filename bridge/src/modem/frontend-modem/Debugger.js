@@ -16,7 +16,7 @@ const Debugger = {};
 Debugger.enable = async (req, store, modem) => {
     store.breakpointRemoveAll();
     store.blackboxRemoveAll();
-    modem.scriptParsed(store);
+    modem.scriptParseProject(store);
     modem.pushProjectConfigToBackend(store);
     modem.pushProjectConfigToBackend(store);
     return null;
@@ -42,7 +42,8 @@ Debugger.setBreakpointByUrl = async (req, store, modem) => {
 
 Debugger.getScriptSource = async (req, store) => {
     const project = store.project;
-    const url = `${project.sourceRoot}/${req.params.scriptId}`;
+    const path = req.params.scriptId.replace('@./', '');
+    const url = `${project.sourceRoot}/${path}`;
     const content = await readFile(url);
     return {scriptSource: content};
 };
@@ -94,7 +95,7 @@ Debugger.setBlackboxedRanges = async(req, store, modem) => {
     if (positions.length > 0) {
         const blackbox = {
             blackboxId: scriptId,
-            file: `@${scriptId}`,
+            file: scriptId,
             start_line: positions[0].lineNumber + 1,
             end_line: 0,
         };

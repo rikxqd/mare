@@ -5,6 +5,19 @@ import liburl from 'url';
 
 const PACK_HEAD_LEN = 4;
 
+const binaryString = function(command) {
+    if (typeof command !== 'object') {
+        return;
+    }
+    for (const [k, v] of Object.entries(command)) {
+        if (Buffer.isBuffer(v)) {
+            command[k] = v.toString('binary');
+        } else {
+            binaryString(v);
+        }
+    }
+};
+
 const parseCommand = (data) => {
     let command = null;
     if (data.length <= PACK_HEAD_LEN) {
@@ -19,6 +32,7 @@ const parseCommand = (data) => {
     const pack_data = data.slice(PACK_HEAD_LEN, PACK_HEAD_LEN + pack_length);
     const chunk = data.slice(PACK_HEAD_LEN + pack_length);
     command = msgpack.decode(pack_data);
+    binaryString(command);
     return {command, chunk};
 };
 

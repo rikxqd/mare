@@ -1,20 +1,31 @@
-import uuid from 'node-uuid';
 import fs from 'fs';
 import * as msgpack from 'msgpack-lite';
-import {TabsonView} from './src/websocket/tabson';
+import {Tabson} from './src/tabson';
 
-const pack_data = fs.readFileSync('../lua-example/data.msgpack');
-const tabson = msgpack.decode(pack_data);
-const props = {id: uuid.v4(), group: 'console'};
-const tv = new TabsonView(props, tabson);
-console.log(1, tabson);
-console.log(2, tv.query());
-console.log(3, tv.query(['[1]']));
-console.log(4, tv.query(['"1"']));
-console.log(5, tv.query(['[false]']));
-console.log(6, tv.query(['"value_array"', '[1]']));
-console.log(7, tv.query(['"value_dict"', '"x"']));
-console.log(8, tv.query(['"value_func"']));
-console.log(9, tv.attrs());
-console.log(10, tv.attrs(['"value_dict"']));
-console.log(11, tv.attrs(['"value_array"']));
+const data = fs.readFileSync('../lua-example/data.msgpack');
+const dumped = msgpack.decode(data);
+const idmix = {id: 'test'};
+const t = new Tabson(dumped, idmix);
+console.log(dumped);
+
+const pathsList = [
+    [],
+    ['#1'],
+    ['@1'],
+    ['@literal'],
+    ['@value_func'],
+    ['@value_inf'],
+    ['@value_nan'],
+    ['@value_native'],
+    ['@value_table'],
+    ['@value_table', '#1'],
+    ['@value_thread'],
+    ['@value_userdata'],
+];
+
+for (const paths of pathsList) {
+    const title = JSON.stringify(paths);
+    console.log(title, t.value(paths), t.props(paths));
+}
+
+setTimeout(console.log, 99999);
