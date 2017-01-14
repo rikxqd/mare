@@ -24,24 +24,24 @@ local rawpairs = function(tbl, func)
 end
 
 local function dumpval(val, opt, mem, depth)
-    if depth >= opt.max_depth then
-        local desc = string.format('limit_depth: %d', opt.max_depth)
-        return {t=TYPE_SPECIAL, v=desc}
-    end
-
-    if mem.count >= opt.max_count then
-        local desc = string.format('limit_count: %d', opt.max_count)
-        return {t=TYPE_SPECIAL, v=desc}
-    end
-
-    mem.count = mem.count + 1
-    depth = depth + 1
-
     local t = type(val)
     local tp = t == 'nil' or t == 'boolean' or t == 'number' or t == 'string'
     if tp then
         return {t=TYPE_PRIMITIVE, v=val}
     end
+
+    if depth >= opt.max_depth then
+        local desc = string.format('limit_depth: %s', val)
+        return {t=TYPE_SPECIAL, v=desc}
+    end
+
+    if mem.count >= opt.max_count then
+        local desc = string.format('limit_count: %s', val)
+        return {t=TYPE_SPECIAL, v=desc}
+    end
+
+    mem.count = mem.count + 1
+    depth = depth + 1
 
     local id = rawtostring(val)
     local ref = mem.refs[id]
@@ -110,7 +110,12 @@ local dump = function(val, opt)
     opt.max_count = opt.max_count or 1024
     local mem = {refs={}, count=0}
     local root = dumpval(val, opt, mem, 0)
-    return {root=root, refs=mem.refs, count=mem.count}
+    return {
+        root = root,
+        refs = mem.refs,
+        count = mem.count,
+        option = opt,
+    }
 end
 
 return {
