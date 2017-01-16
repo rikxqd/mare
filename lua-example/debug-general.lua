@@ -26,5 +26,6 @@ rdebug.sethook(function(event, line)
 end);
 
 if config.start ~= false then
+    session = debugger.session
     debugger:start()
 end

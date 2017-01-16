@@ -1,5 +1,20 @@
 local lo = require('ldb/utils/lodash')
 local rdebug = require('remotedebug')
+local tabson = require('ldb/utils/tabson')
+
+local p = function(v)
+    if not session then
+        return
+    end
+    local value = tabson.dump({
+        'DEBUG',
+        tostring(v),
+        rdebug.type(v),
+        rdebug.value(v),
+    })
+    value.vmtype = 'debug'
+    session.frontend:console_api(value, 'log', {});
+end
 
 local function expand_value(value, cache)
 
@@ -20,18 +35,26 @@ local function expand_value(value, cache)
     end
 
     local orig_type = rdebug.type(value)
+    local mt = {
+        __HOST_OBJ__ = true,
+        __HOST_TYPE = orig_type,
+        __HOST_TOSTRING__ = orig_address,
+    }
 
     if orig_type == 'function' then
-        -- 反正无法直接执行 host vm 里的函数
-        -- 就构造一个返回表示地址的字符串的函数
-        local func = lo.constant(orig_address)
+        mt.__HOST_INFO = rdebug.fvalue(value);
+        local func = setmetatable({}, mt);
         cache[cache_key] = func
         return func
     end
 
     if orig_type == 'table' then
-        local mt = {__call= lo.constant(orig_address)}
-        local tbl = setmetatable({}, mt)
+        local orig_mt = rdebug.getmetatable(value)
+        if orig_mt then
+            mt.__HOST_METATABLE__ = expand_value(orig_mt, cache)
+        end
+
+        local tbl = setmetatable({}, mt);
         cache[cache_key] = tbl
 
         local next_key, next_value
@@ -49,11 +72,20 @@ local function expand_value(value, cache)
     end
 
     if orig_type == 'userdata' then
-        return value
+        local orig_mt = rdebug.getmetatable(value)
+        if orig_mt then
+            mt.__HOST_METATABLE__ = expand_value(orig_mt, cache)
+        end
+        local tbl = setmetatable({}, mt);
+        return tbl
     end
 
     if orig_type == 'thread' then
-        return coroutine.create(function() end);
+        mt.__HOST_INFO = {
+            status = rdebug.fvalue(value),
+        }
+        local tbl = setmetatable({}, mt);
+        return tbl
     end
 
     return nil
