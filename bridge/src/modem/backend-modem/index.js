@@ -40,6 +40,41 @@ export class BackendModem extends EventEmitter {
         }
     }
 
+    scriptParsed = async (scriptId, endLine = -1) => {
+        if (!scriptId.startsWith('@')) {
+            return;
+        }
+        const md5sum = crypto.createHash('md5');
+        md5sum.update(scriptId);
+
+        let path = scriptId.replace('@', '');
+        if (path.startsWith('./')) {
+            path = path.replace('./', '');
+        }
+        console.log(path);
+
+        this.sendFrontend({
+            method: 'Debugger.scriptParsed',
+            params: {
+                endColumn: 0,
+                endLine: endLine,
+                executionContextAuxData: {
+                    frameId: '1',
+                    isDefault: true,
+                },
+                executionContextId: 1,
+                hasSourceURL: false,
+                hash: md5sum.digest('hex').toUpperCase(),
+                isLiveEdit: false,
+                scriptId: scriptId,
+                sourceMapURL: '',
+                startColumn: 0,
+                startLine: 0,
+                url: `file:///${path}`,
+            },
+        });
+    }
+
     consoleApi  = async (data, store) => {
         const project = store.project;
 
@@ -117,6 +152,12 @@ export class BackendModem extends EventEmitter {
     debuggerPause = async(data) => {
         this.frameScriptIdCount += 1;
 
+        await (async () => {
+            for (const s of data.stacks) {
+                await this.scriptParsed(s.file);
+            }
+        })();
+
         const callFrames = data.stacks.map((s, i) => {
             const callFrameId = JSON.stringify({
                 ordinal: i,
@@ -124,10 +165,9 @@ export class BackendModem extends EventEmitter {
             });
             const scopeChain = [
                 {
-                    name: s.func,
                     object: {
                         className: 'Object',
-                        description: 'Object',
+                        description: 'Table',
                         objectId: JSON.stringify({
                             level: i,
                             group: 'locals',
@@ -137,10 +177,9 @@ export class BackendModem extends EventEmitter {
                     type: 'local',
                 },
                 {
-                    name: s.func,
                     object: {
                         className: 'Object',
-                        description: 'Object',
+                        description: 'Table',
                         objectId: JSON.stringify({
                             level: i,
                             group: 'upvalues',
@@ -148,6 +187,19 @@ export class BackendModem extends EventEmitter {
                         type: 'object',
                     },
                     type: 'closure',
+                },
+                {
+                    name: '_ENV',
+                    object: {
+                        className: 'Object',
+                        description: '_ENV',
+                        objectId: JSON.stringify({
+                            level: i,
+                            group: '_env',
+                        }),
+                        type: 'object',
+                    },
+                    type: 'global',
                 },
             ];
             return {
@@ -196,38 +248,23 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    stackWatch = async (data) => {
-        const valueType = typeof data.value;
-        let valueFeild;
-        if (valueType === 'object') {
-            valueFeild = {
-                description: 'Table',
-                type: 'string',
-                value: JSON.stringify(data.value, null, 4),
-            };
-        } else {
-            let desc;
-            if (data.value === undefined) {
-                desc = 'nil';
-            } else {
-                desc = String(data.value);
-            }
-            valueFeild = {
-                description: desc,
-                type: valueType,
-                value: data.value,
-            };
-        }
+    stackWatch = async (data, store) => {
+        const props = {id: uuid.v4(), group: `${data.type}-result`};
+        const docId = JSON.stringify(props);
+        store.jsobjAppendOne(docId, data.value);
+        const tv = new Tabson(data.value, props);
+        const valueFeild = tv.value();
         const result = {result: valueFeild};
         if (data.error) {
             result.exceptionDetails = {
                 columnNumber: 0,
                 lineNumber: 0,
-                text: String(data.value),
+                text: valueFeild.value.description,
                 exceptionId: new Date().getTime(),
             };
         }
         const resp = {id: data.parrot.id, result};
+        console.log(resp);
         this.sendFrontend(resp);
     }
 

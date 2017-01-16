@@ -1,5 +1,5 @@
-local lo = require('ldb/utils/lodash')
 local class = require('ldb/utils/oo').class
+local tabson = require('ldb/utils/tabson')
 local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 
 local Interacter = class({
@@ -75,13 +75,17 @@ local Interacter = class({
         local environ = self.environ
 
         for _, item in ipairs(behavior.scope_queue) do
+            local value
             if item.type == 'locals' then
-                item.value = environ:get_locals_dict(item.level, event)
+                value = environ:get_locals_dict(item.level, event)
             elseif item.type == 'upvalues' then
-                item.value = environ:get_upvalues_dict(item.level, event)
+                value = environ:get_upvalues_dict(item.level, event)
             else
-                item.value = {}
+                value = {}
             end
+
+            item.value = tabson.dump(value)
+            item.value.vmtype = 'host'
             frontend:stack_scope(item)
         end
 
@@ -96,7 +100,8 @@ local Interacter = class({
         for _, item in ipairs(behavior.watch_queue) do
             local ok, value = self:eval_code(item.code, item.level)
             item.error = not ok
-            item.value = value
+            item.value = tabson.dump(value)
+            item.value.vmtype = 'host'
             frontend:stack_watch(item)
         end
 

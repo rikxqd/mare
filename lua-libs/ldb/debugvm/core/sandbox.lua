@@ -1,6 +1,7 @@
 local lo = require('ldb/utils/lodash')
 local class = require('ldb/utils/oo').class
 local mirage = require('ldb/debuglib/core/mirage')
+local tabson = require('ldb/utils/tabson')
 
 local create_console = function(impl)
     local alias = {
@@ -40,10 +41,14 @@ local Sandbox = class({
 
         return {
             print = function(...)
-                frontend:console_api({...}, pp_type, stacks)
+                local value = tabson.dump({...});
+                value.vmtype = 'sandbox'
+                frontend:console_api(value, pp_type, stacks)
             end,
             console = create_console(function(type, ...)
-                frontend:console_api({...}, type, stacks)
+                local value = tabson.dump({...});
+                value.vmtype = 'sandbox'
+                frontend:console_api(value, type, stacks)
             end),
         }
     end,

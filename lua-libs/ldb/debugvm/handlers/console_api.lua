@@ -1,3 +1,5 @@
+local tabson = require('ldb/utils/tabson')
+
 local handle = function(step, session, environ)
     if step.event ~= 'probe' then
         return
@@ -13,7 +15,9 @@ local handle = function(step, session, environ)
     local stacks = environ:get_stacks()
     table.remove(stacks, 1)
 
-    session.frontend:console_api(args, type, stacks);
+    local value = tabson.dump(args);
+    value.vmtype = 'host'
+    session.frontend:console_api(value, type, stacks);
 end
 
 return {

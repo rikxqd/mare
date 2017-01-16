@@ -97,12 +97,17 @@ export class FrontendModem extends EventEmitter {
     }
 
     scriptParsed = async (scriptId, endLine = -1) => {
-        if (!scriptId.startsWith('@./')) {
+        if (!scriptId.startsWith('@')) {
             return;
         }
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
-        const path = scriptId.replace('@./', '');
+
+        let path = scriptId.replace('@', '');
+        if (path.startsWith('./')) {
+            path = scriptId.replace('./', '');
+        }
+
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
             params: {

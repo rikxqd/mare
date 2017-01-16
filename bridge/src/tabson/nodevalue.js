@@ -18,7 +18,7 @@ const fetchFunctionSource = (ref) => {
     }
     // TODO 从文件截取
     const code = `${ref.file}:${ref.line_begin},${ref.line_end}`;
-    return `function()\n${code}\nend`;
+    return `function()\n    ${code}\nend`;
 };
 
 const isArrayLikeTable = (ref) => {

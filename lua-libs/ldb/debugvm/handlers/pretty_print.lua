@@ -1,3 +1,5 @@
+local tabson = require('ldb/utils/tabson')
+
 local handle = function(step, session, environ)
     if step.event ~= 'call' and step.event ~= 'tailcall' then
         return
@@ -15,7 +17,10 @@ local handle = function(step, session, environ)
     local stack = environ:get_stack(1)
     local args = environ:get_locals_array(1, step.event)
     local type = (config and config.type) or 'log'
-    session.frontend:console_api(args, type, {stack})
+
+    local value = tabson.dump(args);
+    value.vmtype = 'host'
+    session.frontend:console_api(value, type, {stack})
 end
 
 return {

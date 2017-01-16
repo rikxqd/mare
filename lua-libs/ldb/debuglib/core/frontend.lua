@@ -1,6 +1,4 @@
 local class = require('ldb/utils/oo').class
-local tabson = require('ldb/utils/tabson')
-local libdata = require('ldb-test/lib-data')
 
 local Frontend = class({
 
@@ -19,11 +17,11 @@ local Frontend = class({
         end
     end,
 
-    console_api = function(self, args, type, stacks)
+    console_api = function(self, value, type, stacks)
         local message = {
             method = 'consoleApi',
             params = {
-                value = tabson.dump({libdata, _ENV}),
+                value = value,
                 type = type,
                 stacks = stacks,
             },
@@ -55,7 +53,7 @@ local Frontend = class({
             params = {
                 level = item.level,
                 type = item.type,
-                value = tabson.dump(item.value),
+                value = item.value,
                 parrot = item.parrot,
             }
         }
@@ -67,7 +65,7 @@ local Frontend = class({
             method = 'stackWatch',
             params = {
                 code = item.code,
-                value = tostring(item.value),
+                value = item.value,
                 error = item.error,
                 parrot = item.parrot,
             }
@@ -80,7 +78,7 @@ local Frontend = class({
             method = 'repl',
             params = {
                 code = item.code,
-                value = tabson.dump(item.value),
+                value = item.value,
                 error = item.error,
                 parrot = item.parrot,
             }

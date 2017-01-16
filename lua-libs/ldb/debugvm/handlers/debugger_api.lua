@@ -1,5 +1,6 @@
 local lo = require('ldb/utils/lodash')
 local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
+local tabson = require('ldb/utils/tabson')
 
 local api = {
 
@@ -38,7 +39,8 @@ local api = {
 
             local ok, value = sandbox:eval(item.code, 2)
             item.error = not ok
-            item.value = value
+            item.value = tabson.dump(value)
+            item.value.vmtype = 'sandbox'
             frontend:repl(item)
         end
 
