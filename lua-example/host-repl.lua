@@ -16,7 +16,7 @@ main = function()
     print('waiting for repl code, press Ctrl+C to exit')
     while true do
         if count % 100 == 0 then
-            console.log('time %d count is', os.time(), count)
+            --console.log('time %d count is', os.time(), count)
         end
         debugger.repl({debug_print=true})
         sleep(interval)

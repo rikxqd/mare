@@ -41,14 +41,24 @@ local Sandbox = class({
 
         return {
             print = function(...)
-                local value = tabson.dump({...});
-                value.vmtype = 'sandbox'
-                frontend:console_api(value, pp_type, stacks)
+                local values = {}
+                for _, v in ipairs({...}) do
+                    local value = tabson.dump(v)
+                    value.vmtype = 'sandbox'
+                    table.insert(values, value)
+                end
+
+                frontend:console_api(values, pp_type, stacks)
             end,
             console = create_console(function(type, ...)
-                local value = tabson.dump({...});
-                value.vmtype = 'sandbox'
-                frontend:console_api(value, type, stacks)
+                local values = {}
+                for _, v in ipairs({...}) do
+                    local value = tabson.dump(v)
+                    value.vmtype = 'sandbox'
+                    table.insert(values, value)
+                end
+
+                frontend:console_api(values, type, stacks)
             end),
         }
     end,

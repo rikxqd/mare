@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
 import {Tabson} from '../../tabson';
+import rehost from '../../tabson/rehost';
 
 export class BackendModem extends EventEmitter {
 
@@ -51,7 +52,6 @@ export class BackendModem extends EventEmitter {
         if (path.startsWith('./')) {
             path = path.replace('./', '');
         }
-        console.log(path);
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -103,8 +103,17 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: 'console'};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new Tabson(data.value, props);
-        const argsField = tv.props().result.map((e) => e.value);
+
+        const argsField = [];
+        for (let i = 0; i < data.value.length; i++) {
+            let value = data.value[i];
+            const vProps = Object.assign({index: i}, props);
+            if (value.vmtype === 'host') {
+                value = rehost(value);
+            }
+            const tv = new Tabson(value, vProps);
+            argsField.push(tv.value());
+        }
 
         const resp = {
             method: 'Runtime.consoleAPICalled',
@@ -244,7 +253,6 @@ export class BackendModem extends EventEmitter {
         const tv = new Tabson(data.value, props);
         const result = tv.props();
         const resp = {id: data.parrot.id, result};
-        console.log(resp);
         this.sendFrontend(resp);
     }
 
@@ -264,7 +272,6 @@ export class BackendModem extends EventEmitter {
             };
         }
         const resp = {id: data.parrot.id, result};
-        console.log(resp);
         this.sendFrontend(resp);
     }
 
@@ -284,7 +291,6 @@ export class BackendModem extends EventEmitter {
             };
         }
         const resp = {id: data.parrot.id, result};
-        console.log(resp);
         this.sendFrontend(resp);
     }
 

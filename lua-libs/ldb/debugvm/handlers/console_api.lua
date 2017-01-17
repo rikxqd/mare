@@ -15,9 +15,14 @@ local handle = function(step, session, environ)
     local stacks = environ:get_stacks()
     table.remove(stacks, 1)
 
-    local value = tabson.dump(args);
-    value.vmtype = 'host'
-    session.frontend:console_api(value, type, stacks);
+    local values = {}
+    for _, v in ipairs(args) do
+        local value = tabson.dump(v)
+        value.vmtype = 'host'
+        table.insert(values, value)
+    end
+
+    session.frontend:console_api(values, type, stacks);
 end
 
 return {

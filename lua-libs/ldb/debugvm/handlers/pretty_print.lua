@@ -18,9 +18,14 @@ local handle = function(step, session, environ)
     local args = environ:get_locals_array(1, step.event)
     local type = (config and config.type) or 'log'
 
-    local value = tabson.dump(args);
-    value.vmtype = 'host'
-    session.frontend:console_api(value, type, {stack})
+    local values = {}
+    for _, v in ipairs(args) do
+        local value = tabson.dump(v)
+        value.vmtype = 'host'
+        table.insert(values, value)
+    end
+
+    session.frontend:console_api(values, type, {stack})
 end
 
 return {

@@ -30,7 +30,6 @@ const normalizeRawobj = (rawobj) => {
             }
         }
     }
-    console.log(rawobj);
     return rawobj;
 };
 

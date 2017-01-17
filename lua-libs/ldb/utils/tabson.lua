@@ -11,7 +11,7 @@ local DEFAULT_MAX_COUNT = 512
 
 -- 无视 metamethod 的 tostring
 local rawtostring = function(obj)
-    local mt = getmetatable(obj)
+    local mt = debug.getmetatable(obj)
     if not mt then
         return tostring(obj)
     end
@@ -116,7 +116,7 @@ local function dumpval(val, opt, mem, depth)
     -- userdata 类型
     -- 好像只有 metatable 能记下
     if t == 'userdata' then
-        local metatable = getmetatable(t)
+        local metatable = debug.getmetatable(t)
         if metatable then
             metatable = dumpval(metatable, opt, mem, depth)
         end
@@ -136,7 +136,7 @@ local function dumpval(val, opt, mem, depth)
             table.insert(items, item)
         end
 
-        local metatable = getmetatable(val)
+        local metatable = debug.getmetatable(val)
         if metatable then
             metatable = dumpval(metatable, opt, mem, depth)
         end

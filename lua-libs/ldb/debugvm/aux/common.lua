@@ -13,7 +13,7 @@ local p = function(v)
         rdebug.value(v),
     })
     value.vmtype = 'debug'
-    session.frontend:console_api(value, 'log', {});
+    session.frontend:console_api({value}, 'log', {});
 end
 
 local function expand_value(value, cache)
@@ -37,12 +37,18 @@ local function expand_value(value, cache)
     local orig_type = rdebug.type(value)
     local mt = {
         __HOST_OBJ__ = true,
-        __HOST_TYPE = orig_type,
+        __HOST_TYPE__ = orig_type,
         __HOST_TOSTRING__ = orig_address,
     }
 
     if orig_type == 'function' then
-        mt.__HOST_INFO = rdebug.fvalue(value);
+        local info = rdebug.fvalue(value);
+        mt.__HOST_INFO_NATIVE__ = info.what == 'C'
+        if not mt.__HOST_INFO_NATIVE__ then
+            mt.__HOST_INFO_FILE__ = info.source
+            mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
+            mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
+        end
         local func = setmetatable({}, mt);
         cache[cache_key] = func
         return func
@@ -81,9 +87,7 @@ local function expand_value(value, cache)
     end
 
     if orig_type == 'thread' then
-        mt.__HOST_INFO = {
-            status = rdebug.fvalue(value),
-        }
+        mt.__HOST_INFO_STATUS__ = rdebug.fvalue(value)
         local tbl = setmetatable({}, mt);
         return tbl
     end

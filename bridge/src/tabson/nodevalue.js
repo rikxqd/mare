@@ -169,7 +169,7 @@ const doTagReference = (arg, refs, mkoid) => {
 
         if (isArrayLikeTable(ref)) {
             const description = `Array[${ref.items.length}]`;
-            const preview = previewer.tableAsObject(ref, refs);
+            const preview = previewer.tableAsArray(ref, refs);
             preview.description = description;
             return {
                 className: 'Array',

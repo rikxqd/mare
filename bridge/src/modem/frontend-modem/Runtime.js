@@ -1,4 +1,5 @@
 import {Tabson} from '../../tabson';
+import rehost from '../../tabson/rehost';
 const Runtime = {};
 
 Runtime.enable = async (req, store, modem) => {
@@ -32,8 +33,23 @@ Runtime.getProperties = async(req, store, modem) => {
     }
 
     const docId = {id: objectId.id, group: objectId.group};
-    const jsobj = await store.jsobjGet(JSON.stringify(docId));
-    const tv = new Tabson(jsobj, docId);
+    let jsobj = await store.jsobjGet(JSON.stringify(docId));
+    let tv;
+    if (objectId.group === 'console') {
+        jsobj = jsobj[objectId.index];
+        if (jsobj.vmtype === 'host') {
+            jsobj = rehost(jsobj);
+            console.log(jsobj);
+        }
+        const vProps = Object.assign({index: objectId.index}, docId);
+        tv = new Tabson(jsobj, vProps);
+    } else {
+        if (jsobj.vmtype === 'host') {
+            jsobj = rehost(jsobj);
+            console.log(jsobj);
+        }
+        tv = new Tabson(jsobj, docId);
+    }
     const result = tv.props(objectId.paths);
 
     if (result.internalProperties) {
