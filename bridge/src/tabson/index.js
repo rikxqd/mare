@@ -2,6 +2,38 @@ import * as cnt from './constant';
 import nodevalue from './nodevalue';
 import nodeprops from './nodeprops';
 
+const normalizeRawobj = (rawobj) => {
+    for (const [id, ref] of Object.entries(rawobj.refs)) {
+        ref.id = id;
+        if (ref.type === 'table') {
+            const keystableId = `${id}~`;
+            const keystableItems = [];
+            for (const item of ref.items) {
+                const keyNode = item.key;
+                if (keyNode.tag === cnt.TAG_REFERENCE) {
+                    keystableItems.push({
+                        key: {tag: cnt.TAG_LITERAL, arg: keyNode.arg},
+                        value: keyNode,
+                    });
+                }
+            }
+            if (keystableItems.length !== 0) {
+                rawobj.refs[keystableId] = {
+                    id: keystableId,
+                    type: 'table',
+                    items: keystableItems,
+                };
+                ref.keystable = {
+                    tag: cnt.TAG_REFERENCE,
+                    arg: keystableId,
+                };
+            }
+        }
+    }
+    console.log(rawobj);
+    return rawobj;
+};
+
 const parsePath = function(path) {
     const prefix = path[0];
     const code = path.slice(1);
@@ -49,7 +81,7 @@ const findItem = function(parsedPath, ref) {
 export class Tabson {
 
     constructor(rawobj, idmix) {
-        this.rawobj = rawobj;
+        this.rawobj = normalizeRawobj(rawobj);
         this.idmix = idmix;
     }
 

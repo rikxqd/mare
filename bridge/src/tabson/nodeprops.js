@@ -98,7 +98,7 @@ const doTagReference = (arg, refs, mkoid) => {
 
             if (!isStringKey) {
                 prop.symbol = nodevalue(keyNode, refs, (subPaths = []) => {
-                    const keyPaths = ['$keyobjects', `@${keyNode.arg}`];
+                    const keyPaths = ['$keystable', `@${keyNode.arg}`];
                     return mkoid([keyPaths, ...subPaths]);
                 });
             }
@@ -109,6 +109,14 @@ const doTagReference = (arg, refs, mkoid) => {
         const internalProperties = [];
         if (metatableProp) {
             internalProperties.push(metatableProp);
+        }
+        if (ref.keystable) {
+            internalProperties.push({
+                name: 'keystable',
+                value: nodevalue(ref.keystable, refs, (subPaths = []) => {
+                    return mkoid(['$keystable', ...subPaths]);
+                }),
+            });
         }
         return {result, internalProperties};
     }
