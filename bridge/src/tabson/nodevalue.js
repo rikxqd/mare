@@ -21,10 +21,36 @@ const fetchFunctionSource = (ref) => {
     return `function()\n    ${code}\nend`;
 };
 
-const isArrayLikeTable = (ref) => {
+const isDictLikeTable = (ref) => {
+    if (ref.metatable) {
+        return false;
+    }
+
     const items = ref.items;
-    const length = items.length;
-    for (let i = 0; i < length; i++) {
+    if (items.length === 0) {
+        return false;
+    }
+
+    for (const item of items) {
+        const {tag, arg} = item.key;
+        if (tag !== cnt.TAG_LITERAL || (typeof arg) !== 'string') {
+            return false;
+        }
+    }
+    return true;
+};
+
+const isArrayLikeTable = (ref) => {
+    if (ref.metatable) {
+        return false;
+    }
+
+    const items = ref.items;
+    if (items.length === 0) {
+        return false;
+    }
+
+    for (let i = 0; i < items.length; i++) {
         const {tag, arg} = items[i].key;
         if (tag !== cnt.TAG_LITERAL || arg !== (i + 1)) {
             return false;
@@ -127,24 +153,41 @@ const doTagReference = (arg, refs, mkoid) => {
     }
 
     if (type === 'table') {
-        if (isArrayLikeTable(ref)) {
-            return {
-                className: 'Array',
-                description: `Table[${ref.items.length}]`,
-                objectId: objectId,
-                preview: previewer.tableAsArray(ref, refs),
-                subtype: 'array',
-                type: 'object',
-            };
-        } else {
+        if (isDictLikeTable(ref)) {
+            const description = `Dict[${ref.items.length}]`;
+            const preview = previewer.tableAsObject(ref, refs);
+            preview.description = description;
             return {
                 className: 'Object',
-                description: 'Table',
+                description: description,
                 objectId: objectId,
-                preview: previewer.tableAsObject(ref, refs),
+                preview: preview,
+                subtype: 'object',
                 type: 'object',
             };
         }
+
+        if (isArrayLikeTable(ref)) {
+            const description = `Array[${ref.items.length}]`;
+            const preview = previewer.tableAsObject(ref, refs);
+            preview.description = description;
+            return {
+                className: 'Array',
+                description: description,
+                objectId: objectId,
+                preview: preview,
+                subtype: 'array',
+                type: 'object',
+            };
+        }
+
+        return {
+            className: 'Object',
+            description: 'Table',
+            objectId: objectId,
+            preview: previewer.tableAsObject(ref, refs),
+            type: 'object',
+        };
     }
 
 };

@@ -80,7 +80,7 @@ const previewer = {
         }
 
         return {
-            description: `Table[${ref.items.length}]`,
+            description: 'Table',
             overflow: items.length > PREVIEW_PROP_COUNT,
             properties: properties,
             subtype: 'array',
