@@ -43,6 +43,16 @@ Runtime.getProperties = async(req, store, modem) => {
         }
         const vProps = Object.assign({index: objectId.index}, docId);
         tv = new Tabson(jsobj, vProps);
+    } else if (objectId.group === 'locals-result') {
+        jsobj = jsobj[objectId.index];
+        jsobj = rehost(jsobj);
+        const vProps = Object.assign({index: objectId.index}, docId);
+        tv = new Tabson(jsobj, vProps);
+    } else if (objectId.group === 'upvalues-result') {
+        jsobj = jsobj[objectId.index];
+        jsobj = rehost(jsobj);
+        const vProps = Object.assign({index: objectId.index}, docId);
+        tv = new Tabson(jsobj, vProps);
     } else {
         if (jsobj.vmtype === 'host') {
             jsobj = rehost(jsobj);
@@ -56,7 +66,7 @@ Runtime.getProperties = async(req, store, modem) => {
         for (const p of result.internalProperties) {
             if (p.value.subtype === 'internal#location') {
                 const scriptId = p.value.value.scriptId;
-                await modem.scriptParsed(scriptId);
+                await modem.scriptParsed(scriptId, store);
             }
         }
     }

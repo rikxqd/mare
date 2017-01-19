@@ -10,7 +10,6 @@ export class BackendModem extends EventEmitter {
         super();
         this.nonFileScriptIdCount = 0;
         this.frameScriptIdCount = 0;
-        this.scriptParsedFiles = {};
     }
 
     sendFrontend(value) {
@@ -42,14 +41,14 @@ export class BackendModem extends EventEmitter {
         }
     }
 
-    scriptParsed = async (scriptId, endLine = -1) => {
+    scriptParsed = async (scriptId, store, endLine = -1) => {
         if (!scriptId.startsWith('@')) {
             return;
         }
-        if (this.scriptParsedFiles[scriptId]) {
+        if (store.scriptParsedFiles[scriptId]) {
             return;
         }
-        this.scriptParsedFiles[scriptId] = true;
+        store.scriptParsedFiles[scriptId] = true;
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
@@ -90,7 +89,7 @@ export class BackendModem extends EventEmitter {
 
         await (async () => {
             for (const s of stacks) {
-                await this.scriptParsed(s.file);
+                await this.scriptParsed(s.file, store);
             }
         })();
 
@@ -176,25 +175,27 @@ export class BackendModem extends EventEmitter {
         });
     }
 
-    debuggerPause = async(data) => {
+    debuggerPause = async(data, store) => {
         this.frameScriptIdCount += 1;
 
         const stacks = data.stacks || [];
 
         const firstStack = stacks[0];
+        let firstStackShifted = false;
         if (firstStack && firstStack.file.includes('hostvm')) {
             stacks.shift();
+            firstStackShifted = true;
         }
 
         await (async () => {
             for (const s of stacks) {
-                await this.scriptParsed(s.file);
+                await this.scriptParsed(s.file, store);
             }
         })();
 
         const callFrames = stacks.map((s, i) => {
             const callFrameId = JSON.stringify({
-                ordinal: i,
+                ordinal: firstStackShifted ? (i + 1) : i,
                 injectedScriptId: this.frameScriptIdCount,
             });
             const scopeChain = [
@@ -203,7 +204,7 @@ export class BackendModem extends EventEmitter {
                         className: 'Object',
                         description: 'Table',
                         objectId: JSON.stringify({
-                            level: i,
+                            level: firstStackShifted ? (i + 1) : i,
                             group: 'locals',
                         }),
                         type: 'object',
@@ -215,7 +216,7 @@ export class BackendModem extends EventEmitter {
                         className: 'Object',
                         description: 'Table',
                         objectId: JSON.stringify({
-                            level: i,
+                            level: firstStackShifted ? (i + 1) : i,
                             group: 'upvalues',
                         }),
                         type: 'object',
@@ -260,7 +261,7 @@ export class BackendModem extends EventEmitter {
                 callFrames,
                 hitBreakpoints: [
                     do {
-                        const s = data.stacks[0];
+                        const s = stacks[0];
                         const file = s.file.replace('@', '').replace('./', '');
                         `file:///${file}:${s.line - 1}:0`;
                     },
@@ -275,17 +276,35 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: `${data.type}-result`};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new Tabson(data.value, props);
-        const result = tv.props();
-        const resp = {id: data.parrot.id, result};
+        const result = [];
+        for (const [k, v] of Object.entries(data.value)) {
+            const vProps = Object.assign({index: k}, props);
+            const re = rehost(v);
+            const tv = new Tabson(re, vProps);
+
+            const arg = {
+                configurable: false,
+                enumerable: true,
+                isOwn: true,
+                writable: false,
+                name: k,
+                value: tv.value(),
+            };
+            result.push(arg);
+        }
+        const resp = {id: data.parrot.id, result: {result}};
         this.sendFrontend(resp);
     }
 
     stackWatch = async (data, store) => {
-        const props = {id: uuid.v4(), group: `${data.type}-result`};
+        const props = {id: uuid.v4(), group: 'watch'};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new Tabson(data.value, props);
+        let dumped = data.value;
+        if (dumped.vmtype === 'host') {
+            dumped = rehost(dumped);
+        }
+        const tv = new Tabson(dumped, props);
         const valueFeild = tv.value();
         const result = {result: valueFeild};
         if (data.error) {
@@ -304,7 +323,11 @@ export class BackendModem extends EventEmitter {
         const props = {id: uuid.v4(), group: 'repl'};
         const docId = JSON.stringify(props);
         store.jsobjAppendOne(docId, data.value);
-        const tv = new Tabson(data.value, props);
+        let dumped = data.value;
+        if (dumped.vmtype === 'host') {
+            dumped = rehost(dumped);
+        }
+        const tv = new Tabson(dumped, props);
         const valueFeild = tv.value();
         const result = {result: valueFeild};
         if (data.error) {

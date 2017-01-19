@@ -2,6 +2,18 @@ local class = require('ldb/utils/oo').class
 local tabson = require('ldb/utils/tabson')
 local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 
+local p = function(v)
+    if not session then
+        return
+    end
+    local value = tabson.dump({
+        'DEBUG',
+        v,
+    })
+    value.vmtype = 'debug'
+    session.frontend:console_api({value}, 'log', {});
+end
+
 local Interacter = class({
 
     constructor = function(self, step, session, environ)
@@ -84,8 +96,13 @@ local Interacter = class({
                 value = {}
             end
 
-            item.value = tabson.dump(value)
-            item.value.vmtype = 'host'
+            local args = {}
+            for k, v in pairs(value) do
+                local dumped = tabson.dump(v)
+                dumped.vmtype = 'host'
+                args[k] = dumped
+            end
+            item.value = args
             frontend:stack_scope(item)
         end
 
@@ -100,8 +117,16 @@ local Interacter = class({
         for _, item in ipairs(behavior.watch_queue) do
             local ok, value = self:eval_code(item.code, item.level)
             item.error = not ok
+
+            local value_type = type(value)
             item.value = tabson.dump(value)
-            item.value.vmtype = 'host'
+            item.value.vmtype = 'sandbox'
+            if value_type == 'table' then
+                local mt = getmetatable(value);
+                if mt and mt.__HOST_OBJ__ then
+                    item.value.vmtype = 'host'
+                end
+            end
             frontend:stack_watch(item)
         end
 

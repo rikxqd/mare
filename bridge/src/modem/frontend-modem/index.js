@@ -92,20 +92,24 @@ export class FrontendModem extends EventEmitter {
             const content = await readFile(file);
             const lines = content.split('\n');
             const scriptId = `@./${path}`;
-            this.scriptParsed(scriptId, lines.length);
+            this.scriptParsed(scriptId, store, lines.length);
         }
     }
 
-    scriptParsed = async (scriptId, endLine = -1) => {
+    scriptParsed = async (scriptId, store, endLine = -1) => {
         if (!scriptId.startsWith('@')) {
             return;
         }
+        if (store.scriptParsedFiles[scriptId]) {
+            return;
+        }
+        store.scriptParsedFiles[scriptId] = true;
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
         let path = scriptId.replace('@', '');
         if (path.startsWith('./')) {
-            path = scriptId.replace('./', '');
+            path = path.replace('./', '');
         }
 
         this.sendFrontend({

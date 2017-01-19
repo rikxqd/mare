@@ -20,6 +20,7 @@ export class SessionDataStore extends EventEmitter {
             breakOnEnter: true,
             snapshotLimitLevel: 6,
         };
+        this.scriptParsedFiles = {};
     }
 
     destroy() {

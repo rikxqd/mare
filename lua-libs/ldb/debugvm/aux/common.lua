@@ -128,12 +128,30 @@ local expand_to_dict = function(items)
     end
 
     if #temporaries > 0 then
+        local mt = {
+            __HOST_OBJ__ = true,
+            __HOST_TYPE__ = 'table',
+            __HOST_TOSTRING__ = '(*temporary)',
+        }
+        setmetatable(temporaries, mt)
         ret['(*temporary)'] = temporaries
     end
     if #varargs > 0 then
+        local mt = {
+            __HOST_OBJ__ = true,
+            __HOST_TYPE__ = 'table',
+            __HOST_TOSTRING__ = '(*vararg)',
+        }
+        setmetatable(varargs, mt)
         ret['(*vararg)'] = varargs
     end
     if #retargs > 0 then
+        local mt = {
+            __HOST_OBJ__ = true,
+            __HOST_TYPE__ = 'table',
+            __HOST_TOSTRING__ = '(*retarg)',
+        }
+        setmetatable(retargs, mt)
         ret['(*retarg)'] = retargs
     end
 

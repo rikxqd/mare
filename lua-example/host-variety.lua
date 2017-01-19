@@ -12,7 +12,8 @@ main = function()
     for k, v in pairs(libdata) do
         print(fmt:format(k, v), v)
     end
-    print(libdata)
+    local x = libdata
+    print(x)
 end
 
 main()

@@ -93,6 +93,7 @@ export class Session extends EventEmitter {
         this.adapter.replaceFrontendWebSocket(ws);
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
+        this.store.scriptParsedFiles = {};
         this.logging('connect', {
             side: 'frontend',
             remoteHost: ws.socket.remoteAddress,
