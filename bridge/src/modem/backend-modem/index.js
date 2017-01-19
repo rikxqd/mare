@@ -10,6 +10,7 @@ export class BackendModem extends EventEmitter {
         super();
         this.nonFileScriptIdCount = 0;
         this.frameScriptIdCount = 0;
+        this.scriptParsedFiles = {};
     }
 
     sendFrontend(value) {
@@ -45,6 +46,10 @@ export class BackendModem extends EventEmitter {
         if (!scriptId.startsWith('@')) {
             return;
         }
+        if (this.scriptParsedFiles[scriptId]) {
+            return;
+        }
+        this.scriptParsedFiles[scriptId] = true;
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
@@ -76,9 +81,19 @@ export class BackendModem extends EventEmitter {
     }
 
     consoleApi  = async (data, store) => {
-        const project = store.project;
-
         const stacks = data.stacks || [];
+
+        const firstStack = stacks[0];
+        if (firstStack && firstStack.file.includes('hostvm')) {
+            stacks.shift();
+        }
+
+        await (async () => {
+            for (const s of stacks) {
+                await this.scriptParsed(s.file);
+            }
+        })();
+
         const frames = stacks.map((s) => {
             let scriptId, url;
             if (s.file === '=stdin') {
@@ -87,8 +102,11 @@ export class BackendModem extends EventEmitter {
                 url = '';
             } else {
                 scriptId = s.file;
-                const path = scriptId.replace('@./', '');
-                url = `${project.id}/${path}`;
+                let path = scriptId.replace('@', '');
+                if (path.startsWith('./')) {
+                    path = path.replace('./', '');
+                }
+                url = `file:///${path}`;
             }
 
             return {
@@ -161,13 +179,20 @@ export class BackendModem extends EventEmitter {
     debuggerPause = async(data) => {
         this.frameScriptIdCount += 1;
 
+        const stacks = data.stacks || [];
+
+        const firstStack = stacks[0];
+        if (firstStack && firstStack.file.includes('hostvm')) {
+            stacks.shift();
+        }
+
         await (async () => {
-            for (const s of data.stacks) {
+            for (const s of stacks) {
                 await this.scriptParsed(s.file);
             }
         })();
 
-        const callFrames = data.stacks.map((s, i) => {
+        const callFrames = stacks.map((s, i) => {
             const callFrameId = JSON.stringify({
                 ordinal: i,
                 injectedScriptId: this.frameScriptIdCount,

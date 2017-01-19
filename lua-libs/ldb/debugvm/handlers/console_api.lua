@@ -13,7 +13,6 @@ local handle = function(step, session, environ)
     local type = step.name:sub(#prefix + 1)
     local args = environ:get_locals_array(1, step.event)
     local stacks = environ:get_stacks()
-    table.remove(stacks, 1)
 
     local values = {}
     for _, v in ipairs(args) do
