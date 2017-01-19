@@ -39,8 +39,16 @@ local api = {
 
             local ok, value = sandbox:eval(item.code, 2)
             item.error = not ok
+
+            local value_type = type(value)
             item.value = tabson.dump(value)
             item.value.vmtype = 'sandbox'
+            if value_type == 'table' then
+                local mt = getmetatable(value);
+                if mt and mt.__HOST_OBJ__ then
+                    item.value.vmtype = 'host'
+                end
+            end
             frontend:repl(item)
         end
 

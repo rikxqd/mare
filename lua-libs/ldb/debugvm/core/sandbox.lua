@@ -43,22 +43,36 @@ local Sandbox = class({
             print = function(...)
                 local values = {}
                 for _, v in ipairs({...}) do
+                    local value_type = type(v)
                     local value = tabson.dump(v)
                     value.vmtype = 'sandbox'
+                    if value_type == 'table' then
+                        local mt = getmetatable(v);
+                        if mt and mt.__HOST_OBJ__ then
+                            value.vmtype = 'host'
+                        end
+                    end
                     table.insert(values, value)
                 end
 
                 frontend:console_api(values, pp_type, stacks)
             end,
-            console = create_console(function(type, ...)
+            console = create_console(function(console_type, ...)
                 local values = {}
                 for _, v in ipairs({...}) do
+                    local value_type = type(v)
                     local value = tabson.dump(v)
                     value.vmtype = 'sandbox'
+                    if value_type == 'table' then
+                        local mt = getmetatable(v);
+                        if mt and mt.__HOST_OBJ__ then
+                            value.vmtype = 'host'
+                        end
+                    end
                     table.insert(values, value)
                 end
 
-                frontend:console_api(values, type, stacks)
+                frontend:console_api(values, console_type, stacks)
             end),
         }
     end,
