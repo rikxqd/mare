@@ -223,19 +223,6 @@ export class BackendModem extends EventEmitter {
                     },
                     type: 'closure',
                 },
-                {
-                    name: '_ENV',
-                    object: {
-                        className: 'Object',
-                        description: '_ENV',
-                        objectId: JSON.stringify({
-                            level: i,
-                            group: '_env',
-                        }),
-                        type: 'object',
-                    },
-                    type: 'global',
-                },
             ];
             return {
                 callFrameId,
