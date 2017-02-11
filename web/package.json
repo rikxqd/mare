@@ -14,8 +14,6 @@
     "babel-preset-react-hmre": "1.1.1",
     "babel-preset-stage-0": "6.16.0",
     "bower": "1.8.0",
-    "chrome-devtools-frontend": "1.0.430158",
-    "chrome-devtools-servefiles": "github:muzuiget/chrome-devtools-servefiles",
     "compression": "1.6.2",
     "css-loader": "0.26.1",
     "del": "2.2.2",
