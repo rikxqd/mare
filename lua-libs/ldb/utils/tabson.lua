@@ -6,8 +6,8 @@ local TAG_LIMIT_DEPTH = 'limit-depth'
 local TAG_LIMIT_COUNT = 'limit-count'
 
 -- 默认值
-local DEFAULT_MAX_DEPTH = 8
-local DEFAULT_MAX_COUNT = 512
+local DEFAULT_MAX_DEPTH = math.maxinteger
+local DEFAULT_MAX_COUNT = math.maxinteger
 
 -- 无视 metamethod 的 tostring
 local rawtostring = function(obj)
