@@ -41,6 +41,9 @@ Debugger.setBreakpointByUrl = async (req, store, modem) => {
 };
 
 Debugger.getScriptSource = async (req, store) => {
+    if (req.params.scriptId.endsWith('-stdin')) {
+        return {scriptSource: '-- No Source Code: this script evaluated on stdin'};
+    }
     const project = store.project;
     let path = req.params.scriptId.replace('@', '');
     if (path.startsWith('./')) {
