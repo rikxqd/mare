@@ -44,7 +44,7 @@ export default class SessionList extends React.Component {
 
     renderDebuggerCell = (value, item) => {
         const path = `ws=${item.wsPath}`;
-        const url = `/devtools/inspector.html?experiments=true&${path}`;
+        const url = `/devtools/inspector.html?${path}`;
         return (
             <div>
                 {do {

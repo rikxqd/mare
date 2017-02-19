@@ -1,7 +1,7 @@
 import express from 'express';
 import libpath from 'path';
 
-const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html?experiments=true';
+const devtoolsTpl = 'chrome-devtools://devtools/bundled/inspector.html';
 const versionPath = libpath.resolve('./src/webapp/assets/version.json');
 const app = express();
 
