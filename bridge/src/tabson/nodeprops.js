@@ -12,17 +12,22 @@ const doTagLiteral = () => {
 const doTagReference = (arg, refs, mkoid) => {
     const ref = refs[arg];
     const type = ref.type;
+    const internalProperties = [{
+        name: 'rawtostring',
+        value: {
+            type: 'string',
+            value: ref.id,
+        },
+    }];
 
     if (type === 'function') {
-        const internalProperties = [
-            {
-                name: 'domain',
-                value: {
-                    type: 'string',
-                    value: ref.native ? 'c' : 'lua',
-                },
+        internalProperties.push({
+            name: 'domain',
+            value: {
+                type: 'string',
+                value: ref.native ? 'c' : 'lua',
             },
-        ];
+        });
         if (ref.file) {
             internalProperties.push({
                 name: 'source',
@@ -42,15 +47,13 @@ const doTagReference = (arg, refs, mkoid) => {
     }
 
     if (type === 'thread') {
-        const internalProperties = [
-            {
-                name: 'status',
-                value: {
-                    type: 'string',
-                    value: ref.status,
-                },
+        internalProperties.push({
+            name: 'status',
+            value: {
+                type: 'string',
+                value: ref.status,
             },
-        ];
+        });
         return {result: [], internalProperties};
     }
 
@@ -66,7 +69,6 @@ const doTagReference = (arg, refs, mkoid) => {
 
     if (type === 'userdata') {
         const result = [];
-        const internalProperties = [];
         if (metatableProp) {
             internalProperties.push(metatableProp);
         }
@@ -106,7 +108,6 @@ const doTagReference = (arg, refs, mkoid) => {
             return prop;
         });
 
-        const internalProperties = [];
         if (metatableProp) {
             internalProperties.push(metatableProp);
         }
