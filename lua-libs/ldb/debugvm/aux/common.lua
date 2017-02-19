@@ -92,51 +92,57 @@ end
 local expand_to_dict = function(items)
     local cache = {}
     local ret = {}
-    local temporaries = {}
-    local varargs = {}
-    local retargs = {}
+    local temporary_count = 0
+    local temporary_dict = {}
+    local vararg_count = 0
+    local vararg_dict = {}
+    local retarg_count = 0
+    local retarg_dict = {}
 
     for _, item in ipairs(items) do
         local name = item[1]
         local value = expand_value(item[2], cache)
 
         if name == '(*temporary)' then
-            table.insert(temporaries, value)
+            temporary_count = temporary_count + 1
+            temporary_dict[temporary_count] = value
         elseif name == '(*vararg)' then
-            table.insert(varargs, value)
+            vararg_count = vararg_count + 1
+            vararg_dict[vararg_count] = value
         elseif name == '(*retarg)' then
-            table.insert(retargs, value)
+            retarg_count = retarg_count + 1
+            retarg_dict[retarg_count] = value
         else
             ret[name] = value
         end
     end
 
-    if #temporaries > 0 then
+    if temporary_count > 0 then
         local mt = {
             __HOST_OBJ__ = true,
             __HOST_TYPE__ = 'table',
             __HOST_TOSTRING__ = '(*temporary)',
         }
-        setmetatable(temporaries, mt)
-        ret['(*temporary)'] = temporaries
+        setmetatable(temporary_dict, mt)
+        ret['(*temporary)'] = temporary_dict
     end
-    if #varargs > 0 then
+    if vararg_count > 0 then
         local mt = {
             __HOST_OBJ__ = true,
             __HOST_TYPE__ = 'table',
             __HOST_TOSTRING__ = '(*vararg)',
         }
-        setmetatable(varargs, mt)
-        ret['(*vararg)'] = varargs
+        setmetatable(vararg_dict, mt)
+        ret['(*vararg)'] = vararg_dict
     end
-    if #retargs > 0 then
+    if retarg_count > 0 then
         local mt = {
             __HOST_OBJ__ = true,
             __HOST_TYPE__ = 'table',
             __HOST_TOSTRING__ = '(*retarg)',
         }
-        setmetatable(retargs, mt)
-        ret['(*retarg)'] = retargs
+        setmetatable(retarg_dict, mt)
+        ret['(*retarg)'] = retarg_dict
     end
 
     return ret
