@@ -78,7 +78,6 @@ local Session = class({
 
     apply_handshaked = function(self)
         self.handshaked = true
-        self:restore_state()
     end,
 
     apply_message = function(self, message)

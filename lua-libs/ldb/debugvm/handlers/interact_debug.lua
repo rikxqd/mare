@@ -136,6 +136,10 @@ local Interacter = class({
         frontend:execute_paused(stacks)
 
         while behavior:is_pausing() do
+            if not session.connected then
+                break
+            end
+
             session:sync(0.1)
             self:process_scope_queue()
             self:process_watch_queue()
