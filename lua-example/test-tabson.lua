@@ -7,11 +7,8 @@ tabson = require('ldb/utils/tabson')
 serializer = require('ldb/common/serializer')
 libdata = require('lib-data')
 
-cmdargs = arg
-moduleargs = {...}
-
-test_variety = function()
-    console.group_collapsed('test_variety()')
+test_data = function()
+    console.group_collapsed('test_data()')
     for k, v in pairs(libdata) do
         local dumped = tabson.dump(v)
         console.log(k, v, dumped)
@@ -36,14 +33,6 @@ test_misc = function()
     console.group_end()
 end
 
-test_global = function()
-    console.group_collapsed('test_global()')
-    console.log('cmdargs', cmdargs, tabson.dump(cmdargs))
-    console.log('moduleargs', moduleargs, tabson.dump(moduleargs))
-    console.log('_ENV', _ENV, tabson.dump(_ENV))
-    console.group_end()
-end
-
 save = function()
     local dumped = tabson.dump(libdata.variety)
     local data = serializer.encode(dumped)
@@ -56,9 +45,8 @@ end
 
 main = function()
     console.clear()
-    test_variety()
+    test_data()
     test_misc()
-    test_global()
 end
 
 if (arg[1] == 'save') then
