@@ -16,9 +16,9 @@ local normalize_frame = function(frame)
     local name = frame.name
     if name == nil then
         if frame.what == 'main' then
-            name = '(*main)'
+            name = '(main)'
         elseif frame.what == 'Lua' then
-            name = '(*noname)'
+            name = '(noname)'
         end
     end
 
