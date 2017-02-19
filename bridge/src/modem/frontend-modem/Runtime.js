@@ -10,12 +10,12 @@ Runtime.enable = async (req, store, modem) => {
 
 const getLocalsProperties = async(req, store, modem, objectId) => {
     modem.getStackScope(req.id, objectId.level, objectId.keys, 'locals');
-    return 'ignoreme';
+    return '__IGNORE_RETURN__';
 };
 
 const getUpvaluesProperties = async(req, store, modem, objectId) => {
     modem.getStackScope(req.id, objectId.level, objectId.keys, 'upvalues');
-    return 'ignoreme';
+    return '__IGNORE_RETURN__';
 };
 
 Runtime.getProperties = async(req, store, modem) => {
@@ -84,7 +84,7 @@ Runtime.evaluate = async (req, store, modem) => {
         return null;
     }
     modem.getRepl(req.id, req.params.expression);
-    return 'ignoreme';
+    return '__IGNORE_RETURN__';
 };
 
 export default Runtime;

@@ -113,7 +113,7 @@ Debugger.setBlackboxedRanges = async(req, store, modem) => {
 Debugger.evaluateOnCallFrame = async(req, store, modem) => {
     const level = JSON.parse(req.params.callFrameId).ordinal;
     modem.getStackWatch(req.id, level, req.params.expression);
-    return 'ignoreme';
+    return '__IGNORE_RETURN__';
 };
 
 export default Debugger;

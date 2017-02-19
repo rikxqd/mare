@@ -53,7 +53,7 @@ export class FrontendModem extends EventEmitter {
         if (func) {
             result = await func(msg, store, this);
         }
-        if (result === 'ignoreme') {
+        if (result === '__IGNORE_RETURN__') {
             return;
         }
 
@@ -72,7 +72,7 @@ export class FrontendModem extends EventEmitter {
                 context: {
                     id: 1,
                     origin: 'file://',
-                    name: 'Lua Host VM',
+                    name: 'Debug Context',
                     auxData: {
                         isDefault: true,
                         frameId: '1',
