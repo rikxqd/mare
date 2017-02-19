@@ -1,27 +1,7 @@
 rdebug = require('remotedebug')
 console = require('ldb/hostvm/console')
 debugger = require('ldb/hostvm/debugger')
-rdebug.start('debug-general')
-
-libmath = require('lib-math')
-
-hell = function()
-    local count = 1
-    local name = 'level 1'
-    return function()
-        count = count + 1
-        local name = 'level 2'
-        return function()
-            count = count + 1
-            local name = 'level 3'
-            return function()
-                count = count + 1
-                local name = 'level 4'
-                print(string.format('count in %s: %d', name, count))
-            end
-        end
-    end
-end
+rdebug.start('debug-test')
 
 hello = function(name)
     print('hello', name)
@@ -42,12 +22,7 @@ fact = function(n)
     return n * fact(n - 1)
 end
 
-invoke = function(func, ...)
-    print('invoking', func, ...)
-    func(...)
-end
-
-steps = function()
+flow = function()
 
     local test1 = function(args)
         local a = 'a'
@@ -78,17 +53,41 @@ steps = function()
 end
 
 probe = function(name)
-    print('begin probe', name)
-    rdebug.probe(name);
-    print('end probe', name)
+    print('probe begin', name)
+    rdebug.probe(name)
+    print('probe end', name)
+end
+
+hell = function()
+    local count = 1
+    local name = 'level 1'
+    return function()
+        count = count + 1
+        local name = 'level 2'
+        return function()
+            count = count + 1
+            local name = 'level 3'
+            return function()
+                count = count + 1
+                local name = 'level 4'
+                print(string.format('count in %s: %d', name, count))
+            end
+        end
+    end
+end
+
+invoke = function(func, ...)
+    func(...)
 end
 
 main = function()
-    hell()()()()
     invoke(hello, 'world')
-    invoke(fact, 5)
-    invoke(steps)
+    invoke(fact, 8)
+    invoke(flow)
     invoke(probe, 'test')
+    invoke(function() hell()()()() end)
 end
 
---main()
+if (arg[-1] ~= '-i') then
+    main()
+end

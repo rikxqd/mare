@@ -1,4 +1,4 @@
-local desc = function(a, b) return string.format('%s=%s', a, b) end
+local _desc = function(a, b) return string.format('%s=%s', a, b) end
 
 local _, cycle = pcall(function()
     local a = {'a'}
@@ -27,9 +27,9 @@ local value_func_lua = function() return 'value_func_lua' end
 local value_inf_neg = -1 / 0
 local value_inf_pos = 1 / 0
 local value_nan = 0 / 0
-local value_string_ascii = '+1s'
+local value_string_ascii = 'too young too simple, sometimes naive'
 local value_string_binary = '\xCA\xFE\xBA\xBE'
-local value_string_utf8 = '续1秒'
+local value_string_utf8 = '苟利国家生死以，岂因祸福避趋之'
 local value_table_array = {'one', 'two', 'threee'}
 local value_table_dict = {x=1, y=2, z=3}
 local value_table_meta = setmetatable({a=1, n=2, z=3, [4]=4}, {__mode='k'})
@@ -52,19 +52,19 @@ local variety = {
     value_table_mix = value_table_mix,
     value_thread = value_thread,
     value_userdata = value_userdata,
-    desc('key_auto', '[1]'),
-    [key_func_c] = desc('key_func_c', key_func_c),
-    [key_func_lua] = desc('key_func_lua', key_func_lua),
-    [key_inf_neg] = desc('key_inf_neg', key_inf_neg),
-    [key_inf_pos] = desc('key_inf_pos', key_inf_pos),
-    [key_string_number] = desc('key_string_number', key_string_number),
-    [key_table_array] = desc('key_table_array' ,key_table_array),
-    [key_table_mix] = desc('key_table_mix' ,key_table_mix),
-    [key_thread] = desc('key_thread', key_thread),
-    [key_userdata] = desc('key_userdata', key_userdata),
-    [false] = desc('false', false),
-    [true] = desc('true', true),
-};
+    _desc('key_auto', '[1]'),
+    [key_func_c] = _desc('key_func_c', key_func_c),
+    [key_func_lua] = _desc('key_func_lua', key_func_lua),
+    [key_inf_neg] = _desc('key_inf_neg', key_inf_neg),
+    [key_inf_pos] = _desc('key_inf_pos', key_inf_pos),
+    [key_string_number] = _desc('key_string_number', key_string_number),
+    [key_table_array] = _desc('key_table_array' ,key_table_array),
+    [key_table_mix] = _desc('key_table_mix' ,key_table_mix),
+    [key_thread] = _desc('key_thread', key_thread),
+    [key_userdata] = _desc('key_userdata', key_userdata),
+    [false] = _desc('false', false),
+    [true] = _desc('true', true),
+}
 
 return {
     cycle = cycle,

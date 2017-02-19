@@ -10,22 +10,21 @@ local debugger = Debugger:new({
         port = 8083,
     },
     session = {
-        id = 'general',
+        id = 'test',
         args = {
             title = config.title,
             expire = -1,
         },
     },
     pause_on_start = config.pause,
-}, IOStream);
+}, IOStream)
 
 rdebug.hookmask(debugger.mask)
 rdebug.sethook(function(event, line)
     debugger:hook(event, line)
     rdebug.hookmask(debugger.mask)
-end);
+end)
 
 if config.start ~= false then
-    session = debugger.session
     debugger:start()
 end

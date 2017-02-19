@@ -1,7 +1,6 @@
 rdebug = require('remotedebug')
 console = require('ldb/hostvm/console')
 debugger = require('ldb/hostvm/debugger')
-rdebug.start('debug-general')
+rdebug.start('debug-test')
 
-console.clear()
-print('hello, world');
+print('hello, world')
