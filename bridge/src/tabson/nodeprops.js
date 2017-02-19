@@ -12,13 +12,17 @@ const doTagLiteral = () => {
 const doTagReference = (arg, refs, mkoid) => {
     const ref = refs[arg];
     const type = ref.type;
-    const internalProperties = [{
-        name: 'rawtostring',
-        value: {
-            type: 'string',
-            value: ref.id,
-        },
-    }];
+    const internalProperties = [];
+
+    if (!ref.id.startsWith('(*')) {
+        internalProperties.push({
+            name: 'rawtostring',
+            value: {
+                type: 'string',
+                value: ref.id,
+            },
+        });
+    }
 
     if (type === 'function') {
         internalProperties.push({
