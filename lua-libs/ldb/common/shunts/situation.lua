@@ -6,9 +6,11 @@ local Situation = class({
         self.state = props.state
     end,
 
+    -- luacheck: no unused args
     match_always = function(self, step)
         return true
     end,
+    -- luacheck: unused args
 
     match = function(self, step)
         if self.state == 'always' then

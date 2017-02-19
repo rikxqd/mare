@@ -1,20 +1,4 @@
-local lo = require('ldb/utils/lodash')
 local rdebug = require('remotedebug')
-local tabson = require('ldb/utils/tabson')
-
-local p = function(v)
-    if not session then
-        return
-    end
-    local value = tabson.dump({
-        'DEBUG',
-        tostring(v),
-        rdebug.type(v),
-        rdebug.value(v),
-    })
-    value.vmtype = 'debug'
-    session.frontend:console_api({value}, 'log', {});
-end
 
 local function expand_value(value, cache)
 

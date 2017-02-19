@@ -1,6 +1,6 @@
 local class = require('ldb/utils/oo').class
-local serializer = require('ldb/utils/serializer')
 local packager = require('ldb/utils/packager')
+local serializer = require('ldb/common/serializer')
 
 local Modem = class({
 

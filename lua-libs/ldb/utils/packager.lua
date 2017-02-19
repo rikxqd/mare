@@ -1,3 +1,5 @@
+-- 二进制流封包处理
+
 local HEAD_LEN = 4
 
 local dump_fmt = '<s' .. HEAD_LEN

@@ -2,18 +2,6 @@ local class = require('ldb/utils/oo').class
 local tabson = require('ldb/utils/tabson')
 local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 
-local p = function(v)
-    if not session then
-        return
-    end
-    local value = tabson.dump({
-        'DEBUG',
-        v,
-    })
-    value.vmtype = 'debug'
-    session.frontend:console_api({value}, 'log', {});
-end
-
 local Interacter = class({
 
     constructor = function(self, step, session, environ)
@@ -112,7 +100,6 @@ local Interacter = class({
     process_watch_queue = function(self)
         local behavior = self.session.behavior
         local frontend = self.session.frontend
-        local environ = self.environ
 
         for _, item in ipairs(behavior.watch_queue) do
             local ok, value = self:eval_code(item.code, item.level)

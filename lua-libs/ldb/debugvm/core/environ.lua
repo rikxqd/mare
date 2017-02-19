@@ -35,13 +35,19 @@ local Environ = class({
         return value
     end,
 
+    -- luacheck: no unused args
     get_upvalues_dict = function(self, level)
         return aux.get_upvalues_dict(level)
+    end,
+
+    get_step = function(self, event)
+        return aux.get_step(event)
     end,
 
     get_stack = function(self, level)
         return aux.get_stack(level)
     end,
+    -- luacheck: unused args
 
     get_stacks = function(self)
         local stacks = {}
@@ -55,10 +61,6 @@ local Environ = class({
             i = i + 1
         end
         return stacks
-    end,
-
-    get_step = function(self, event)
-        return aux.get_step(event)
     end,
 
     require_mask = function(self, mask)

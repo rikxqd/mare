@@ -1,3 +1,5 @@
+-- 过滤掉 IO 功能的 Lua 沙盒环境
+
 local whitelist = {}
 
 local basic_names = {

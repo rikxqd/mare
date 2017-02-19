@@ -1,4 +1,5 @@
--- API 子集实现 https://lodash.com/docs/4.17.3
+-- Lodash API 子集实现
+-- https://lodash.com/docs/4.17.4
 
 local assign = function(object, ...)
     for _, source in ipairs({...}) do

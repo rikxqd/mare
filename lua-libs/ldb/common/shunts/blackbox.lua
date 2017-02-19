@@ -9,7 +9,7 @@ local Blackbox = class({
     end,
 
     match = function(self, step)
-        if self.file ~= step_file then
+        if self.file ~= step.file then
             return false
         end
 

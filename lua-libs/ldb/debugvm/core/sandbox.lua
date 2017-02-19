@@ -1,6 +1,6 @@
 local lo = require('ldb/utils/lodash')
 local class = require('ldb/utils/oo').class
-local mirage = require('ldb/debuglib/core/mirage')
+local mirage = require('ldb/utils/mirage')
 local tabson = require('ldb/utils/tabson')
 
 local create_console = function(impl)
@@ -11,9 +11,11 @@ local create_console = function(impl)
         group_end = 'endGroup'
     }
     local mt = {
+        -- luacheck: no unused args
         __index = function(t, k)
             return function(...) impl(alias[k] or k, ...) end
         end,
+        -- luacheck: unused args
     }
     return setmetatable({}, mt)
 end
@@ -32,7 +34,7 @@ local Sandbox = class({
         local frontend = self.session.frontend
         local storage = self.session.storage
         local stacks = self.environ:get_stacks()
-        for i = 1, self.stack_offset do
+        for _ = 1, self.stack_offset do
             table.remove(stacks, 1)
         end
 
@@ -89,7 +91,7 @@ local Sandbox = class({
         local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
         local fallback = {_LDB=injects}
-        local env = lo.assign({}, mirage, injects, upvalues, locals, fallback)
+        env = lo.assign({}, mirage, injects, upvalues, locals, fallback)
 
         self.envs[level] = env
         return env

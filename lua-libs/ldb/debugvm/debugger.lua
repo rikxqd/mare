@@ -67,7 +67,7 @@ local Debugger = class({
         session:start()
     end,
 
-    hook = function(self, event, line)
+    hook = function(self, event)
         local frame = aux.get_frame(1)
         --aux.print_frame(frame, event)
         if aux.is_c_inner_frame(frame) then
@@ -99,7 +99,7 @@ local Debugger = class({
         return libstr.uniqchars(mask)
     end,
 
-    get_host_args = function(cls)
+    get_host_args = function()
         return aux.get_locals_array(0)
     end,
 })

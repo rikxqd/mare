@@ -6,6 +6,7 @@ local Trapper = class({
         self.state = props.state
     end,
 
+    -- luacheck: no unused args
     match_all = function(self, step)
         -- TODO 其实这里不完全正确，先凑合
         -- 似乎某些异常会触发出以 __ 开头的 C 函数的 return
@@ -13,6 +14,7 @@ local Trapper = class({
         local is_metamethod = step.func:find('__', 1, true) == 1
         return is_c_return and is_metamethod
     end,
+    -- luacheck: unused args
 
     match_uncaught = function(self, step)
         -- TODO 处理未在 pcall/xpcall 里运行的

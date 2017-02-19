@@ -1,3 +1,5 @@
+-- Lua 对象结构描述库
+
 -- 节点表示的数据类型
 local TAG_SPECIAL = 'special'
 local TAG_LITERAL = 'literal'

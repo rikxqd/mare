@@ -23,9 +23,9 @@ local IOStream = {
         end
 
         lsocket.select(nil, {socket}, 1)
-        local ok, err = socket:status()
+        local ok, err1 = socket:status()
         if not ok then
-            return false, err
+            return false, err1
         end
 
         self.socket = socket

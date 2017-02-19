@@ -3,6 +3,7 @@ local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
 local tabson = require('ldb/utils/tabson')
 
 local api = {
+    -- luacheck: no unused args
 
     idling = function(step, session, environ)
         session:heartbeat()
@@ -24,7 +25,6 @@ local api = {
     repl = function(step, session, environ)
         local behavior = session.behavior
         local frontend = session.frontend
-        local environ = environ
 
         local args = environ:get_locals_array(1, step.event)[1]
         local debug_print = args and args.debug_print
@@ -80,6 +80,8 @@ local api = {
     print_behavior = function(step, session, environ)
         print(session.behavior:to_string())
     end,
+
+    -- luacheck: unused args
 }
 
 local handle = function(step, session, environ)

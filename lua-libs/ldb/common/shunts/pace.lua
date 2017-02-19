@@ -22,9 +22,11 @@ local Pace = class({
         return self.call_depth == 0 and (not step.is_call)
     end,
 
+    -- luacheck: no unused args
     match_out = function(self, step)
         return self.call_depth < 0 and self:prev_step_is_return()
     end,
+    -- luacheck: unused args
 
     match_into = function(self, step)
         if self.call_depth > 0 and self:prev_step_is_call() then

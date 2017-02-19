@@ -1,3 +1,5 @@
+-- 字符串处理工具
+
 local split = function(str, sep)
     local fields = {}
     local pattern = string.format('([^%s]+)', sep)

@@ -1,3 +1,5 @@
+-- 简单粗暴的面向对象实现
+
 local new = function(cls, ...)
     local self = {}
     setmetatable(self, cls)
