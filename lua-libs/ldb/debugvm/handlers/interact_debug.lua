@@ -133,7 +133,7 @@ local Interacter = class({
         --print(self.behavior:to_string())
         local stacks = environ:get_stacks()
         behavior:execute_pause(stacks)
-        frontend:execute_paused(stacks)
+        frontend:execute_paused(stacks, self.step)
 
         while behavior:is_pausing() do
             if not session:is_ready() then

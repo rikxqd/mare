@@ -278,6 +278,7 @@ export class BackendModem extends EventEmitter {
                     },
                 ],
                 reason: 'other',
+                data: {step: data.step},
             },
         };
         this.sendFrontend(resp);

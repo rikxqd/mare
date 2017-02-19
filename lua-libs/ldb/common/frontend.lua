@@ -29,11 +29,12 @@ local Frontend = class({
         self:emit('message', message)
     end,
 
-    execute_paused = function(self, stacks)
+    execute_paused = function(self, stacks, step)
         local message = {
             method = 'executePaused',
             params = {
                 stacks = stacks,
+                step = step,
             },
         }
         self:emit('message', message)
