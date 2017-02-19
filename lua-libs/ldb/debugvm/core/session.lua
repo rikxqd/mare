@@ -4,6 +4,12 @@ local Behavior = require('ldb/common/behavior').Behavior
 local Frontend = require('ldb/common/frontend').Frontend
 local Modem = require('ldb/common/modem').Modem
 
+local STATE_INIT = 0
+local STATE_CONNECTING = 1
+local STATE_HANDSHAKING = 2
+local STATE_PREPARING = 3
+local STATE_READY = 4
+
 local Session = class({
 
     constructor = function(self, config, iostream)
@@ -18,19 +24,24 @@ local Session = class({
         self.modem:on('command', self:on_modem_command())
         self.frontend:on('message', self:on_frontend_message())
 
-        self.connected = false
-        self.handshaked = false
+        self.state = STATE_INIT
         self.storage = {}
     end,
 
+    is_ready = function(self)
+        return self.state == STATE_READY
+    end,
+
     start = function(self)
-        if not self.connected then
+        if self.state == STATE_INIT then
+            self.state = STATE_CONNECTING
             self.modem:connect()
         end
     end,
 
     stop = function(self)
-        if self.connected then
+        if self.state ~= STATE_INIT then
+            self.state = STATE_INIT
             self.modem:disconnect()
         end
     end,
@@ -42,16 +53,19 @@ local Session = class({
 
     on_modem_connect = function(self)
         return function()
-            self.connected = true
-            self.handshaked = false
-            self:handshake()
+            self.state = STATE_HANDSHAKING
+            local query = libstr.urlencode(self.config.args)
+            local url = string.format('/session/%s?%s', self.config.id, query)
+            self.modem:send('handshake', url)
+            while self.state == STATE_HANDSHAKING do
+                self.modem:recv(0.1)
+            end
         end
     end,
 
     on_modem_disconnect = function(self)
         return function()
-            self.connected = false
-            self.handshaked = false
+            self.state = STATE_INIT
         end
     end,
 
@@ -77,12 +91,24 @@ local Session = class({
     end,
 
     apply_handshaked = function(self)
-        self.handshaked = true
+        self.state = STATE_PREPARING
+        self:message({method='sessionPrepare'})
+        while self.state == STATE_PREPARING do
+            self.modem:recv(0.1)
+        end
     end,
 
     apply_message = function(self, message)
         local method = message.method
         local params = message.params
+
+        if method == 'session.prepareInfo' then
+            self.behavior:set_skip_blackboxes(params.blackboxes)
+            self.behavior:set_pause_breakpoints(params.breakpoints)
+            self.state = STATE_READY
+            return
+        end
+
         if method == 'behavior.setSkipSituation' then
             self.behavior:set_skip_situation(params)
             return
@@ -121,28 +147,8 @@ local Session = class({
         end
     end,
 
-    restore_state = function(self)
-        local behavior = self.behavior
-        local frontend = self.frontend
-        if behavior:is_pausing() then
-            frontend:execute_paused(behavior.pausing_stacks)
-        else
-            frontend:execute_resumed()
-        end
-    end,
-
     heartbeat = function(self)
         self.modem:send('heartbeat')
-    end,
-
-    handshake = function(self)
-        local query = libstr.urlencode(self.config.args)
-        local url = string.format('/session/%s?%s', self.config.id, query)
-        self.modem:send('handshake', url)
-
-        while self.connected and not self.handshaked do
-            self.modem:recv(0.1)
-        end
     end,
 
     message = function(self, message)

@@ -136,7 +136,7 @@ local Interacter = class({
         frontend:execute_paused(stacks)
 
         while behavior:is_pausing() do
-            if not session.connected then
+            if not session:is_ready() then
                 break
             end
 

@@ -21,23 +21,33 @@ export class BackendModem extends EventEmitter {
     }
 
     deliver = async (msg, store) => {
+        if (msg.method === 'sessionPrepare') {
+            this.sessionPrepare(msg.params, store);
+            return;
+        }
         if (msg.method === 'consoleApi') {
             this.consoleApi(msg.params, store);
+            return;
         }
         if (msg.method === 'executePaused') {
             this.debuggerPause(msg.params, store);
+            return;
         }
         if (msg.method === 'executeResumed') {
             this.debuggerResumed(msg.params, store);
+            return;
         }
         if (msg.method === 'stackScope') {
             this.stackScope(msg.params, store);
+            return;
         }
         if (msg.method === 'stackWatch') {
             this.stackWatch(msg.params, store);
+            return;
         }
         if (msg.method === 'repl') {
             this.repl(msg.params, store);
+            return;
         }
     }
 
@@ -79,7 +89,21 @@ export class BackendModem extends EventEmitter {
         });
     }
 
-    consoleApi  = async (data, store) => {
+    sessionPrepare = async(data, store) => {
+        const breakpoints = await store.breakpointGetAll();
+        for (const breakpoint of breakpoints) {
+            delete breakpoint.breakpointId;
+        }
+        const blackboxes = await store.blackboxGetAll();
+        for (const blackbox of blackboxes) {
+            delete blackbox.blackboxId;
+        }
+        const method = 'session.prepareInfo';
+        const params = {breakpoints, blackboxes};
+        this.sendBackend({method, params});
+    }
+
+    consoleApi = async (data, store) => {
         const stacks = data.stacks || [];
 
         const firstStack = stacks[0];
