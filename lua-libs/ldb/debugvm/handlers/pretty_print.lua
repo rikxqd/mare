@@ -14,7 +14,7 @@ local handle = function(step, session, environ)
         return
     end
 
-    local stack = environ:get_stack(1)
+    local stack = environ:get_stack(2)
     local args = environ:get_locals_array(1, step.event)
     local type = (config and config.type) or 'log'
 
