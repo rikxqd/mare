@@ -53,6 +53,7 @@ local Debugger = class({
         local session = self.session
         local behavior = session.behavior
 
+        session:start()
         if config.pause_on_start then
             local step = aux.get_step()
             local breakpoint = {
@@ -63,8 +64,6 @@ local Debugger = class({
             }
             behavior:insert_pause_breakpoint(breakpoint, 1)
         end
-
-        session:start()
     end,
 
     hook = function(self, event)
