@@ -144,6 +144,8 @@ local Interacter = class({
             self:process_scope_queue()
             self:process_watch_queue()
         end
+
+        frontend:execute_resumed()
     end,
 
     require_mask = function(self)
