@@ -175,9 +175,14 @@ export class FrontendModem extends EventEmitter {
     }
 
     updateBreakpoints = async (store) => {
-        const breakpoints = await store.breakpointGetAll();
-        for (const breakpoint of breakpoints) {
-            delete breakpoint.breakpointId;
+        let breakpoints;
+        if (store.activeBreakpoints) {
+            breakpoints = await store.breakpointGetAll();
+            for (const breakpoint of breakpoints) {
+                delete breakpoint.breakpointId;
+            }
+        } else {
+            breakpoints = [];
         }
         const method = 'behavior.setPauseBreakpoints';
         const params = breakpoints;

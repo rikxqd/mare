@@ -16,6 +16,7 @@ const Debugger = {};
 Debugger.enable = async (req, store, modem) => {
     store.breakpointRemoveAll();
     store.blackboxRemoveAll();
+    store.activeBreakpoints = true;
     //modem.scriptParseProject(store);
     modem.pushProjectConfigToBackend(store);
     modem.pushProjectConfigToBackend(store);
@@ -117,6 +118,11 @@ Debugger.evaluateOnCallFrame = async(req, store, modem) => {
     const level = JSON.parse(req.params.callFrameId).ordinal;
     modem.getStackWatch(req.id, level, req.params.expression);
     return '__IGNORE_RETURN__';
+};
+
+Debugger.setBreakpointsActive = async(req, store, modem) => {
+    store.activeBreakpoints = req.params.active;
+    modem.updateBreakpoints(store);
 };
 
 export default Debugger;

@@ -90,9 +90,14 @@ export class BackendModem extends EventEmitter {
     }
 
     sessionPrepare = async(data, store) => {
-        const breakpoints = await store.breakpointGetAll();
-        for (const breakpoint of breakpoints) {
-            delete breakpoint.breakpointId;
+        let breakpoints;
+        if (store.activeBreakpoints) {
+            breakpoints = await store.breakpointGetAll();
+            for (const breakpoint of breakpoints) {
+                delete breakpoint.breakpointId;
+            }
+        } else {
+            breakpoints = [];
         }
         const blackboxes = await store.blackboxGetAll();
         for (const blackbox of blackboxes) {
