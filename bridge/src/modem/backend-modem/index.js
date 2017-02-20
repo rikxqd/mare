@@ -9,7 +9,6 @@ export class BackendModem extends EventEmitter {
     constructor() {
         super();
         this.nonFileScriptIdCount = 0;
-        this.frameScriptIdCount = 0;
     }
 
     sendFrontend(value) {
@@ -205,9 +204,15 @@ export class BackendModem extends EventEmitter {
     }
 
     debuggerPause = async(data, store) => {
-        this.frameScriptIdCount += 1;
+        store.debuggerPauseData = data;
+        store.frameScriptIdCount += 1;
 
-        const stacks = data.stacks || [];
+        let stacks;
+        if (data.stacks) {
+            stacks = data.stacks.slice();
+        } else {
+            stacks = [];
+        }
 
         const firstStack = stacks[0];
         let firstStackShifted = false;
@@ -225,7 +230,7 @@ export class BackendModem extends EventEmitter {
         const callFrames = stacks.map((s, i) => {
             const callFrameId = JSON.stringify({
                 ordinal: firstStackShifted ? (i + 1) : i,
-                injectedScriptId: this.frameScriptIdCount,
+                injectedScriptId: store.frameScriptIdCount,
             });
             const scopeChain = [
                 {
@@ -359,7 +364,8 @@ export class BackendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    debuggerResumed = async () => {
+    debuggerResumed = async (data, store) => {
+        store.debuggerPauseData = null;
         const resp = {
             method: 'Debugger.resumed',
             params: {},

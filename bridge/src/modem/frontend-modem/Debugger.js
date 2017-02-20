@@ -17,9 +17,9 @@ Debugger.enable = async (req, store, modem) => {
     store.breakpointRemoveAll();
     store.blackboxRemoveAll();
     store.activeBreakpoints = true;
-    //modem.scriptParseProject(store);
-    modem.pushProjectConfigToBackend(store);
-    modem.pushProjectConfigToBackend(store);
+    if (store.debuggerPauseData) {
+        modem.restorePause(store.debuggerPauseData, store);
+    }
     return null;
 };
 

@@ -116,6 +116,7 @@ export class Adapter extends EventEmitter {
 
     onBewsClose = (code, message) => {
         console.info(this.bews.id, 'close',  code, message);
+        this.fm.restoreResumed(null, this.store);
         this.emit('websocket-close', 'backend');
     }
 

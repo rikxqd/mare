@@ -150,12 +150,6 @@ export class FrontendModem extends EventEmitter {
         }
     }
 
-    pushProjectConfigToBackend = async (store) => {
-        const method = 'updateProjectConfig';
-        const params = store.project.id;
-        this.sendBackend({method, params});
-    }
-
     debuggerResume = async () => {
         const method = 'behavior.executeResume';
         const params = null;
@@ -172,6 +166,105 @@ export class FrontendModem extends EventEmitter {
         const method = 'behavior.setPauseTrapper';
         const params = value !== 'none' ? {state: value} : null;
         this.sendBackend({method, params});
+    }
+
+    restorePause = async(data, store) => {
+        store.frameScriptIdCount += 1;
+
+        let stacks;
+        if (data.stacks) {
+            stacks = data.stacks.slice();
+        } else {
+            stacks = [];
+        }
+
+        const firstStack = stacks[0];
+        let firstStackShifted = false;
+        if (firstStack && firstStack.file.includes('hostvm')) {
+            stacks.shift();
+            firstStackShifted = true;
+        }
+
+        await (async () => {
+            for (const s of stacks) {
+                await this.scriptParsed(s.file, store);
+            }
+        })();
+
+        const callFrames = stacks.map((s, i) => {
+            const callFrameId = JSON.stringify({
+                ordinal: firstStackShifted ? (i + 1) : i,
+                injectedScriptId: store.frameScriptIdCount,
+            });
+            const scopeChain = [
+                {
+                    object: {
+                        className: 'Object',
+                        description: 'Table',
+                        objectId: JSON.stringify({
+                            level: firstStackShifted ? (i + 1) : i,
+                            group: 'locals',
+                        }),
+                        type: 'object',
+                    },
+                    type: 'local',
+                },
+                {
+                    object: {
+                        className: 'Object',
+                        description: 'Table',
+                        objectId: JSON.stringify({
+                            level: firstStackShifted ? (i + 1) : i,
+                            group: 'upvalues',
+                        }),
+                        type: 'object',
+                    },
+                    type: 'closure',
+                },
+            ];
+            return {
+                callFrameId,
+                functionLocation: {
+                    columnNumber: 0,
+                    lineNumber: s.line - 1,
+                    scriptId: s.file,
+                },
+                functionName: s.func,
+                location: {
+                    columnNumber: 0,
+                    lineNumber: s.line - 1,
+                    scriptId: s.file,
+
+                },
+                scopeChain: scopeChain,
+            };
+        });
+
+        const resp = {
+            method: 'Debugger.paused',
+            params: {
+                callFrames,
+                hitBreakpoints: [
+                    do {
+                        const s = stacks[0];
+                        const file = s.file.replace('@', '').replace('./', '');
+                        `file:///${file}:${s.line - 1}:0`;
+                    },
+                ],
+                reason: 'other',
+                data: {step: data.step},
+            },
+        };
+        this.sendFrontend(resp);
+    }
+
+    restoreResumed = async (data, store) => {
+        store.debuggerPauseData = null;
+        const resp = {
+            method: 'Debugger.resumed',
+            params: {},
+        };
+        this.sendFrontend(resp);
     }
 
     updateBreakpoints = async (store) => {

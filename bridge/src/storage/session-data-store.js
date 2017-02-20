@@ -22,6 +22,8 @@ export class SessionDataStore extends EventEmitter {
         };
         this.scriptParsedFiles = {};
         this.activeBreakpoints = true;
+        this.frameScriptIdCount = 0;
+        this.debuggerPauseData = null;
     }
 
     destroy() {
