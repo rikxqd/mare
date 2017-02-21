@@ -1,11 +1,17 @@
 import libpath from 'path';
 import EventEmitter from 'events';
 
-const resolveHome = (filepath) => {
-    if (filepath[0] === '~') {
-        return libpath.join(process.env.HOME, filepath.slice(1));
+const resolveHome = (path) => {
+    if (path[0] === '~') {
+        return libpath.join(process.env.HOME, path.slice(1));
     }
-    return filepath;
+    return path;
+};
+
+const resolvePath = (path) => {
+    path = resolveHome(path);
+    path = libpath.resolve(path);
+    return path + '/';
 };
 
 export class SessionDataStore extends EventEmitter {
@@ -14,16 +20,26 @@ export class SessionDataStore extends EventEmitter {
         super();
         this.cln = cln;
         this.project = {
-            id: 'ldb-example',
-            sourceRoot: resolveHome('~/work/ldb/lua-example/'),
-            mainFile: 'host-test.lua',
-            breakOnEnter: true,
-            snapshotLimitLevel: 6,
+            id: 'default',
+            source: resolvePath('.'),
+            main: 'main.lua',
         };
         this.scriptParsedFiles = {};
         this.activeBreakpoints = true;
         this.frameScriptIdCount = 0;
         this.debuggerPauseData = null;
+    }
+
+    updateProject(project) {
+        if (!project) {
+            return;
+        }
+        if (project.source) {
+            this.project.source = resolvePath(project.source);
+        }
+        if (project.main) {
+            this.project.main = project.main;
+        }
     }
 
     destroy() {

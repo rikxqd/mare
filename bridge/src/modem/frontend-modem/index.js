@@ -71,8 +71,8 @@ export class FrontendModem extends EventEmitter {
             params: {
                 context: {
                     id: 1,
-                    origin: 'file://',
-                    name: 'Debug Context',
+                    origin: 'http://project',
+                    name: '',
                     auxData: {
                         isDefault: true,
                         frameId: '1',
@@ -85,13 +85,13 @@ export class FrontendModem extends EventEmitter {
 
     scriptParseProject = async (store) => {
         const project = store.project;
-        const pattern = `${project.sourceRoot}/**/*.lua`;
+        const pattern = `${project.source}/**/*.lua`;
         const files = await globFiles(pattern);
         for (const file of files) {
-            const path = file.replace(project.sourceRoot, '');
+            const path = file.replace(project.source, '');
             const content = await readFile(file);
             const lines = content.split('\n');
-            const scriptId = `@./${path}`;
+            const scriptId = `@${path}`;
             this.scriptParsed(scriptId, store, lines.length);
         }
     }
@@ -107,10 +107,8 @@ export class FrontendModem extends EventEmitter {
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
-        let path = scriptId.replace('@', '');
-        if (path.startsWith('./')) {
-            path = path.replace('./', '');
-        }
+        const path = scriptId.replace('@', '');
+        const domain = path.startsWith('/') ? 'root' : 'project/';
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -129,7 +127,7 @@ export class FrontendModem extends EventEmitter {
                 sourceMapURL: '',
                 startColumn: 0,
                 startLine: 0,
-                url: `file:///${path}`,
+                url: `http://${domain}${path}`,
             },
         });
     }
@@ -169,6 +167,7 @@ export class FrontendModem extends EventEmitter {
     }
 
     restorePause = async(data, store) => {
+        store.debuggerPauseData = data;
         store.frameScriptIdCount += 1;
 
         let stacks;
@@ -240,17 +239,21 @@ export class FrontendModem extends EventEmitter {
             };
         });
 
+        const hitBreakpoints = [];
+        const stack = stacks[0];
+        const scriptId = stack.file;
+        if (scriptId.startsWith('@')) {
+            const path = scriptId.replace('@', '');
+            const domain = path.startsWith('/') ? 'root' : 'project/';
+            const url = `http://${domain}${path}`;
+            hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
+        }
+
         const resp = {
             method: 'Debugger.paused',
             params: {
                 callFrames,
-                hitBreakpoints: [
-                    do {
-                        const s = stacks[0];
-                        const file = s.file.replace('@', '').replace('./', '');
-                        `file:///${file}:${s.line - 1}:0`;
-                    },
-                ],
+                hitBreakpoints: hitBreakpoints,
                 reason: 'other',
                 data: {step: data.step},
             },

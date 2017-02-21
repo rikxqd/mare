@@ -4,6 +4,23 @@ import {Adapter} from './adapter';
 
 const mktime = () => new Date().getTime();
 
+const parseSessionArgs = (query) => {
+    const args = {};
+    for (const [key, value] of Object.entries(query)) {
+        if (!key.includes('.')) {
+            args[key] = value;
+            continue;
+        }
+
+        const [subKey1, subKey2] = key.split('.');
+        if (!args[subKey1]) {
+            args[subKey1] = {};
+        }
+        args[subKey1][subKey2] = value;
+    }
+    return args;
+};
+
 export class Session extends EventEmitter {
 
     constructor(id) {
@@ -93,12 +110,16 @@ export class Session extends EventEmitter {
         this.adapter.replaceFrontendWebSocket(ws);
         this.isFrontendConnected = true;
         this.frontendConnectionTime = now;
+
+        const sessionArgs = parseSessionArgs(ws.location.query);
+        this.store.updateProject(sessionArgs.project);
         this.store.scriptParsedFiles = {};
+
         this.logging('connect', {
             side: 'frontend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
-            sessionArgs: ws.location.query,
+            sessionArgs: sessionArgs,
         }, now);
         this.saveToStorage();
     }
@@ -110,11 +131,15 @@ export class Session extends EventEmitter {
         this.adapter.replaceBackendWebSoceket(ws);
         this.isBackendConnected = true;
         this.backendConnectionTime = now;
+
+        const sessionArgs = parseSessionArgs(ws.location.query);
+        this.store.updateProject(sessionArgs.project);
+
         this.logging('connect', {
             side: 'backend',
             remoteHost: ws.socket.remoteAddress,
             remotePort: ws.socket.remotePort,
-            sessionArgs: ws.location.query,
+            sessionArgs: sessionArgs,
         }, now);
         this.saveToStorage();
     }
@@ -196,14 +221,14 @@ export class Session extends EventEmitter {
                 connectionTime: this.frontendConnectionTime,
                 remoteHost: fews.socket.remoteAddress,
                 remotePort: fews.socket.remotePort,
-                sessionArgs: fews.location.query,
+                sessionArgs: parseSessionArgs(fews.location.query),
             },
             backend: {
                 isConnected: this.isBackendConnected,
                 connectionTime: this.backendConnectionTime,
                 remoteHost: bews.socket.remoteAddress,
                 remotePort: bews.socket.remotePort,
-                sessionArgs: bews.location.query,
+                sessionArgs: parseSessionArgs(bews.location.query),
             },
         };
     }

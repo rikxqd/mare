@@ -26,10 +26,22 @@ Debugger.enable = async (req, store, modem) => {
 Debugger.setBreakpointByUrl = async (req, store, modem) => {
     const {url, lineNumber, columnNumber, condition} = req.params;
     const breakpointId = `${url}:${lineNumber}:${columnNumber}`;
+
+    if (url.startsWith('http://other/')) {
+        return {breakpointId, locations: []};
+    }
+
+    let file;
+    if (url.startsWith('http://project/')) {
+        file = url.replace('http://project/', '@');
+    } else {
+        file = url.replace('http://root/', '@/');
+    }
+
     const breakpoint = {
         breakpointId: breakpointId,
         event: 'line',
-        file: '@' + url.replace('file:///', ''),
+        file: file,
         line: lineNumber + 1,
         cond: condition,
     };
@@ -42,16 +54,25 @@ Debugger.setBreakpointByUrl = async (req, store, modem) => {
 };
 
 Debugger.getScriptSource = async (req, store) => {
-    if (req.params.scriptId.endsWith('-stdin')) {
+    if (req.params.scriptId.startsWith('=stdin')) {
         return {scriptSource: '-- No Source Code: this script evaluated on stdin'};
     }
     const project = store.project;
-    let path = req.params.scriptId.replace('@', '');
-    if (path.startsWith('./')) {
-        path = path.replace('./', '');
+    const path = req.params.scriptId.replace('@', '');
+
+    let abspath;
+    if (path.startsWith('/')) {
+        abspath = path;
+    } else {
+        abspath = `${project.source}/${path}`;
     }
-    const url = `${project.sourceRoot}/${path}`;
-    const content = await readFile(url);
+
+    let content = '';
+    try {
+        content = await readFile(abspath);
+    } catch (e) {
+        content = `-- ${e}`;
+    }
     return {scriptSource: content};
 };
 

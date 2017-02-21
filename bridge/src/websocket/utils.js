@@ -8,7 +8,7 @@ export default {
     },
 
     location: (ws) => {
-        const url = ws.upgradeReq.url.replace(/\|/, '&');
+        const url = decodeURIComponent(ws.upgradeReq.url).replace(/\|/, '&');
         return liburl.parse(url, true);
     },
 

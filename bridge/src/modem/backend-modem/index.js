@@ -61,10 +61,8 @@ export class BackendModem extends EventEmitter {
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
-        let path = scriptId.replace('@', '');
-        if (path.startsWith('./')) {
-            path = path.replace('./', '');
-        }
+        const path = scriptId.replace('@', '');
+        const domain = path.startsWith('/') ? 'root' : 'project/';
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -83,7 +81,7 @@ export class BackendModem extends EventEmitter {
                 sourceMapURL: '',
                 startColumn: 0,
                 startLine: 0,
-                url: `file:///${path}`,
+                url: `http://${domain}${path}`,
             },
         });
     }
@@ -124,16 +122,15 @@ export class BackendModem extends EventEmitter {
         const frames = stacks.map((s) => {
             let scriptId, url;
             if (s.file === '=stdin') {
-                this.nonFileScriptParsed(data);
-                scriptId = `${this.nonFileScriptIdCount}-stdin`;
-                url = '';
+                this.nonFileScriptParsed();
+                scriptId = `=stdin-${this.nonFileScriptIdCount}`;
+                const path = `stdin-${this.nonFileScriptIdCount}`;
+                url = `http://other/${path}`;
             } else {
                 scriptId = s.file;
-                let path = scriptId.replace('@', '');
-                if (path.startsWith('./')) {
-                    path = path.replace('./', '');
-                }
-                url = `file:///${path}`;
+                const path = scriptId.replace('@', '');
+                const domain = path.startsWith('@/') ? 'root' : 'project/';
+                url = `http://${domain}${path}`;
             }
 
             return {
@@ -178,7 +175,8 @@ export class BackendModem extends EventEmitter {
 
     nonFileScriptParsed = async () => {
         this.nonFileScriptIdCount += 1;
-        const scriptId = `${this.nonFileScriptIdCount}-stdin`;
+        const scriptId = `=stdin-${this.nonFileScriptIdCount}`;
+        const path = `stdin-${this.nonFileScriptIdCount}`;
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
         this.sendFrontend({
@@ -198,7 +196,7 @@ export class BackendModem extends EventEmitter {
                 sourceMapURL: '',
                 startColumn: 0,
                 startLine: 0,
-                url: '',
+                url: `http://other/${path}`,
             },
         });
     }
@@ -276,17 +274,21 @@ export class BackendModem extends EventEmitter {
             };
         });
 
+        const hitBreakpoints = [];
+        const stack = stacks[0];
+        const scriptId = stack.file;
+        if (scriptId.startsWith('@')) {
+            const path = scriptId.replace('@', '');
+            const domain = path.startsWith('/') ? 'root' : 'project/';
+            const url = `http://${domain}${path}`;
+            hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
+        }
+
         const resp = {
             method: 'Debugger.paused',
             params: {
                 callFrames,
-                hitBreakpoints: [
-                    do {
-                        const s = stacks[0];
-                        const file = s.file.replace('@', '').replace('./', '');
-                        `file:///${file}:${s.line - 1}:0`;
-                    },
-                ],
+                hitBreakpoints: hitBreakpoints,
                 reason: 'other',
                 data: {step: data.step},
             },
