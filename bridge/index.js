@@ -29,6 +29,6 @@ console.info(bridge);
 bridge.mount(webapp);
 bridge.start();
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.error({promise, reason});
+process.on('unhandledRejection', (reason) => {
+    console.error(reason.stack);
 });
