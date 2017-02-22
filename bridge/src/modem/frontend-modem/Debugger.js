@@ -17,9 +17,11 @@ Debugger.enable = async (req, store, modem) => {
     store.breakpointRemoveAll();
     store.blackboxRemoveAll();
     store.activeBreakpoints = true;
-    if (store.debuggerPauseData) {
-        modem.restorePause(store.debuggerPauseData, store);
-    }
+    setTimeout(() => {
+        if (store.debuggerPauseData) {
+            modem.restorePause(store.debuggerPauseData, store);
+        }
+    }, 1000);
     return null;
 };
 
