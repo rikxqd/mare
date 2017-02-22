@@ -29,7 +29,7 @@ local function expand_value(value, cache)
         local info = rdebug.fvalue(value);
         mt.__HOST_INFO_NATIVE__ = info.what == 'C'
         if not mt.__HOST_INFO_NATIVE__ then
-            mt.__HOST_INFO_FILE__ = info.source
+            mt.__HOST_INFO_FILE__ = info.source:gsub('@./', '@')
             mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
             mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
         end
