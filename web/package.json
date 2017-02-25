@@ -1,6 +1,6 @@
 {
-  "name": "ldb_web",
-  "version": "1.0.0",
+  "name": "mare-web",
+  "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "autoprefixer": "6.7.5",

@@ -1,6 +1,6 @@
 {
-  "name": "ldb_bridge",
-  "version": "1.0.0",
+  "name": "mare-server",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "babel-node index.js"
