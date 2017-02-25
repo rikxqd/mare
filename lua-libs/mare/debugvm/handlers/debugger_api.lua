@@ -103,7 +103,7 @@ local handle = function(step, session, environ)
 end
 
 return {
-    name = 'ldb.debugger_api',
+    name = 'mare.debugger_api',
     handle = handle,
     init_hook_mask = '',
 }

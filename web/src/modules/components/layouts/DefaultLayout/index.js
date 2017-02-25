@@ -52,7 +52,7 @@ export default class DefaultLayout extends React.Component {
             <div className={style.root}>
                 <Layout fixedHeader>
                     <Header title={<a className={style.title}
-                            href='/' onClick={href('/')}>LDB</a>}>
+                            href='/' onClick={href('/')}>Mare</a>}>
                         {this.renderNavigation()}
                     </Header>
                     <div className={style.content}>

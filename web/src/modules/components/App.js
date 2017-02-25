@@ -4,7 +4,7 @@ import {pages, redirect} from 'components/router';
 import DefaultLayout from 'components/layouts/DefaultLayout';
 
 postal.sub('document-title', (title) => {
-    document.title = `LDB - ${title}`;
+    document.title = `Mare - ${title}`;
 });
 
 export default class App extends React.Component {

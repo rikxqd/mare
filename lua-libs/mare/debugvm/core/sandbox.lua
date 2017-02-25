@@ -90,7 +90,7 @@ local Sandbox = class({
         local locals = environ:get_locals_dict(level, event)
         local upvalues = environ:get_upvalues_dict(level, event)
         local injects = self:get_injects()
-        local fallback = {_LDB=injects}
+        local fallback = {_MARE=injects}
         env = lo.assign({}, mirage, injects, upvalues, locals, fallback)
 
         self.envs[level] = env
@@ -119,7 +119,7 @@ local Sandbox = class({
             return func()
         end)
         if type(value) == 'string' then
-            local find = '%g/ldb%-debug/core/sandbox.lua:%d+: '
+            local find = '%g/mare/debugvm/core/sandbox.lua:%d+: '
             value = value:gsub(find, '')
         end
         return ok, value

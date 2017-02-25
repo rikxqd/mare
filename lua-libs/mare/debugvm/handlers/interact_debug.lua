@@ -206,7 +206,7 @@ local handle = function(step, session, environ)
 end
 
 return {
-    name = 'ldb.interact_debug',
+    name = 'mare.interact_debug',
     handle = handle,
     init_hook_mask = '',
 }

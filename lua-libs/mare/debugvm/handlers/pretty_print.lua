@@ -29,7 +29,7 @@ local handle = function(step, session, environ)
 end
 
 return {
-    name = 'ldb.pretty_print',
+    name = 'mare.pretty_print',
     handle = handle,
     init_hook_mask = 'c',
 }

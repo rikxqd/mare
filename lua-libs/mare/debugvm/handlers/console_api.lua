@@ -25,7 +25,7 @@ local handle = function(step, session, environ)
 end
 
 return {
-    name = 'ldb.console_api',
+    name = 'mare.console_api',
     handle = handle,
     init_hook_mask = '',
 }

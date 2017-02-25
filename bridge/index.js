@@ -5,7 +5,7 @@ import packageJson from './package.json';
 const webapp = new WebApp(packageJson);
 const config = {
     storage: {
-        database: 'mongodb://localhost:27017/ldb',
+        database: 'mongodb://localhost:27017/mare',
     },
     session: {
         expire: 30,
