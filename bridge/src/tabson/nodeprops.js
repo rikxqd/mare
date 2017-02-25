@@ -16,7 +16,7 @@ const doTagReference = (arg, refs, mkoid) => {
 
     if (!ref.id.startsWith('(*')) {
         internalProperties.push({
-            name: 'rawtostring',
+            name: 'objectid',
             value: {
                 type: 'string',
                 value: ref.id,
@@ -46,10 +46,9 @@ const doTagReference = (arg, refs, mkoid) => {
                     },
                 },
             });
-        }
-        if (ref.source_file) {
+        } else if (ref.source_file) {
             internalProperties.push({
-                name: 'source_file',
+                name: 'source',
                 value: {
                     description: 'Object',
                     subtype: 'internal#location',
@@ -64,11 +63,10 @@ const doTagReference = (arg, refs, mkoid) => {
         }
 
         const propKeys = [
-            'symbol_name',
+            'pointer_address',
             'symbol_address',
-            'pointer',
-            'dli_fbase',
-            'dli_fname',
+            'symbol_base',
+            'symbol_file',
         ];
         for (const key of propKeys) {
             if (!ref[key]) {

@@ -9,7 +9,7 @@ local function expand_value(value, cache)
 
     -- 非基本类型，rdebug.value() 返回一个表示地址的字符串
     -- 相当于在 host vm 里 tostring()
-    local orig_address = rdebug.value(value)
+    local orig_address = rdebug.value(value):sub(2, -2)
 
     -- 避免递归，从缓存取出已经展开过的
     local cache_key = orig_address
@@ -26,13 +26,14 @@ local function expand_value(value, cache)
     }
 
     if orig_type == 'function' then
-        local info = rdebug.fvalue(value);
-        mt.__HOST_INFO_NATIVE__ = info.what == 'C'
-        if mt.__HOST_INFO_NATIVE__ then
-            mt.__HOST_INFO_POINTER__ = info.pointer
-            mt.__HOST_INFO_DLI_FBASE__ = info.dli_fbase
-            mt.__HOST_INFO_DLI_FNAME__ = info.dli_fname
+        local info = rdebug.props(value);
+        if info.pointer_address then
+            mt.__HOST_INFO_NATIVE__ = true
+            mt.__HOST_INFO_POINTER_ADDRESS__ = info.pointer_address
+            mt.__HOST_INFO_SYMBOL_BASE__ = info.symbol_base
+            mt.__HOST_INFO_SYMBOL_FILE__ = info.symbol_file
         else
+            mt.__HOST_INFO_NATIVE__ = false
             mt.__HOST_INFO_FILE__ = info.source:gsub('@./', '@')
             mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
             mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
@@ -75,7 +76,7 @@ local function expand_value(value, cache)
     end
 
     if orig_type == 'thread' then
-        mt.__HOST_INFO_STATUS__ = rdebug.fvalue(value)
+        mt.__HOST_INFO_STATUS__ = rdebug.props(value)
         local tbl = setmetatable({}, mt);
         return tbl
     end

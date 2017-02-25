@@ -2,12 +2,12 @@ import libpath from 'path';
 import child_process from 'child_process';
 
 const getAddr = (ref) => {
-    const name = ref.dli_fname;
+    const name = ref.symbol_file;
     if (name.endsWith('.so') || name.endsWith('.dll')) {
-        const offset = Number(ref.pointer) - Number(ref.dli_fbase);
+        const offset = Number(ref.pointer_address) - Number(ref.symbol_base);
         return offset.toString(16);
     } else {
-        return ref.pointer.replace('0x', '');
+        return ref.pointer_address.replace('0x', '');
     }
 };
 
@@ -48,10 +48,10 @@ const runCmd = ([cmd, path, addrs]) => {
 };
 
 const dlinfo = async (refs, projectSource) => {
-    refs = refs.filter((r) => r.dli_fname);
+    refs = refs.filter((r) => r.symbol_file);
     const files = {};
     for (const ref of refs) {
-        const path = libpath.resolve(projectSource, ref.dli_fname);
+        const path = libpath.resolve(projectSource, ref.symbol_file);
         let addrs = files[path];
         if (!addrs) {
             addrs = {};
@@ -75,7 +75,7 @@ const dlinfo = async (refs, projectSource) => {
         mapping[item.path] = item.info;
     }
     for (const ref of refs) {
-        const path = libpath.resolve(projectSource, ref.dli_fname);
+        const path = libpath.resolve(projectSource, ref.symbol_file);
         const info = mapping[path];
         Object.assign(ref, info[ref.symbol_address]);
     }

@@ -9,7 +9,11 @@ local is_c_frame = function(frame)
 end
 
 local get_frame = function(level)
-    return rdebug.getinfo(level)
+    local frame = rdebug.getinfo(level)
+    if frame and (frame.event == 'tail call') then
+        frame.event = 'tailcall'
+    end
+    return frame
 end
 
 local normalize_frame = function(frame)

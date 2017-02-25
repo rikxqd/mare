@@ -30,9 +30,9 @@ const rehost = (rawobj) => {
         if (newRefType === 'function') {
             newRef.native = info.__HOST_INFO_NATIVE__;
             if (newRef.native) {
-                newRef.pointer = info.__HOST_INFO_POINTER__;
-                newRef.dli_fbase = info.__HOST_INFO_DLI_FBASE__;
-                newRef.dli_fname = info.__HOST_INFO_DLI_FNAME__;
+                newRef.pointer_address = info.__HOST_INFO_POINTER_ADDRESS__;
+                newRef.symbol_base = info.__HOST_INFO_SYMBOL_BASE__;
+                newRef.symbol_file = info.__HOST_INFO_SYMBOL_FILE__;
             } else {
                 newRef.file = info.__HOST_INFO_FILE__;
                 newRef.line_begin = info.__HOST_INFO_LINE_BEGIN__;
