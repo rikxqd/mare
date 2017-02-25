@@ -47,6 +47,41 @@ const doTagReference = (arg, refs, mkoid) => {
                 },
             });
         }
+        if (ref.source_file) {
+            internalProperties.push({
+                name: 'source_file',
+                value: {
+                    description: 'Object',
+                    subtype: 'internal#location',
+                    type: 'object',
+                    value: {
+                        columnNumber: 0,
+                        lineNumber: ref.line_begin - 1,
+                        scriptId: `@${ref.source_file}`,
+                    },
+                },
+            });
+        }
+
+        const propKeys = [
+            'symbol_name',
+            'symbol_address',
+            'pointer',
+            'dli_fbase',
+            'dli_fname',
+        ];
+        for (const key of propKeys) {
+            if (!ref[key]) {
+                continue;
+            }
+            internalProperties.push({
+                name: key,
+                value: {
+                    type: 'string',
+                    value: ref[key],
+                },
+            });
+        }
         return {result: [], internalProperties};
     }
 

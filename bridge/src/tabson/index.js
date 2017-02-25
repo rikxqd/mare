@@ -114,6 +114,14 @@ export class Tabson {
         return node;
     }
 
+    getNodeRef(node) {
+        if (node.tag !== cnt.TAG_REFERENCE) {
+            return null;
+        }
+        const ref = this.rawobj.refs[node.arg];
+        return ref;
+    }
+
     getNode(paths = []) {
         const root = this.rawobj.root;
         if (paths.length === 0) {

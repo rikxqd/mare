@@ -1,5 +1,6 @@
 import {Tabson} from '../../tabson';
 import rehost from '../../tabson/rehost';
+import dlinfo from '../../tabson/dlinfo';
 const Runtime = {};
 
 Runtime.enable = async (req, store, modem) => {
@@ -39,7 +40,6 @@ Runtime.getProperties = async(req, store, modem) => {
         jsobj = jsobj[objectId.index];
         if (jsobj.vmtype === 'host') {
             jsobj = rehost(jsobj);
-            console.log(jsobj);
         }
         const vProps = Object.assign({index: objectId.index}, docId);
         tv = new Tabson(jsobj, vProps);
@@ -56,9 +56,14 @@ Runtime.getProperties = async(req, store, modem) => {
     } else {
         if (jsobj.vmtype === 'host') {
             jsobj = rehost(jsobj);
-            console.log(jsobj);
         }
         tv = new Tabson(jsobj, docId);
+    }
+
+    const node = tv.getNode(objectId.paths);
+    const ref = tv.getNodeRef(node);
+    if (ref) {
+        await dlinfo([ref], store.project.source);
     }
     const result = tv.props(objectId.paths);
 
