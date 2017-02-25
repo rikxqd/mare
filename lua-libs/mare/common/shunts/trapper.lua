@@ -1,4 +1,4 @@
-local class = require('ldb/utils/oo').class
+local class = require('mare/utils/oo').class
 
 local Trapper = class({
 

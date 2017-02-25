@@ -1,9 +1,9 @@
-local class = require('ldb/utils/oo').class
-local Blackbox = require('ldb/common/shunts/blackbox').Blackbox
-local Breakpoint = require('ldb/common/shunts/breakpoint').Breakpoint
-local Pace = require('ldb/common/shunts/pace').Pace
-local Situation = require('ldb/common/shunts/situation').Situation
-local Trapper = require('ldb/common/shunts/trapper').Trapper
+local class = require('mare/utils/oo').class
+local Blackbox = require('mare/common/shunts/blackbox').Blackbox
+local Breakpoint = require('mare/common/shunts/breakpoint').Breakpoint
+local Pace = require('mare/common/shunts/pace').Pace
+local Situation = require('mare/common/shunts/situation').Situation
+local Trapper = require('mare/common/shunts/trapper').Trapper
 
 local Behavior = class({
 

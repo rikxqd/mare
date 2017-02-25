@@ -1,7 +1,7 @@
-local lo = require('ldb/utils/lodash')
-local class = require('ldb/utils/oo').class
-local mirage = require('ldb/utils/mirage')
-local tabson = require('ldb/utils/tabson')
+local lo = require('mare/utils/lodash')
+local class = require('mare/utils/oo').class
+local mirage = require('mare/utils/mirage')
+local tabson = require('mare/utils/tabson')
 
 local create_console = function(impl)
     local alias = {
@@ -115,7 +115,7 @@ local Sandbox = class({
             end
 
             -- TODO func() 执行如果出错，会在下一次调用时出现
-            -- debugger error: ./ldb/debugvm/aux/frame.lua:12: Must call in debug client
+            -- debugger error: ./mare/debugvm/aux/frame.lua:12: Must call in debug client
             return func()
         end)
         if type(value) == 'string' then

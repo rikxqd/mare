@@ -1,10 +1,10 @@
 rdebug = require('remotedebug')
-console = require('ldb/hostvm/console')
-debugger = require('ldb/hostvm/debugger')
+console = require('mare/hostvm/console')
+debugger = require('mare/hostvm/debugger')
 rdebug.start('debug-test')
 
-tabson = require('ldb/utils/tabson')
-serializer = require('ldb/common/serializer')
+tabson = require('mare/utils/tabson')
+serializer = require('mare/common/serializer')
 libdata = require('lib-data')
 
 test_data = function()

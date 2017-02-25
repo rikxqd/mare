@@ -1,5 +1,5 @@
 local rdebug = require('remotedebug')
-local aux_common = require('ldb/debugvm/aux/common')
+local aux_common = require('mare/debugvm/aux/common')
 
 -- 根据 event 的类型，统一下 (*temporary) 的意义
 local normalize_temporary_items = function(items, event)

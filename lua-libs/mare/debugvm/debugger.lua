@@ -1,15 +1,15 @@
-local lo = require('ldb/utils/lodash')
-local libstr = require('ldb/utils/string')
-local class = require('ldb/utils/oo').class
-local aux = require('ldb/debugvm/aux')
-local Session = require('ldb/debugvm/core/session').Session
-local Environ = require('ldb/debugvm/core/environ').Environ
+local lo = require('mare/utils/lodash')
+local libstr = require('mare/utils/string')
+local class = require('mare/utils/oo').class
+local aux = require('mare/debugvm/aux')
+local Session = require('mare/debugvm/core/session').Session
+local Environ = require('mare/debugvm/core/environ').Environ
 
 local builtin_handlers = {
-    require('ldb/debugvm/handlers/debugger_api'),
-    require('ldb/debugvm/handlers/interact_debug'),
-    require('ldb/debugvm/handlers/pretty_print'),
-    require('ldb/debugvm/handlers/console_api'),
+    require('mare/debugvm/handlers/debugger_api'),
+    require('mare/debugvm/handlers/interact_debug'),
+    require('mare/debugvm/handlers/pretty_print'),
+    require('mare/debugvm/handlers/console_api'),
 }
 
 local Debugger = class({

@@ -1,5 +1,5 @@
-local class = require('ldb/utils/oo').class
-local aux = require('ldb/debugvm/aux')
+local class = require('mare/utils/oo').class
+local aux = require('mare/debugvm/aux')
 
 local Environ = class({
 

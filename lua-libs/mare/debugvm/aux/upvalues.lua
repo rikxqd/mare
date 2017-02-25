@@ -1,5 +1,5 @@
 local rdebug = require('remotedebug')
-local aux_common = require('ldb/debugvm/aux/common')
+local aux_common = require('mare/debugvm/aux/common')
 
 local get_upvalues_items = function(level)
     local items = {}

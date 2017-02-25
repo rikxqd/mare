@@ -1,4 +1,4 @@
-local tabson = require('ldb/utils/tabson')
+local tabson = require('mare/utils/tabson')
 
 local handle = function(step, session, environ)
     if step.event ~= 'call' and step.event ~= 'tailcall' then

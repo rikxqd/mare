@@ -1,6 +1,6 @@
-local lo = require('ldb/utils/lodash')
-local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
-local tabson = require('ldb/utils/tabson')
+local lo = require('mare/utils/lodash')
+local Sandbox = require('mare/debugvm/core/sandbox').Sandbox
+local tabson = require('mare/utils/tabson')
 
 local api = {
     -- luacheck: no unused args

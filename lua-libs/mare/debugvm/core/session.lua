@@ -1,8 +1,8 @@
-local class = require('ldb/utils/oo').class
-local libstr = require('ldb/utils/string')
-local Behavior = require('ldb/common/behavior').Behavior
-local Frontend = require('ldb/common/frontend').Frontend
-local Modem = require('ldb/common/modem').Modem
+local class = require('mare/utils/oo').class
+local libstr = require('mare/utils/string')
+local Behavior = require('mare/common/behavior').Behavior
+local Frontend = require('mare/common/frontend').Frontend
+local Modem = require('mare/common/modem').Modem
 
 local STATE_INIT = 0
 local STATE_CONNECTING = 1

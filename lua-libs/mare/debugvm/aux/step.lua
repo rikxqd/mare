@@ -1,4 +1,4 @@
-local aux_frame = require('ldb/debugvm/aux/frame')
+local aux_frame = require('mare/debugvm/aux/frame')
 
 local get_step = function(event)
     local frame = aux_frame.get_frame(1)

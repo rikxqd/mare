@@ -1,6 +1,6 @@
-local class = require('ldb/utils/oo').class
-local tabson = require('ldb/utils/tabson')
-local Sandbox = require('ldb/debugvm/core/sandbox').Sandbox
+local class = require('mare/utils/oo').class
+local tabson = require('mare/utils/tabson')
+local Sandbox = require('mare/debugvm/core/sandbox').Sandbox
 
 local Interacter = class({
 

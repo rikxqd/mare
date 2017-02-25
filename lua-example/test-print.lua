@@ -1,6 +1,6 @@
 rdebug = require('remotedebug')
-console = require('ldb/hostvm/console')
-debugger = require('ldb/hostvm/debugger')
+console = require('mare/hostvm/console')
+debugger = require('mare/hostvm/debugger')
 rdebug.start('debug-test')
 
 main = function()
