@@ -1,6 +1,6 @@
 import React from 'react';
 import sdk from 'sdk';
-import {Icon, DataTable, TableHeader} from 'react-mdl';
+import {DataTable, TableHeader} from 'react-mdl';
 import style from './index.scss';
 
 export default class SessionList extends React.Component {
@@ -55,8 +55,7 @@ export default class SessionList extends React.Component {
                             onClick={this.onFrontendLinkClick(url, item.title)}>打开前端</a>;
                     }
                 }}
-                <Icon className={style.cellIcon}
-                    name='compare_arrows' />
+                <span> ~ </span>
                 {do {
                     if (item.backend.isConnected) {
                         <span className='text-success'>后端已连接</span>;
