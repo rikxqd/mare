@@ -221,7 +221,6 @@ export default class OverviewTable extends React.Component {
 
                 <div className={style.section}>
                     {this.renderSesssionTable(this.state.session)}
-                    {this.renderProjectTable(this.state.project)}
                 </div>
 
             </div>

@@ -98,9 +98,6 @@ export default class SessionList extends React.Component {
                     <TableHeader name='_debugger'
                         style={{width: '220px'}}
                         cellFormatter={this.renderDebuggerCell}>调试器</TableHeader>
-                    <TableHeader name='_detail'
-                        style={{width: '80px'}}
-                        cellFormatter={this.renderDetailCell}>操作</TableHeader>
                 </DataTable>
             </div>
         );
