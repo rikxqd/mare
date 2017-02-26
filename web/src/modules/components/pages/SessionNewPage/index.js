@@ -23,8 +23,8 @@ export default class SessionNewPage extends React.Component {
         const result = await sdk.newSession(value);
 
         if (result.ok) {
-            const url = `/session/id/${value.id}`;
-            const link = <a href={url} onClick={href(url)}>点击转到详情页</a>;
+            const url = '/session/';
+            const link = <a href={url} onClick={href(url)}>点击转到会话列表</a>;
             const alert = {
                 type: 'ok',
                 desc: <span>创建会话 {value.id} 成功，{link}。</span>,
