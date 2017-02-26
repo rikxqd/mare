@@ -3,9 +3,9 @@ import libpath from 'path';
 import minimist from 'minimist';
 
 const defaultConfig = {
-    debugListen: 'http://0.0.0.0:8001/',
-    releaseListen: 'http://0.0.0.0:8000/',
-    bridgeServerUrl: 'http://0.0.0.0:9223/',
+    debugListen: 'http://127.0.0.1:8001/',
+    releaseListen: 'http://127.0.0.1:8000/',
+    bridgeServerUrl: 'http://127.0.0.1:9223/',
     devtoolsFrontendPath: 'bower_components/mare-devtools-frontend',
 };
 
