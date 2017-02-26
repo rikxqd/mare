@@ -30,7 +30,7 @@ export default class SessionList extends React.Component {
         this.setState({sessions});
     }
 
-    onFrontendLinkClick = (url, title) => () => {
+    openFrontendWin = (url, title) => {
         const width = Math.round(screen.width * 0.618);
         const height = Math.round(screen.height * 0.618);
         const left = Math.round(screen.width / 2 - width / 2);
@@ -40,6 +40,14 @@ export default class SessionList extends React.Component {
             width=${width},height=${height},
             top=${top},left=${left}`;
         window.open(url, title, features);
+    }
+
+    openFrontendTab = (url, title) => {
+        window.open(url, title);
+    }
+
+    onFrontendLinkClick = (url, title) => () => {
+        this.openFrontendTab(url, title);
     }
 
     renderDebuggerCell = (value, item) => {
