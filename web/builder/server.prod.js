@@ -18,6 +18,24 @@ const httpServer = http.createServer(app);
     httpServer.on('upgrade', proxy.ws);
 }
 
+// static
+{
+    const items = [
+        [
+            '/node_modules/',
+            './node_modules/',
+        ],
+        [
+            '/devtools/',
+            '../../mare-devtools-frontend/front_end/',
+        ],
+    ];
+    const option = {fallthrough: false};
+    for (const [url, path] of items) {
+        app.use(url, express.static(path, option));
+    }
+}
+
 // root
 {
     app.use(compression());

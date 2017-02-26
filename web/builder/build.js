@@ -2,7 +2,6 @@ import rimraf from 'rimraf';
 import webpack from 'webpack';
 import fsUtils from './lib/fs-utils';
 import webpackConfig from './webpack-config.prod';
-import bc from './build-config';
 
 const runWebpackBuild = () => {
     return new Promise((resolve, reject) => {
@@ -39,12 +38,6 @@ const copyWebRoot = () => {
         fsUtils.copyFolder(
             './src/webroot/',
             './dist/');
-        fsUtils.copyFolder(
-            './node_modules/chrome-devtools-frontend/front_end/',
-            './dist/devtools/');
-        fsUtils.copyFolder(
-            `./node_modules/chrome-devtools-servefiles/${bc.devtoolsVersion}/`,
-            './dist/devtools/');
         resolve();
     });
 };

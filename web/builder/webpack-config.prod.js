@@ -14,8 +14,9 @@ export default {
         ],
         vendor: [
             'babel-polyfill',
-            'immutable',
+            'react',
             'react-dom',
+            'react-mdl',
         ],
     },
 

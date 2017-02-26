@@ -21,7 +21,6 @@ export default {
     },
 
     externals: {
-        'immutable': 'Immutable',
         'react': 'React',
         'react-dom': 'ReactDOM',
         'react-mdl': 'ReactMDL',

@@ -41,10 +41,6 @@ const httpServer = http.createServer(app);
             './node_modules/',
         ],
         [
-            '/bower_components/',
-            './bower_components/',
-        ],
-        [
             '/devtools/',
             '../../mare-devtools-frontend/front_end/',
         ],
