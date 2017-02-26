@@ -27,7 +27,7 @@ const httpServer = http.createServer(app);
         ],
         [
             '/devtools/',
-            '../../mare-devtools-frontend/front_end/',
+            `${bc.devtoolsFrontendPath}/front_end`,
         ],
     ];
     const option = {fallthrough: false};

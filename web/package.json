@@ -42,11 +42,12 @@
     "webpack-hot-middleware": "2.13.2"
   },
   "scripts": {
-    "postinstall": "bower install --verbose",
+    "bower": "bower",
+    "bridge-server": "babel-node bridge/index.js",
     "build": "babel-node builder/build.js",
-    "lint": "babel-node builder/lint.js",
-    "start": "babel-node builder/server.dev.js",
     "dist-server": "babel-node builder/server.prod.js",
-    "bridge-server": "babel-node bridge/index.js"
+    "lint": "babel-node builder/lint.js",
+    "postinstall": "bower install --verbose",
+    "start": "babel-node builder/server.dev.js"
   }
 }
