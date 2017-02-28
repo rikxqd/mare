@@ -1,8 +1,8 @@
-import {MongoClient} from 'mongodb';
 import EventEmitter from 'events';
 import {SessionStore} from './session-store';
 import {LoggingStore} from './logging-store';
 import {SessionDataStore} from './session-data-store';
+import databaseFactory from './database-factory';
 
 export class Storage extends EventEmitter {
 
@@ -13,7 +13,7 @@ export class Storage extends EventEmitter {
     }
 
     start = async () => {
-        this.database = await MongoClient.connect(this.config.database);
+        this.database = await databaseFactory(this.config.database);
     }
 
     getDatabase() {

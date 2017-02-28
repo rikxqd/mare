@@ -1,4 +1,8 @@
-export default (cln) => {
+import tingodb from 'tingodb';
+import {MongoClient} from 'mongodb';
+import utils from './utils';
+
+const collectionWrap = (cln) => {
     return {
         find: (query) => {
             const result = cln.find(query);
@@ -16,7 +20,6 @@ export default (cln) => {
         },
         findOne: (query) => new Promise((resolve, reject) => {
             cln.findOne(query, null, (err, res) => {
-                console.log(query, err, res);
                 if (err) {
                     reject(err);
                 } else {
@@ -72,4 +75,33 @@ export default (cln) => {
             });
         }),
     };
+};
+
+const createTingo = async (url) => {
+    const path = utils.resolvePath(url);
+    const Database = tingodb().Db;
+    const database = new Database(path, {});
+    const api = {
+        collection: (name) => {
+            return collectionWrap(database.collection(name));
+        },
+        dropCollection: (name) => {
+            database.dropCollection(name);
+        },
+    };
+    return api;
+};
+
+const createMongo = async (url) => {
+    return await MongoClient.connect(url);
+};
+
+export default async (url) => {
+    let create;
+    if (url.startsWith('mongodb://')) {
+        create = createMongo;
+    } else {
+        create = createTingo;
+    }
+    return await create(url);
 };

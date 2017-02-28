@@ -1,18 +1,5 @@
-import libpath from 'path';
 import EventEmitter from 'events';
-
-const resolveHome = (path) => {
-    if (path[0] === '~') {
-        return libpath.join(process.env.HOME, path.slice(1));
-    }
-    return path;
-};
-
-const resolvePath = (path) => {
-    path = resolveHome(path);
-    path = libpath.resolve(path);
-    return path + libpath.sep;
-};
+import utils from './utils';
 
 export class SessionDataStore extends EventEmitter {
 
@@ -21,7 +8,7 @@ export class SessionDataStore extends EventEmitter {
         this.cln = cln;
         this.project = {
             id: 'default',
-            source: resolvePath('.'),
+            source: utils.resolvePath('.'),
             main: 'main.lua',
         };
         this.scriptParsedFiles = {};
@@ -35,7 +22,7 @@ export class SessionDataStore extends EventEmitter {
             return;
         }
         if (project.source) {
-            this.project.source = resolvePath(project.source);
+            this.project.source = utils.resolvePath(project.source);
         }
         if (project.main) {
             this.project.main = project.main;

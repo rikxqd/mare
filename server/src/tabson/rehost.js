@@ -43,7 +43,12 @@ const rehost = (rawobj) => {
         } else if (newRefType === 'userdata') {
             newRef.metatable = info.__HOST_METATABLE__;
         } else if (newRefType === 'table') {
-            newRef.items = ref.items;
+            newRef.items = ref.items.map((item) => {
+                // 复制副本，因为后面会修改
+                const key = Object.assign({}, item.key);
+                const value = Object.assign({}, item.value);
+                return {key, value};
+            });
             newRef.metatable = info.__HOST_METATABLE__;
         }
 
