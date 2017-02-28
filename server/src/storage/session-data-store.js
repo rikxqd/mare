@@ -11,7 +11,7 @@ const resolveHome = (path) => {
 const resolvePath = (path) => {
     path = resolveHome(path);
     path = libpath.resolve(path);
-    return path + '/';
+    return path + libpath.sep;
 };
 
 export class SessionDataStore extends EventEmitter {

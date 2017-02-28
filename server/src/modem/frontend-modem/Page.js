@@ -1,5 +1,6 @@
 import fs from 'fs';
 import glob from 'glob';
+import libpath from 'path';
 
 const readFile = (url) => {
     return new Promise((resolve, reject) => {
@@ -39,7 +40,7 @@ Page.getResourceTree = async (req, store) => {
                 url: `http://project/${project.main}`,
             },
             resources: files.map((f) => {
-                const path = f.replace(project.source, '');
+                const path = libpath.normalize(f).replace(project.source, '');
                 return {
                     mimeType: 'text/x-lua',
                     type: 'Document',
