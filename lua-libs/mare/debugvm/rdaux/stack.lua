@@ -1,4 +1,4 @@
-local aux_frame = require('mare/debugvm/aux/frame')
+local aux_frame = require('mare/debugvm/rdaux/frame')
 
 local get_stack = function(level)
     local frame = aux_frame.get_frame(level)

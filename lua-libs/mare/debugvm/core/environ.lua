@@ -1,5 +1,5 @@
 local class = require('mare/utils/oo').class
-local aux = require('mare/debugvm/aux')
+local aux = require('mare/debugvm/rdaux')
 
 local Environ = class({
 

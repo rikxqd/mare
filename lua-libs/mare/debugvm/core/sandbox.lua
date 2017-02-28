@@ -115,7 +115,7 @@ local Sandbox = class({
             end
 
             -- TODO func() 执行如果出错，会在下一次调用时出现
-            -- debugger error: ./mare/debugvm/aux/frame.lua:12: Must call in debug client
+            -- debugger error: ./mare/debugvm/rdaux/frame.lua:12: Must call in debug client
             return func()
         end)
         if type(value) == 'string' then

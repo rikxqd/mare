@@ -1,7 +1,7 @@
 local lo = require('mare/utils/lodash')
 local libstr = require('mare/utils/string')
 local class = require('mare/utils/oo').class
-local aux = require('mare/debugvm/aux')
+local aux = require('mare/debugvm/rdaux')
 local Session = require('mare/debugvm/core/session').Session
 local Environ = require('mare/debugvm/core/environ').Environ
 
