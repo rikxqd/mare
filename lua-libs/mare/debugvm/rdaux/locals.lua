@@ -19,7 +19,7 @@ local normalize_temporary_items = function(items, event)
 
     -- event 为 call 时，对于 C 函数来说，(*temporary) 看上去就是函数参数
     -- 改成和 Lua 函数的 (*vararg) 一致
-    if event == 'call' or event == 'tailcall' then
+    if event == 'call' or event == 'tail call' then
         for _, item in ipairs(items) do
             local name = item[1]
             if name == '(*temporary)' then

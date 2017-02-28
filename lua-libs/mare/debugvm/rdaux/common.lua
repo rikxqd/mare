@@ -9,7 +9,11 @@ local function expand_value(value, cache)
 
     -- 非基本类型，rdebug.value() 返回一个表示地址的字符串
     -- 相当于在 host vm 里 tostring()
-    local orig_address = rdebug.value(value):sub(2, -2)
+    local host_value = rdebug.value(value)
+    if type(host_value) ~= 'string' then
+        return nil
+    end
+    local orig_address = host_value:sub(2, -2)
 
     -- 避免递归，从缓存取出已经展开过的
     local cache_key = orig_address

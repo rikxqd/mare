@@ -155,7 +155,7 @@ local Interacter = class({
 
         for _, breakpoint in ipairs(behavior.pause_breakpoints) do
             local event = breakpoint.event
-            if event == 'call' or event == 'tailcall' then
+            if event == 'call' or event == 'tail call' then
                 chars.c = true
             elseif event == 'return' then
                 chars.r = true

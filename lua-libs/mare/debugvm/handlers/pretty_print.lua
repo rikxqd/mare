@@ -1,7 +1,7 @@
 local tabson = require('mare/utils/tabson')
 
 local handle = function(step, session, environ)
-    if step.event ~= 'call' and step.event ~= 'tailcall' then
+    if step.event ~= 'call' and step.event ~= 'tail call' then
         return
     end
 

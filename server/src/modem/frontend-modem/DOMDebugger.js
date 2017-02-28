@@ -14,7 +14,7 @@ DOMDebugger.setXHRBreakpoint = async (req, store, modem) => {
         const event = parts[0];
         const props = parts[1].split(':');
         breakpoint = {event};
-        if (event === 'line' || event === 'tailcall') {
+        if (event === 'line' || event === 'tail call') {
             if (props.length !== 2) {
                 return null;
             }

@@ -60,7 +60,7 @@ local Breakpoint = class({
             return self:match_call(step)
         end
 
-        if self.event == 'tailcall' then
+        if self.event == 'tail call' then
             return self:match_tailcall(step)
         end
 
