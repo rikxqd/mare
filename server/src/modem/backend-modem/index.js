@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
 import {Tabson} from '../../tabson';
+import libpath from 'path';
 import rehost from '../../tabson/rehost';
 
 export class BackendModem extends EventEmitter {
@@ -62,7 +63,7 @@ export class BackendModem extends EventEmitter {
         md5sum.update(scriptId);
 
         const path = scriptId.replace('@', '');
-        const domain = path.startsWith('/') ? 'root' : 'project/';
+        const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -129,7 +130,7 @@ export class BackendModem extends EventEmitter {
             } else {
                 scriptId = s.file;
                 const path = scriptId.replace('@', '');
-                const domain = path.startsWith('@/') ? 'root' : 'project/';
+                const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
                 url = `http://${domain}${path}`;
             }
 
@@ -279,7 +280,7 @@ export class BackendModem extends EventEmitter {
         const scriptId = stack.file;
         if (scriptId.startsWith('@')) {
             const path = scriptId.replace('@', '');
-            const domain = path.startsWith('/') ? 'root' : 'project/';
+            const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
             const url = `http://${domain}${path}`;
             hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
         }

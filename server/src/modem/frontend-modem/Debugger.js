@@ -1,3 +1,4 @@
+import libpath from 'path';
 import fs from 'fs';
 
 const readFile = (url) => {
@@ -63,7 +64,7 @@ Debugger.getScriptSource = async (req, store) => {
     const path = req.params.scriptId.replace('@', '');
 
     let abspath;
-    if (path.startsWith('/')) {
+    if (libpath.isAbsolute(path)) {
         abspath = path;
     } else {
         abspath = `${project.source}/${path}`;

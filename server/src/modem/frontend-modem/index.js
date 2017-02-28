@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import domains from './domains';
 import fs from 'fs';
 import glob from 'glob';
+import libpath from 'path';
 import crypto from 'crypto';
 
 const readFile = (url) => {
@@ -108,7 +109,7 @@ export class FrontendModem extends EventEmitter {
         md5sum.update(scriptId);
 
         const path = scriptId.replace('@', '');
-        const domain = path.startsWith('/') ? 'root' : 'project/';
+        const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -244,7 +245,7 @@ export class FrontendModem extends EventEmitter {
         const scriptId = stack.file;
         if (scriptId.startsWith('@')) {
             const path = scriptId.replace('@', '');
-            const domain = path.startsWith('/') ? 'root' : 'project/';
+            const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
             const url = `http://${domain}${path}`;
             hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
         }
