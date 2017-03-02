@@ -1,4 +1,5 @@
 local class = require('mare/utils/oo').class
+local libpath = require('mare/utils/path')
 
 local Blackbox = class({
 
@@ -9,7 +10,7 @@ local Blackbox = class({
     end,
 
     match = function(self, step)
-        if self.file ~= step.file then
+        if not libpath.is_same_source(self.file, step.file) then
             return false
         end
 

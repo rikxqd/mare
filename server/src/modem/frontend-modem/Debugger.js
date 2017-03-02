@@ -1,9 +1,10 @@
 import libpath from 'path';
 import fs from 'fs';
+import luapkg from '../../tabson/luapkg';
 
-const readFile = (url) => {
+const readFile = (path) => {
     return new Promise((resolve, reject) => {
-        fs.readFile(url, 'utf8', (error, data) => {
+        fs.readFile(path, 'utf8', (error, data) => {
             if (error) {
                 reject(error);
             }
@@ -38,7 +39,12 @@ Debugger.setBreakpointByUrl = async (req, store, modem) => {
     if (url.startsWith('http://project/')) {
         file = url.replace('http://project/', '@');
     } else {
-        file = url.replace('http://root/', '@/');
+        file = url.replace('http://root/', '');
+        if ((!file.startsWith('/')) && (!libpath.win32.isAbsolute(file))) {
+            file = '@/' + file;
+        } else {
+            file = '@' + file;
+        }
     }
 
     const breakpoint = {
@@ -61,14 +67,7 @@ Debugger.getScriptSource = async (req, store) => {
         return {scriptSource: '-- No Source Code: this script evaluated on stdin'};
     }
     const project = store.project;
-    const path = req.params.scriptId.replace('@', '');
-
-    let abspath;
-    if (libpath.isAbsolute(path)) {
-        abspath = path;
-    } else {
-        abspath = `${project.source}/${path}`;
-    }
+    const abspath = luapkg.sourceToFile(req.params.scriptId, project.folder);
 
     let content = '';
     try {

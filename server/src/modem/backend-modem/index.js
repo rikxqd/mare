@@ -2,8 +2,8 @@ import EventEmitter from 'events';
 import uuid from 'node-uuid';
 import crypto from 'crypto';
 import {Tabson} from '../../tabson';
-import libpath from 'path';
 import rehost from '../../tabson/rehost';
+import luapkg from '../../tabson/luapkg';
 
 export class BackendModem extends EventEmitter {
 
@@ -62,9 +62,6 @@ export class BackendModem extends EventEmitter {
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
 
-        const path = scriptId.replace('@', '');
-        const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
-
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
             params: {
@@ -82,7 +79,7 @@ export class BackendModem extends EventEmitter {
                 sourceMapURL: '',
                 startColumn: 0,
                 startLine: 0,
-                url: `http://${domain}${path}`,
+                url: luapkg.sourceToUrl(scriptId),
             },
         });
     }
@@ -128,10 +125,7 @@ export class BackendModem extends EventEmitter {
                 const path = `stdin-${this.nonFileScriptIdCount}`;
                 url = `http://other/${path}`;
             } else {
-                scriptId = s.file;
-                const path = scriptId.replace('@', '');
-                const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
-                url = `http://${domain}${path}`;
+                url = luapkg.sourceToUrl(s.file);
             }
 
             return {
@@ -279,9 +273,7 @@ export class BackendModem extends EventEmitter {
         const stack = stacks[0];
         const scriptId = stack.file;
         if (scriptId.startsWith('@')) {
-            const path = scriptId.replace('@', '');
-            const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
-            const url = `http://${domain}${path}`;
+            const url = luapkg.sourceToUrl(scriptId);
             hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
         }
 

@@ -2,8 +2,12 @@ import fs from 'fs';
 import glob from 'glob';
 import libpath from 'path';
 
+const normalize = (path) => {
+    return libpath.normalize(path).replace(/[\\/]+/g, '/');
+}
+
 const mkdirp = (path) => {
-    const dirs = libpath.normalize(path).split('/');
+    const dirs = normalize(path).split('/');
     let current = '';
     for (const dir of dirs) {
         current = libpath.join(current, dir);
@@ -21,8 +25,8 @@ const copyFile = (src, dst, mkdir = false) => {
 };
 
 const copyFolder = (srcFolder, dstFolder) => {
-    srcFolder = libpath.normalize(`${srcFolder}/`);
-    dstFolder = libpath.normalize(`${dstFolder}/`);
+    srcFolder = normalize(`${srcFolder}/`);
+    dstFolder = normalize(`${dstFolder}/`);
 
     const pattern = libpath.join(srcFolder, '**/*');
     const matchFiles = [];

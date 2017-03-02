@@ -1,4 +1,5 @@
 local class = require('mare/utils/oo').class
+local libpath = require('mare/utils/path')
 
 local Breakpoint = class({
 
@@ -12,26 +13,26 @@ local Breakpoint = class({
     end,
 
     match_line = function(self, step)
-        local same_file = step.file == self.file
+        local same_file = libpath.is_same_source(step.file, self.file)
         local same_line = step.line == self.line
         return same_file and same_line
     end,
 
     match_call = function(self, step)
-        local same_file = step.file == self.file
+        local same_file = libpath.is_same_source(step.file, self.file)
         local same_line = step.line == self.line
         local same_func = step.func == self.func
         return same_file and same_line and same_func
     end,
 
     match_tailcall = function(self, step)
-        local same_file = step.file == self.file
+        local same_file = libpath.is_same_source(step.file, self.file)
         local same_line = step.line == self.line
         return same_file and same_line
     end,
 
     match_return = function(self, step)
-        local same_file = step.file == self.file
+        local same_file = libpath.is_same_source(step.file, self.file)
         local same_line = step.line == self.line
         local same_func = step.func == self.func
         return same_file and same_line and same_func

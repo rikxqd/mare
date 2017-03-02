@@ -38,7 +38,7 @@ local function expand_value(value, cache)
             mt.__HOST_INFO_SYMBOL_FILE__ = info.symbol_file
         else
             mt.__HOST_INFO_NATIVE__ = false
-            mt.__HOST_INFO_FILE__ = info.source:gsub('@./', '@')
+            mt.__HOST_INFO_FILE__ = info.source
             mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
             mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
         end

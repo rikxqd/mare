@@ -7,10 +7,15 @@ const resolveHome = (path) => {
     return path;
 };
 
+const resolveAsPosix = (path) => {
+    return path.replace(/\\+/g, '/');
+};
+
 const resolvePath = (path) => {
     path = resolveHome(path);
     path = libpath.resolve(path);
-    return path + libpath.sep;
+    path = resolveAsPosix(path);
+    return path;
 };
 
 export default {resolveHome, resolvePath};

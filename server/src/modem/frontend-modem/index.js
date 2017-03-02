@@ -1,31 +1,7 @@
 import EventEmitter from 'events';
 import domains from './domains';
-import fs from 'fs';
-import glob from 'glob';
-import libpath from 'path';
 import crypto from 'crypto';
-
-const readFile = (url) => {
-    return new Promise((resolve, reject) => {
-        fs.readFile(url, 'utf8', (error, data) => {
-            if (error) {
-                reject(error);
-            }
-            resolve(data);
-        });
-    });
-};
-
-const globFiles = (pattern) => {
-    return new Promise((resolve, reject) => {
-        glob(pattern, (error, files) => {
-            if (error) {
-                reject(error);
-            }
-            resolve(files);
-        });
-    });
-};
+import luapkg from '../../tabson/luapkg';
 
 export class FrontendModem extends EventEmitter {
 
@@ -84,18 +60,6 @@ export class FrontendModem extends EventEmitter {
         this.sendFrontend(resp);
     }
 
-    scriptParseProject = async (store) => {
-        const project = store.project;
-        const pattern = `${project.source}/**/*.lua`;
-        const files = await globFiles(pattern);
-        for (const file of files) {
-            const path = file.replace(project.source, '');
-            const content = await readFile(file);
-            const lines = content.split('\n');
-            const scriptId = `@${path}`;
-            this.scriptParsed(scriptId, store, lines.length);
-        }
-    }
 
     scriptParsed = async (scriptId, store, endLine = -1) => {
         if (!scriptId.startsWith('@')) {
@@ -107,9 +71,6 @@ export class FrontendModem extends EventEmitter {
         store.scriptParsedFiles[scriptId] = true;
         const md5sum = crypto.createHash('md5');
         md5sum.update(scriptId);
-
-        const path = scriptId.replace('@', '');
-        const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
 
         this.sendFrontend({
             method: 'Debugger.scriptParsed',
@@ -128,7 +89,7 @@ export class FrontendModem extends EventEmitter {
                 sourceMapURL: '',
                 startColumn: 0,
                 startLine: 0,
-                url: `http://${domain}${path}`,
+                url: luapkg.sourceToUrl(scriptId),
             },
         });
     }
@@ -244,9 +205,7 @@ export class FrontendModem extends EventEmitter {
         const stack = stacks[0];
         const scriptId = stack.file;
         if (scriptId.startsWith('@')) {
-            const path = scriptId.replace('@', '');
-            const domain = libpath.isAbsolute(path) ? 'root' : 'project/';
-            const url = `http://${domain}${path}`;
+            const url = luapkg.sourceToUrl(scriptId);
             hitBreakpoints.push(`${url}:${stack.line - 1}:0`);
         }
 
