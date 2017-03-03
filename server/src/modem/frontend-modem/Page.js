@@ -28,7 +28,12 @@ const Page = {};
 
 Page.getResourceTree = async (req, store) => {
     const project = store.project;
-    const pattern = `${project.folder}/**/*.lua`;
+    let pattern;
+    if (project.chdir) {
+        pattern = `${project.source}/${project.chdir}/**/*.lua`;
+    } else {
+        pattern = `${project.source}/**/*.lua`;
+    }
     const files = await globFiles(pattern);
     return {
         frameTree: {
@@ -41,7 +46,7 @@ Page.getResourceTree = async (req, store) => {
             },
             resources: files.map((f) => {
                 // glob 返回的是正斜杠
-                const path = f.replace(project.folder + '/', '');
+                const path = f.replace(project.source + '/', '');
                 return {
                     mimeType: 'text/x-lua',
                     type: 'Document',
@@ -55,7 +60,7 @@ Page.getResourceTree = async (req, store) => {
 Page.getResourceContent = async (req, store) => {
     const project = store.project;
     const url = req.params.url;
-    const abspath = luapkg.urlToFile(url, project.folder);
+    const abspath = luapkg.urlToFile(url, project.source);
 
     let content = '';
     try {

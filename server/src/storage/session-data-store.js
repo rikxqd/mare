@@ -9,7 +9,7 @@ export class SessionDataStore extends EventEmitter {
         this.project = {
             id: 'default',
             source: utils.resolvePath('.'),
-            folder: utils.resolvePath('.'),
+            chdir: '',
             main: 'main.lua',
         };
         this.scriptParsedFiles = {};
@@ -25,13 +25,11 @@ export class SessionDataStore extends EventEmitter {
         if (project.main) {
             this.project.main = project.main;
         }
-        if (project.folder) {
-            this.project.folder = utils.resolvePath(project.folder);
-        }
         if (project.source) {
             this.project.source = utils.resolvePath(project.source);
-        } else {
-            this.project.source = this.project.folder;
+        }
+        if (project.chdir) {
+            this.project.chdir = utils.resolveAsPosix(project.chdir);
         }
     }
 

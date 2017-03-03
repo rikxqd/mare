@@ -63,7 +63,7 @@ Runtime.getProperties = async(req, store, modem) => {
     const node = tv.getNode(objectId.paths);
     const ref = tv.getNodeRef(node);
     if (ref) {
-        await dlinfo([ref], store.project.folder);
+        await dlinfo([ref], store.project.source);
     }
     const result = tv.props(objectId.paths);
 

@@ -18,4 +18,4 @@ const resolvePath = (path) => {
     return path;
 };
 
-export default {resolveHome, resolvePath};
+export default {resolveHome, resolveAsPosix, resolvePath};

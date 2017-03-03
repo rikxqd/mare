@@ -67,7 +67,7 @@ Debugger.getScriptSource = async (req, store) => {
         return {scriptSource: '-- No Source Code: this script evaluated on stdin'};
     }
     const project = store.project;
-    const abspath = luapkg.sourceToFile(req.params.scriptId, project.folder);
+    const abspath = luapkg.sourceToFile(req.params.scriptId, project.source);
 
     let content = '';
     try {
