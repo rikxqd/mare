@@ -30,15 +30,19 @@ local normalize_temporary_items = function(items, event)
     end
 
     -- event 为 return 时，(*temporary) 看上去就是函数返回值
-    -- 不过好像判断不了实际返回的个数
+    -- 不过好像判断不了实际返回的个数，实际上 Lua 官方文档也是这么说的
+    -- 见 https://cloudwu.github.io/lua53doc/manual.html
+    -- lua_sethook() 一节 「没有标准方法来访问被函数返回的那些值。」
+    -- 所以这里全部删掉
     if event == 'return' then
+        local filtered = {}
         for _, item in ipairs(items) do
             local name = item[1]
-            if name == '(*temporary)' then
-                item[1] = '(*retarg)'
+            if name ~= '(*temporary)' then
+                table.insert(filtered, item)
             end
         end
-        return items
+        return filtered
     end
 
     -- event 为 line 时，(*temporary) 看上去是没意义的
