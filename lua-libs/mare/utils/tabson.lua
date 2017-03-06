@@ -7,10 +7,6 @@ local TAG_REFERENCE = 'reference'
 local TAG_LIMIT_DEPTH = 'limit-depth'
 local TAG_LIMIT_COUNT = 'limit-count'
 
--- 默认值
-local DEFAULT_MAX_DEPTH = math.maxinteger
-local DEFAULT_MAX_COUNT = math.maxinteger
-
 -- 无视 metamethod 的 tostring
 local rawtostring = function(obj)
     local mt = debug.getmetatable(obj)
@@ -78,10 +74,10 @@ local function dumpval(val, opt, mem, depth)
     end
 
     -- 避免爆栈，限制递归深度和数量
-    if depth >= opt.max_depth then
+    if opt.max_depth and depth >= opt.max_depth then
         return {tag=TAG_LIMIT_DEPTH, arg=id}
     end
-    if mem.count >= opt.max_count then
+    if opt.max_count and mem.count >= opt.max_count then
         return {tag=TAG_LIMIT_COUNT, arg=id}
     end
 
@@ -155,8 +151,8 @@ end
 -- 外层包装函数
 local dump = function(val, opt)
     opt = opt or {}
-    opt.max_depth = opt.max_depth or DEFAULT_MAX_DEPTH
-    opt.max_count = opt.max_count or DEFAULT_MAX_COUNT
+    opt.max_depth = opt.max_depth
+    opt.max_count = opt.max_count
     local mem = {refs={}, count=0}
     local root = dumpval(val, opt, mem, 0)
     return {
