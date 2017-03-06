@@ -5,7 +5,7 @@ import nodeprops from './nodeprops';
 const normalizeRawobj = (rawobj) => {
     for (const [id, ref] of Object.entries(rawobj.refs)) {
         ref.id = id;
-        if (ref.type === 'table') {
+        if (ref.type === 'table' && ref.items) {
             const keystableId = `${id}~`;
             const keystableItems = [];
             for (const item of ref.items) {

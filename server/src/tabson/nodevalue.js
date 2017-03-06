@@ -27,7 +27,7 @@ const isDictLikeTable = (ref) => {
     }
 
     const items = ref.items;
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         return false;
     }
 
@@ -46,7 +46,7 @@ const isArrayLikeTable = (ref) => {
     }
 
     const items = ref.items;
-    if (items.length === 0) {
+    if (!items || items.length === 0) {
         return false;
     }
 

@@ -1,105 +1,119 @@
 local rdebug = require('remotedebug')
 
-local function expand_value(value, cache)
-
+local function expand_value(val, opt, cache, depth)
     -- 基本类型，自身就是值
-    if type(value) ~= 'userdata' then
-        return value
+    if type(val) ~= 'userdata' then
+        return val
     end
 
-    -- 非基本类型，rdebug.value() 返回一个表示地址的字符串
-    -- 相当于在 host vm 里 tostring()
-    local host_value = rdebug.value(value)
-    if type(host_value) ~= 'string' then
-        return nil
-    end
-    local orig_address = host_value:sub(2, -2)
+    -- 引用类型，rdebug.value() 返回一个表示地址的字符串
+    -- 相当于在 host vm 里 tostring()，并去掉头尾的方括号
+    -- 用来当成唯一标识符
+    local id = rdebug.value(val):sub(2, -2)
 
-    -- 避免递归，从缓存取出已经展开过的
-    local cache_key = orig_address
-    local cache_value = cache[cache_key]
-    if cache_value then
-        return cache_value
+    -- 从缓存取出已经获取过的
+    local ref = cache.refs[id]
+    if ref then
+        return ref
     end
 
-    local orig_type = rdebug.type(value)
-    local mt = {
+    -- 这个引用对象在 host vm 里的类型
+    -- 在 debug vm 里全部用一个 table 来表示，host vm 的元数据
+    -- 保存在这个 table 的 metatable 里
+    ref = {}
+    local t = rdebug.type(val)
+    local ref_mt = {
         __HOST_OBJ__ = true,
-        __HOST_TYPE__ = orig_type,
-        __HOST_TOSTRING__ = orig_address,
+        __HOST_TYPE__ = t,
+        __HOST_TOSTRING__ = id,
     }
+    setmetatable(ref, ref_mt)
 
-    if orig_type == 'function' then
-        local info = rdebug.props(value);
-        if info.pointer_address then
-            mt.__HOST_INFO_NATIVE__ = true
-            mt.__HOST_INFO_POINTER_ADDRESS__ = info.pointer_address
-            mt.__HOST_INFO_SYMBOL_BASE__ = info.symbol_base
-            mt.__HOST_INFO_SYMBOL_FILE__ = info.symbol_file
-        else
-            mt.__HOST_INFO_NATIVE__ = false
-            mt.__HOST_INFO_FILE__ = info.source
-            mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
-            mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
-        end
-        local func = setmetatable({}, mt);
-        cache[cache_key] = func
-        return func
+    -- 避免爆栈，限制递归深度和数量
+    if opt.max_depth and depth >= opt.max_depth then
+        ref_mt.__HOST_LIMITED__ = 'depth'
+        return ref
+    end
+    if opt.max_count and cache.count >= opt.max_count then
+        ref_mt.__HOST_LIMITED__ = 'count'
+        return ref
     end
 
-    if orig_type == 'table' then
-        local orig_mt = rdebug.getmetatable(value)
-        if orig_mt then
-            mt.__HOST_METATABLE__ = expand_value(orig_mt, cache)
-        end
+    -- 加入缓存，并递归深度和数量递增
+    cache.refs[id] = ref
+    cache.count = cache.count + 1
+    depth = depth + 1
 
-        local tbl = setmetatable({}, mt);
-        cache[cache_key] = tbl
+    -- 开始获取更多引用对象的元数据
+
+    if t == 'function' then
+        local info = rdebug.props(val);
+        if info.pointer_address then
+            ref_mt.__HOST_INFO_NATIVE__ = true
+            ref_mt.__HOST_INFO_POINTER_ADDRESS__ = info.pointer_address
+            ref_mt.__HOST_INFO_SYMBOL_BASE__ = info.symbol_base
+            ref_mt.__HOST_INFO_SYMBOL_FILE__ = info.symbol_file
+        else
+            ref_mt.__HOST_INFO_NATIVE__ = false
+            ref_mt.__HOST_INFO_FILE__ = info.source
+            ref_mt.__HOST_INFO_LINE_BEGIN__ = info.linedefined
+            ref_mt.__HOST_INFO_LINE_END__ = info.lastlinedefined
+        end
+        return ref
+    end
+
+    if t == 'table' then
+        local val_mt = rdebug.getmetatable(val)
+        if val_mt then
+            ref_mt.__HOST_METATABLE__ = expand_value(val_mt, opt, cache, depth)
+        end
 
         local next_key, next_value
         while true do
-            next_key, next_value = rdebug.next(value, next_key)
+            next_key, next_value = rdebug.next(val, next_key)
             if next_key == nil then
                 break
             end
 
-            local expanded_next_key = expand_value(next_key, cache)
-            tbl[expanded_next_key] = expand_value(next_value, cache)
+            local expanded_next_key = expand_value(next_key, opt, cache, depth)
+            ref[expanded_next_key] = expand_value(next_value, opt, cache, depth)
         end
 
-        return tbl
+        return ref
     end
 
-    if orig_type == 'userdata' then
-        local orig_mt = rdebug.getmetatable(value)
-        if orig_mt then
-            mt.__HOST_METATABLE__ = expand_value(orig_mt, cache)
+    if t == 'userdata' then
+        local val_mt = rdebug.getmetatable(val)
+        if val_mt then
+            ref_mt.__HOST_METATABLE__ = expand_value(val_mt, opt, cache, depth)
         end
-        local tbl = setmetatable({}, mt);
-        return tbl
+        return ref
     end
 
-    if orig_type == 'thread' then
-        mt.__HOST_INFO_STATUS__ = rdebug.props(value)
-        local tbl = setmetatable({}, mt);
-        return tbl
+    if t == 'thread' then
+        ref_mt.__HOST_INFO_STATUS__ = rdebug.props(val)
+        return ref
     end
 
     return nil
 end
 
 local expand_to_array = function(items)
-    local cache = {}
+    local opt = {max_depth=8, max_count=4096}
+    local cache = {refs={}, count=0}
+
     local ret = {}
     for _, item in ipairs(items) do
-        local value = expand_value(item[2], cache)
+        local value = expand_value(item[2], opt, cache, 0)
         table.insert(ret, value)
     end
     return ret
 end
 
 local expand_to_dict = function(items)
-    local cache = {}
+    local opt = {max_depth=8, max_count=4096}
+    local cache = {refs={}, count=0}
+
     local ret = {}
     local temporary_count = 0
     local temporary_dict = {}
@@ -110,7 +124,7 @@ local expand_to_dict = function(items)
 
     for _, item in ipairs(items) do
         local name = item[1]
-        local value = expand_value(item[2], cache)
+        local value = expand_value(item[2], opt, cache, 0)
 
         if name == '(*temporary)' then
             temporary_count = temporary_count + 1

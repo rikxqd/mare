@@ -8,6 +8,33 @@ const getInfo = (ref) => {
     return ret;
 };
 
+const tranInfo = (newRefType, newRef, ref, info) => {
+    if (newRefType === 'function') {
+        newRef.native = info.__HOST_INFO_NATIVE__;
+        if (newRef.native) {
+            newRef.pointer_address = info.__HOST_INFO_POINTER_ADDRESS__;
+            newRef.symbol_base = info.__HOST_INFO_SYMBOL_BASE__;
+            newRef.symbol_file = info.__HOST_INFO_SYMBOL_FILE__;
+        } else {
+            newRef.file = info.__HOST_INFO_FILE__;
+            newRef.line_begin = info.__HOST_INFO_LINE_BEGIN__;
+            newRef.line_end = info.__HOST_INFO_LINE_END__;
+        }
+    } else if (newRefType === 'thread') {
+        newRef.status = info.__HOST_INFO_STATUS__;
+    } else if (newRefType === 'userdata') {
+        newRef.metatable = info.__HOST_METATABLE__;
+    } else if (newRefType === 'table') {
+        newRef.items = ref.items.map((item) => {
+            // 复制副本，因为后面会修改
+            const key = Object.assign({}, item.key);
+            const value = Object.assign({}, item.value);
+            return {key, value};
+        });
+        newRef.metatable = info.__HOST_METATABLE__;
+    }
+};
+
 const rehost = (rawobj) => {
     const {root, refs} = rawobj;
     const newRefs = {};
@@ -24,32 +51,13 @@ const rehost = (rawobj) => {
         const info = getInfo(refs[ref.metatable.arg]);
         const newRefId = info.__HOST_TOSTRING__;
         const newRefType = info.__HOST_TYPE__;
-        const newRef = {
-            type: newRefType,
-        };
-        if (newRefType === 'function') {
-            newRef.native = info.__HOST_INFO_NATIVE__;
-            if (newRef.native) {
-                newRef.pointer_address = info.__HOST_INFO_POINTER_ADDRESS__;
-                newRef.symbol_base = info.__HOST_INFO_SYMBOL_BASE__;
-                newRef.symbol_file = info.__HOST_INFO_SYMBOL_FILE__;
-            } else {
-                newRef.file = info.__HOST_INFO_FILE__;
-                newRef.line_begin = info.__HOST_INFO_LINE_BEGIN__;
-                newRef.line_end = info.__HOST_INFO_LINE_END__;
-            }
-        } else if (newRefType === 'thread') {
-            newRef.status = info.__HOST_INFO_STATUS__;
-        } else if (newRefType === 'userdata') {
-            newRef.metatable = info.__HOST_METATABLE__;
-        } else if (newRefType === 'table') {
-            newRef.items = ref.items.map((item) => {
-                // 复制副本，因为后面会修改
-                const key = Object.assign({}, item.key);
-                const value = Object.assign({}, item.value);
-                return {key, value};
-            });
-            newRef.metatable = info.__HOST_METATABLE__;
+        const newRefLimited = info.__HOST_LIMITED__;
+        const newRef = {type: newRefType};
+
+        if (newRefLimited) {
+            newRef.limited = newRefLimited;
+        } else {
+            tranInfo(newRefType, newRef, ref, info);
         }
 
         if (updateRoot && root.arg === id) {

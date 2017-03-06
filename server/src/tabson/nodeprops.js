@@ -24,6 +24,18 @@ const doTagReference = (arg, refs, mkoid) => {
         });
     }
 
+    if (ref.limited) {
+        internalProperties.push({
+            name: 'limited',
+            value: {
+                type: 'object',
+                subtype: 'null',
+                value: `more info limit by serialize ${ref.limited}`,
+            },
+        });
+        return {result: [], internalProperties};
+    }
+
     if (type === 'function') {
         internalProperties.push({
             name: 'domain',

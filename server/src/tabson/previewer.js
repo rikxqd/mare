@@ -89,7 +89,7 @@ const previewer = {
     },
 
     tableAsObject: (ref, refs) => {
-        const items = ref.items;
+        const items = ref.items || [];
         const properties = [];
         for (let i = 0; i < PREVIEW_PROP_COUNT; i++) {
             const item = items[i];
