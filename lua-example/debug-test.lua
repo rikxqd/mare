@@ -1,4 +1,5 @@
 local rdebug = require('remotedebug')
+assert(rdebug.status == 'debugger');
 local IOStream = require('mare/common/lsocket').IOStream
 local Debugger = require('mare/debugvm/debugger').Debugger
 
@@ -27,4 +28,9 @@ end)
 
 if config.start ~= false then
     debugger:start()
+    if debugger.session:is_ready() then
+        local pwd = os.getenv('PWD')
+        local url = string.format('chrome-devtools://devtools/bundled/inspector.html?ws=127.0.0.1:9223/session/test?project.source=%s', pwd)
+        print(string.format('[mare] 此入口文件 Chrome 地址调试\n%s', url))
+    end
 end
