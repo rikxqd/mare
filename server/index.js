@@ -5,7 +5,7 @@ const packageJson = require('./package.json');
 const webapp = new WebApp(packageJson);
 const config = {
     storage: {
-        database: './dbdata/',
+        database: `${__dirname}/dbdata/`,
     },
     session: {
         expire: 30,
@@ -23,6 +23,7 @@ const bridge = new Bridge(config);
 
 const frontendAddress = `${config.frontend.host}:${config.frontend.port}`;
 const backendAddress = `${config.backend.host}:${config.backend.port}`;
+console.info('当前以产品模式运行');
 console.info(`* HTTP 服务器地址: http://${frontendAddress}/`);
 console.info(`* Lua 服务器地址: socket://${backendAddress}/`);
 bridge.mount(webapp);
