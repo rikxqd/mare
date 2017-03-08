@@ -4,7 +4,7 @@ import minimist from 'minimist';
 
 const defaultConfig = {
     debugListen: 'http://127.0.0.1:8001/',
-    releaseListen: 'http://127.0.0.1:8000/',
+    releaseListen: 'http://127.0.0.1:8001/',
     bridgeServerUrl: 'http://127.0.0.1:9223/',
     devtoolsFrontendPath: 'bower_components/mare-devtools-frontend',
 };
