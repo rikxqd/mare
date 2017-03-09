@@ -21,7 +21,7 @@ export default {
     },
 
     output: {
-        path: libpath.resolve('./dist/scripts/'),
+        path: libpath.resolve('./dist/webroot/scripts/'),
         filename: '[name].js',
         publicPath: '/scripts/',
     },

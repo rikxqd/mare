@@ -21,7 +21,7 @@ const httpServer = http.createServer(app);
 // root
 {
     app.use(compression());
-    const root = './dist/';
+    const root = './dist/webroot/';
     const index = 'index.html';
     const option = {index, fallthrough: true};
     const fallback = libpath.resolve(root, index);
