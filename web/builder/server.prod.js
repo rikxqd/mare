@@ -18,24 +18,6 @@ const httpServer = http.createServer(app);
     httpServer.on('upgrade', proxy.ws);
 }
 
-// static
-{
-    const items = [
-        [
-            '/node_modules/',
-            './node_modules/',
-        ],
-        [
-            '/devtools/',
-            `${bc.devtoolsFrontendPath}/front_end`,
-        ],
-    ];
-    const option = {fallthrough: false};
-    for (const [url, path] of items) {
-        app.use(url, express.static(path, option));
-    }
-}
-
 // root
 {
     app.use(compression());
@@ -49,7 +31,8 @@ const httpServer = http.createServer(app);
 
 // startup
 const address = liburl.parse(bc.releaseListen);
-console.info(`服务器地址：http://${address.host}/\n`);
+console.info('当前以产品模式运行');
+console.info(`* 服务器地址：http://${address.host}/\n`);
 httpServer.listen(address.port, address.hostname, (error) => {
     if (error) {
         console.error(error);

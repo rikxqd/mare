@@ -35,9 +35,26 @@ const cleanDistDir = () => {
 const copyWebRoot = () => {
 
     return new Promise((resolve) => {
+        fsUtils.mkdirp('./dist/');
+
+        fsUtils.copyFile(
+            './src/webroot/index.html',
+            './dist/index.html');
         fsUtils.copyFolder(
-            './src/webroot/',
-            './dist/');
+            './bower_components/mare-devtools-frontend/front_end/',
+            './dist/devtools');
+
+        fsUtils.mkdirp('./dist/react-mdl/extra/css/');
+        fsUtils.copyFile(
+            './node_modules/react-mdl/extra/material.css',
+            './dist/react-mdl/extra/material.css');
+        fsUtils.copyFile(
+            './node_modules/react-mdl/extra/css/material.blue-amber.min.css',
+            './dist/react-mdl/extra/css/material.blue-amber.min.css');
+        fsUtils.copyFile(
+            './node_modules/react-mdl/extra/material.js',
+            './dist/react-mdl/extra/material.js');
+
         resolve();
     });
 };

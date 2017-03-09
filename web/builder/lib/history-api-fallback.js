@@ -1,5 +1,7 @@
 export default (path) => (req, resp, next) => {
-    if (req.method !== 'GET' || !req.accepts('html')) {
+    const isGet = req.method === 'GET';
+    const isHTML = req.headers.accept.startsWith('text/html');
+    if (!(isGet && isHTML)) {
         next();
         return;
     }

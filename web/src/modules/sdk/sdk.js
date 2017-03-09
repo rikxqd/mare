@@ -45,9 +45,11 @@ class Sdk {
 
     startPollSession() {
         // TODO 换成 websocket
+        /*
         setInterval(async () => {
             this.postal.pub('session-update', await this.getSessions());
-        }, 2000);
+        }, 30 * 1000);
+        */
     }
 
 }
