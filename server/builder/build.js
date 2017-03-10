@@ -51,32 +51,11 @@ const copyAuxFiles = () => {
     });
 };
 
-const npmInstallModules = () => {
-    const cmd = 'npm';
-    const args = 'install --verbose --only=prod'.split(' ');
-    return new Promise((resolve, reject) => {
-        const proc = child_process.spawn(cmd, args, {cwd: './dist'});
-        proc.stdout.on('data', (data) => {
-            process.stdout.write(data);
-        });
-        proc.stderr.on('data', (data) => {
-            process.stderr.write(data);
-        });
-        proc.on('error', () => {
-            reject();
-        });
-        proc.on('close', () => {
-            resolve();
-        });
-    });
-};
-
 (async () => {
     try {
         await cleanDistDir();
         await copyAuxFiles();
         await runBabelBuild();
-        await npmInstallModules();
     } catch (e) {
         console.error('构建失败');
         console.error(e);
