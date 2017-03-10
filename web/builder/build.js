@@ -39,7 +39,7 @@ const copyWebRoot = () => {
         fsUtils.mkdirp('./dist/webroot/');
 
         fsUtils.copyFile(
-            './src/webroot/index.html',
+            './src/webroot/index.prod.html',
             './dist/webroot/index.html');
         fsUtils.copyFolder(
             './bower_components/mare-devtools-frontend/front_end/',
@@ -56,6 +56,9 @@ const copyWebRoot = () => {
             './node_modules/react-mdl/extra/material.js',
             './dist/webroot/react-mdl/extra/material.js');
 
+        fsUtils.copyFile(
+            './package.json',
+            './dist/package.json');
         resolve();
     });
 };
