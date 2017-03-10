@@ -42,7 +42,7 @@ const copyAuxFiles = () => {
     return new Promise((resolve) => {
         fsUtils.mkdirp('./dist/dbdata');
         fsUtils.copyFile(
-            './index.js',
+            './index.prod.js',
             './dist/index.js');
         fsUtils.copyFile(
             './package.json',
