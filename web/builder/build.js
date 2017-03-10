@@ -1,3 +1,4 @@
+import fs from 'fs';
 import child_process from 'child_process';
 import rimraf from 'rimraf';
 import webpack from 'webpack';
@@ -41,9 +42,11 @@ const copyWebRoot = () => {
         fsUtils.copyFile(
             './src/webroot/index.prod.html',
             './dist/webroot/index.html');
-        fsUtils.copyFolder(
-            './bower_components/mare-devtools-frontend/front_end/',
-            './dist/webroot/devtools');
+
+        const devtools = './bower_components/mare-devtools-frontend/front_end/';
+        if (fs.existsSync(devtools)) {
+            fsUtils.copyFolder(devtools, './dist/webroot/devtools');
+        }
 
         fsUtils.mkdirp('./dist/webroot/react-mdl/extra/css/');
         fsUtils.copyFile(
