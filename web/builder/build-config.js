@@ -3,10 +3,9 @@ import libpath from 'path';
 import minimist from 'minimist';
 
 const defaultConfig = {
-    debugListen: 'http://127.0.0.1:8001/',
-    releaseListen: 'http://127.0.0.1:8001/',
-    bridgeServerUrl: 'http://127.0.0.1:9223/',
-    devtoolsFrontendPath: 'bower_components/mare-devtools-frontend',
+    apiServerUrl: 'http://127.0.0.1:9223/',
+    localServerUrl: 'http://127.0.0.1:8001/',
+    devtoolsFrontend: 'bower_components/mare-devtools-frontend',
 };
 
 const fileConfig = do {
@@ -33,7 +32,7 @@ const resolveHome = (path) => {
     }
     return path;
 };
-config.devtoolsFrontendPath = resolveHome(config.devtoolsFrontendPath);
+config.devtoolsFrontend = resolveHome(config.devtoolsFrontend);
 
 console.info('当前构建配置');
 console.info(JSON.stringify(config, null, 4));

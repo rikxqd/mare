@@ -57,6 +57,9 @@ const copyWebRoot = () => {
             './dist/webroot/react-mdl/extra/material.js');
 
         fsUtils.copyFile(
+            './index.prod.js',
+            './dist/index.js');
+        fsUtils.copyFile(
             './package.json',
             './dist/package.json');
         resolve();
@@ -64,8 +67,8 @@ const copyWebRoot = () => {
 };
 
 const runBabelBuild = () => {
-    const inputDir = './builder';
-    const outputDir = './dist/builder';
+    const inputDir = './builder/lib';
+    const outputDir = './dist/lib';
     const cmd = `babel ${inputDir} --out-dir ${outputDir}`;
     return new Promise((resolve, reject) => {
         child_process.exec(cmd, (error, stdout, stderr) => {
