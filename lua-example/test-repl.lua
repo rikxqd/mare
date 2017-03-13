@@ -4,8 +4,13 @@ debugger = require('mare/hostvm/debugger')
 rdebug.start('debug-test')
 
 sleep = function(s)
-    local lsocket = require('lsocket')
-    lsocket.select(s / 1000)
+    if os.getenv('OS') == 'Windows_NT' then
+        local cmd = string.format('ping -n %d localhost > NUL', s + 1)
+        os.execute(cmd)
+    else
+        local lsocket = require('lsocket')
+        lsocket.select(s)
+    end
 end
 
 printl = function(...)
@@ -19,7 +24,7 @@ main = function()
     local value_array = {'one', 'two', 'three'}
     printl('Waiting for repl code, press Ctrl+C to exit')
 
-    local interval = 200
+    local interval = 1
     local count = 0
     while true do
         debugger.repl()
