@@ -34,9 +34,10 @@ Runtime.getProperties = async(req, store, modem) => {
     }
 
     const docId = {id: objectId.id, group: objectId.group};
-    let jsobj = await store.jsobjGet(JSON.stringify(docId));
+    let jsobj;
     let tv;
     if (objectId.group === 'console') {
+        jsobj = await store.jsobjGet(JSON.stringify(docId));
         jsobj = jsobj[objectId.index];
         if (jsobj.vmtype === 'host') {
             jsobj = rehost(jsobj);
@@ -44,16 +45,19 @@ Runtime.getProperties = async(req, store, modem) => {
         const vProps = Object.assign({index: objectId.index}, docId);
         tv = new Tabson(jsobj, vProps);
     } else if (objectId.group === 'locals-result') {
+        jsobj = store.debuggerPauseResults[JSON.stringify(docId)];
         jsobj = jsobj[objectId.index];
         jsobj = rehost(jsobj);
         const vProps = Object.assign({index: objectId.index}, docId);
         tv = new Tabson(jsobj, vProps);
     } else if (objectId.group === 'upvalues-result') {
+        jsobj = store.debuggerPauseResults[JSON.stringify(docId)];
         jsobj = jsobj[objectId.index];
         jsobj = rehost(jsobj);
         const vProps = Object.assign({index: objectId.index}, docId);
         tv = new Tabson(jsobj, vProps);
     } else {
+        jsobj = await store.jsobjGet(JSON.stringify(docId));
         if (jsobj.vmtype === 'host') {
             jsobj = rehost(jsobj);
         }

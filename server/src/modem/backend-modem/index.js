@@ -292,7 +292,7 @@ export class BackendModem extends EventEmitter {
     stackScope = async (data, store) => {
         const props = {id: uuid.v4(), group: `${data.type}-result`};
         const docId = JSON.stringify(props);
-        store.jsobjAppendOne(docId, data.value);
+        store.debuggerPauseResults[docId] = data.value;
         const result = [];
         for (const [k, v] of Object.entries(data.value)) {
             const vProps = Object.assign({index: k}, props);
@@ -361,6 +361,7 @@ export class BackendModem extends EventEmitter {
 
     debuggerResumed = async (data, store) => {
         store.debuggerPauseData = null;
+        store.debuggerPauseResults = {};
         const resp = {
             method: 'Debugger.resumed',
             params: {},

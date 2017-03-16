@@ -16,6 +16,7 @@ export class SessionDataStore extends EventEmitter {
         this.activeBreakpoints = true;
         this.frameScriptIdCount = 0;
         this.debuggerPauseData = null;
+        this.debuggerPauseResults = {};
     }
 
     updateProject(project) {

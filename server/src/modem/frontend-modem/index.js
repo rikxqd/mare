@@ -223,6 +223,7 @@ export class FrontendModem extends EventEmitter {
 
     restoreResumed = async (data, store) => {
         store.debuggerPauseData = null;
+        store.debuggerPauseResults = {};
         const resp = {
             method: 'Debugger.resumed',
             params: {},
