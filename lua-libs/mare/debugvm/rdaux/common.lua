@@ -6,10 +6,16 @@ local function expand_value(val, opt, cache, depth)
         return val
     end
 
-    -- 引用类型，rdebug.value() 返回一个表示地址的字符串
-    -- 相当于在 host vm 里 tostring()，并去掉头尾的方括号
-    -- 用来当成唯一标识符
-    local id = rdebug.value(val):sub(2, -2)
+    -- 引用类型，rdebug.value() 返回值有两种
+    --   * 如果是 lightuserdata，返回这个 lightuserdata 本身
+    --   * 非 lightuserdata，返回一个表示地址的字符串
+    local v = rdebug.value(val)
+    local id
+    if v == val then
+        id = tostring(v)
+    else
+        id = v:sub(2, -2) -- 去掉头尾的方括号
+    end
 
     -- 从缓存取出已经获取过的
     local ref = cache.refs[id]
